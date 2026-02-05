@@ -14,6 +14,15 @@ export interface Measurement {
   areaM2: number;
 }
 
+export interface DetectedRoom {
+  id: string;
+  name: string;
+  x: number;      // % of image width
+  y: number;      // % of image height
+  width: number;  // % of image width
+  height: number; // % of image height
+}
+
 interface Props {
   imageUrl: string | null;
   measurements: Measurement[];
@@ -22,6 +31,7 @@ interface Props {
   onSelect: (id: string | null) => void;
   tool: 'select' | 'measure';
   scale: number; // pixels per meter
+  detectedRooms?: DetectedRoom[];
 }
 
 export default function MeasurementCanvas({
@@ -32,6 +42,7 @@ export default function MeasurementCanvas({
   onSelect,
   tool,
   scale,
+  detectedRooms = [],
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
@@ -276,6 +287,42 @@ export default function MeasurementCanvas({
               dash={[5, 5]}
             />
           )}
+
+          {/* AI-detected rooms (pending approval) */}
+          {image && detectedRooms.map((room) => {
+            const rx = imageX + (room.x / 100) * image.width * imageScale;
+            const ry = imageY + (room.y / 100) * image.height * imageScale;
+            const rw = (room.width / 100) * image.width * imageScale;
+            const rh = (room.height / 100) * image.height * imageScale;
+            return (
+              <Rect
+                key={room.id}
+                x={rx}
+                y={ry}
+                width={rw}
+                height={rh}
+                fill="rgba(34, 197, 94, 0.15)"
+                stroke="#22C55E"
+                strokeWidth={2}
+                dash={[6, 4]}
+              />
+            );
+          })}
+          {image && detectedRooms.map((room) => {
+            const rx = imageX + (room.x / 100) * image.width * imageScale;
+            const ry = imageY + (room.y / 100) * image.height * imageScale;
+            return (
+              <Text
+                key={`ai_label_${room.id}`}
+                x={rx}
+                y={ry - 18}
+                text={`🤖 ${room.name}`}
+                fontSize={12}
+                fill="#22C55E"
+                padding={3}
+              />
+            );
+          })}
 
           {/* Transformer */}
           <Transformer

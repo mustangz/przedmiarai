@@ -12,10 +12,13 @@ import {
   Settings,
   ZoomIn,
   ZoomOut,
+  Check,
+  X,
 } from 'lucide-react';
 import MeasurementList from '@/components/MeasurementList';
 import ScaleCalibration from '@/components/ScaleCalibration';
-import type { Measurement } from '@/components/MeasurementCanvas';
+import AnalyzeButton from '@/components/AnalyzeButton';
+import type { Measurement, DetectedRoom } from '@/components/MeasurementCanvas';
 
 // Dynamic import for react-konva (SSR issue)
 const MeasurementCanvas = dynamic(() => import('@/components/MeasurementCanvas'), {
@@ -43,6 +46,7 @@ export default function ProjectEditor() {
   const [scale, setScale] = useState(100); // pixels per meter (default)
   const [showCalibration, setShowCalibration] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [detectedRooms, setDetectedRooms] = useState<DetectedRoom[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load from localStorage on mount
@@ -175,8 +179,92 @@ export default function ProjectEditor() {
       setImageUrl(null);
       setMeasurements([]);
       setSelectedId(null);
+      setDetectedRooms([]);
       localStorage.removeItem(STORAGE_KEY);
     }
+  };
+
+  const handleRoomsDetected = (rooms: DetectedRoom[]) => {
+    setDetectedRooms(rooms);
+  };
+
+  const approveRoom = (room: DetectedRoom) => {
+    // Convert % coordinates to pixel coordinates on the rendered image
+    // We need the image dimensions — load them from imageUrl
+    const img = new window.Image();
+    img.src = imageUrl!;
+    img.onload = () => {
+      // Recreate the same scaling logic as MeasurementCanvas
+      const container = document.querySelector('.w-full.h-full.bg-neutral-900\\/50');
+      const stageW = container?.clientWidth || 800;
+      const stageH = container?.clientHeight || 600;
+      const scaleX = stageW / img.width;
+      const scaleY = stageH / img.height;
+      const imgScale = Math.min(scaleX, scaleY, 1);
+      const imgX = (stageW - img.width * imgScale) / 2;
+      const imgY = (stageH - img.height * imgScale) / 2;
+
+      const x = imgX + (room.x / 100) * img.width * imgScale;
+      const y = imgY + (room.y / 100) * img.height * imgScale;
+      const width = (room.width / 100) * img.width * imgScale;
+      const height = (room.height / 100) * img.height * imgScale;
+
+      const newMeasurement: Measurement = {
+        id: `m_${Date.now()}`,
+        name: room.name,
+        x,
+        y,
+        width,
+        height,
+        areaM2: scale > 0 ? (width / scale) * (height / scale) : 0,
+      };
+
+      setMeasurements(prev => [...prev, newMeasurement]);
+      setDetectedRooms(prev => prev.filter(r => r.id !== room.id));
+    };
+  };
+
+  const approveAllRooms = () => {
+    const img = new window.Image();
+    img.src = imageUrl!;
+    img.onload = () => {
+      const container = document.querySelector('.w-full.h-full.bg-neutral-900\\/50');
+      const stageW = container?.clientWidth || 800;
+      const stageH = container?.clientHeight || 600;
+      const scaleX = stageW / img.width;
+      const scaleY = stageH / img.height;
+      const imgScale = Math.min(scaleX, scaleY, 1);
+      const imgX = (stageW - img.width * imgScale) / 2;
+      const imgY = (stageH - img.height * imgScale) / 2;
+
+      const newMeasurements = detectedRooms.map((room, i) => {
+        const x = imgX + (room.x / 100) * img.width * imgScale;
+        const y = imgY + (room.y / 100) * img.height * imgScale;
+        const width = (room.width / 100) * img.width * imgScale;
+        const height = (room.height / 100) * img.height * imgScale;
+
+        return {
+          id: `m_${Date.now()}_${i}`,
+          name: room.name,
+          x,
+          y,
+          width,
+          height,
+          areaM2: scale > 0 ? (width / scale) * (height / scale) : 0,
+        };
+      });
+
+      setMeasurements(prev => [...prev, ...newMeasurements]);
+      setDetectedRooms([]);
+    };
+  };
+
+  const rejectRoom = (roomId: string) => {
+    setDetectedRooms(prev => prev.filter(r => r.id !== roomId));
+  };
+
+  const rejectAllRooms = () => {
+    setDetectedRooms([]);
   };
 
   return (
@@ -275,6 +363,11 @@ export default function ProjectEditor() {
               <Settings className="w-4 h-4" />
               Skala: {scale.toFixed(0)} px/m
             </button>
+
+            <AnalyzeButton
+              imageUrl={imageUrl}
+              onRoomsDetected={handleRoomsDetected}
+            />
           </div>
 
           {/* Canvas */}
@@ -324,6 +417,7 @@ export default function ProjectEditor() {
                 onSelect={setSelectedId}
                 tool={tool}
                 scale={scale}
+                detectedRooms={detectedRooms}
               />
             )}
           </div>
@@ -342,7 +436,63 @@ export default function ProjectEditor() {
         </div>
 
         {/* Right panel - measurements */}
-        <aside className="w-80 border-l border-[var(--card-border)] p-6">
+        <aside className="w-80 border-l border-[var(--card-border)] p-6 overflow-y-auto">
+          {/* AI Detected rooms panel */}
+          {detectedRooms.length > 0 && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-semibold text-lg text-green-400">AI Wykryte</h2>
+                <span className="text-xs text-gray-400">{detectedRooms.length} pomieszczeń</span>
+              </div>
+
+              <div className="flex gap-2 mb-3">
+                <button
+                  onClick={approveAllRooms}
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 px-3 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded-lg text-xs text-green-400 transition"
+                >
+                  <Check className="w-3 h-3" />
+                  Zatwierdź wszystkie
+                </button>
+                <button
+                  onClick={rejectAllRooms}
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 px-3 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg text-xs text-red-400 transition"
+                >
+                  <X className="w-3 h-3" />
+                  Odrzuć wszystkie
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {detectedRooms.map((room) => (
+                  <div
+                    key={room.id}
+                    className="flex items-center justify-between p-2 bg-green-500/5 border border-green-500/20 rounded-lg"
+                  >
+                    <span className="text-sm text-green-300">{room.name}</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => approveRoom(room)}
+                        title="Zatwierdź"
+                        className="p-1 hover:bg-green-500/20 rounded transition"
+                      >
+                        <Check className="w-4 h-4 text-green-400" />
+                      </button>
+                      <button
+                        onClick={() => rejectRoom(room.id)}
+                        title="Odrzuć"
+                        className="p-1 hover:bg-red-500/20 rounded transition"
+                      >
+                        <X className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-3 border-b border-[var(--card-border)]" />
+            </div>
+          )}
+
           <div className="mb-6">
             <h2 className="font-semibold text-lg mb-1">Pomiary</h2>
             <p className="text-sm text-gray-400">
