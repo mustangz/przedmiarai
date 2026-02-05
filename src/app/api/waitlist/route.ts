@@ -1,33 +1,51 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import { createServerSupabase } from '@/lib/supabase';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { email } = body;
+    const { email } = await request.json();
 
-    if (!email || !email.includes("@")) {
+    if (!email || !email.includes('@')) {
       return NextResponse.json(
-        { error: "Invalid email" },
+        { error: 'Nieprawidłowy email' },
         { status: 400 }
       );
     }
 
-    // Log for now - Supabase integration later
-    console.log(`[WAITLIST] New signup: ${email} at ${new Date().toISOString()}`);
+    const supabase = createServerSupabase();
 
-    // TODO: Save to Supabase
-    // const { error } = await supabase
-    //   .from('waitlist')
-    //   .insert({ email, created_at: new Date().toISOString() });
+    // Check if email already exists
+    const { data: existing } = await supabase
+      .from('waitlist')
+      .select('id')
+      .eq('email', email)
+      .single();
 
-    return NextResponse.json(
-      { success: true, message: "Added to waitlist" },
-      { status: 200 }
-    );
+    if (existing) {
+      return NextResponse.json(
+        { error: 'Ten email jest już na liście' },
+        { status: 400 }
+      );
+    }
+
+    // Insert new email
+    const { error } = await supabase
+      .from('waitlist')
+      .insert([{ email }]);
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json(
+        { error: 'Błąd zapisu do bazy' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[WAITLIST] Error:", error);
+    console.error('API error:', error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: 'Błąd serwera' },
       { status: 500 }
     );
   }
