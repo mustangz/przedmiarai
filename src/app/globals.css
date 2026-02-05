@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0f;
+  --background: #0a0a12;
   --foreground: #f0f0f5;
   --primary: #7c3aed;
   --primary-light: #a78bfa;
   --secondary: #3b82f6;
   --accent: #06b6d4;
-  --card-bg: #131318;
-  --card-border: #2a2a35;
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --card-border: rgba(255, 255, 255, 0.08);
   --muted: #6b7280;
 }
 
@@ -35,84 +35,116 @@ body {
 .orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.3;
-  animation: float 8s ease-in-out infinite;
+  filter: blur(120px);
+  opacity: 0.15;
+  animation: float 20s ease-in-out infinite;
+  will-change: transform;
 }
 
 .orb-1 {
-  width: 600px;
-  height: 600px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  top: -200px;
-  right: -200px;
+  width: 40vw;
+  height: 40vw;
+  max-width: 600px;
+  max-height: 600px;
+  min-width: 250px;
+  min-height: 250px;
+  background: radial-gradient(circle, var(--primary), var(--secondary));
+  top: -10%;
+  right: -10%;
   animation-delay: 0s;
 }
 
 .orb-2 {
-  width: 400px;
-  height: 400px;
-  background: linear-gradient(135deg, var(--secondary), var(--accent));
-  bottom: 200px;
-  left: -100px;
-  animation-delay: -3s;
+  width: 30vw;
+  height: 30vw;
+  max-width: 450px;
+  max-height: 450px;
+  min-width: 200px;
+  min-height: 200px;
+  background: radial-gradient(circle, var(--secondary), var(--accent));
+  top: 40%;
+  left: -10%;
+  animation-delay: -7s;
 }
 
 .orb-3 {
-  width: 500px;
-  height: 500px;
-  background: linear-gradient(135deg, var(--accent), var(--primary));
-  top: 60%;
-  right: -150px;
-  animation-delay: -5s;
+  width: 35vw;
+  height: 35vw;
+  max-width: 500px;
+  max-height: 500px;
+  min-width: 220px;
+  min-height: 220px;
+  background: radial-gradient(circle, var(--accent), var(--primary));
+  top: 70%;
+  right: -8%;
+  animation-delay: -13s;
 }
 
 @keyframes float {
   0%, 100% {
     transform: translate(0, 0) scale(1);
   }
-  33% {
-    transform: translate(30px, -30px) scale(1.05);
+  25% {
+    transform: translate(30px, -40px) scale(1.05);
   }
-  66% {
+  50% {
     transform: translate(-20px, 20px) scale(0.95);
+  }
+  75% {
+    transform: translate(15px, 10px) scale(1.02);
   }
 }
 
 /* Button styles */
 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
-  padding: 14px 32px;
+  padding: 12px 24px;
   border-radius: 12px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.25);
+  text-decoration: none;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.35);
 }
 
 .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   color: var(--foreground);
-  padding: 14px 32px;
+  padding: 12px 24px;
   border-radius: 12px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   border: 1px solid var(--card-border);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  text-decoration: none;
 }
 
 .btn-secondary:hover {
-  border-color: var(--primary);
-  background: rgba(124, 58, 237, 0.1);
+  border-color: rgba(124, 58, 237, 0.5);
+  background: rgba(124, 58, 237, 0.08);
+}
+
+@media (min-width: 640px) {
+  .btn-primary,
+  .btn-secondary {
+    padding: 14px 32px;
+    font-size: 16px;
+  }
 }
 
 /* Card styles */
@@ -120,14 +152,20 @@ body {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 16px;
-  padding: 32px;
+  padding: 24px;
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .card:hover {
-  border-color: var(--primary);
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-color: rgba(124, 58, 237, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 640px) {
+  .card {
+    padding: 32px;
+  }
 }
 
 /* Gradient text */
@@ -138,15 +176,10 @@ body {
   background-clip: text;
 }
 
-/* Section spacing */
-.section {
-  padding: 100px 0;
-  position: relative;
-}
-
 /* Glass effect */
 .glass {
-  background: rgba(19, 19, 24, 0.8);
+  background: rgba(10, 10, 18, 0.7);
   backdrop-filter: blur(20px);
-  border: 1px solid var(--card-border);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--card-border);
 }
