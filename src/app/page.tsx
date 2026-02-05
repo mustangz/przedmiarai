@@ -208,7 +208,7 @@ export default function Home() {
             <span className="text-xs sm:text-sm text-violet-300 font-medium">Powered by AI</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight mb-5 sm:mb-6">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15] tracking-tight mb-6 sm:mb-6">
             Przedmiar w{' '}
             <span className="gradient-text">sekundy</span>
             <br className="hidden sm:block" />
@@ -216,7 +216,7 @@ export default function Home() {
             nie godziny
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-8 sm:mb-10 px-2 sm:px-0 leading-relaxed">
             AI automatycznie mierzy powierzchnie z rysunków PDF.{' '}
             <span className="text-white font-medium">Oszczędź 80% czasu</span> na wycenach.
           </p>
@@ -263,7 +263,7 @@ export default function Home() {
       </section>
 
       {/* ─── Problem ─── */}
-      <section id="problem" className="relative py-16 sm:py-24 lg:py-32">
+      <section id="problem" className="relative py-20 sm:py-24 lg:py-32">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-950/5 to-transparent pointer-events-none" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
           <div className="text-center mb-10 sm:mb-16">
@@ -281,8 +281,8 @@ export default function Home() {
                 <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-4 group-hover:bg-red-500/20 transition">
                   <item.icon className="w-5 h-5 sm:w-6 sm:h-6 text-red-400" />
                 </div>
-                <h3 className="font-semibold text-base sm:text-lg mb-1.5">{item.title}</h3>
-                <p className="text-gray-400 text-sm sm:text-base leading-relaxed">{item.desc}</p>
+                <h3 className="font-semibold text-base sm:text-lg mb-2">{item.title}</h3>
+                <p className="text-gray-400 text-sm sm:text-base leading-relaxed sm:leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -290,7 +290,7 @@ export default function Home() {
       </section>
 
       {/* ─── Solution ─── */}
-      <section id="features" className="relative py-16 sm:py-24 lg:py-32">
+      <section id="features" className="relative py-20 sm:py-24 lg:py-32">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight">
@@ -312,8 +312,8 @@ export default function Home() {
                 >
                   <item.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                 </div>
-                <h3 className="font-bold text-lg sm:text-xl mb-2 sm:mb-3">{item.title}</h3>
-                <p className="text-gray-400 text-sm sm:text-base leading-relaxed">{item.desc}</p>
+                <h3 className="font-bold text-lg sm:text-xl mb-2.5 sm:mb-3">{item.title}</h3>
+                <p className="text-gray-400 text-sm sm:text-base leading-relaxed sm:leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -321,7 +321,7 @@ export default function Home() {
       </section>
 
       {/* ─── How it works ─── */}
-      <section id="how-it-works" className="relative py-16 sm:py-24 lg:py-32">
+      <section id="how-it-works" className="relative py-20 sm:py-24 lg:py-32">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-950/5 to-transparent pointer-events-none" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
           <div className="text-center mb-10 sm:mb-16">
@@ -330,14 +330,14 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-8">
             {steps.map((item, i) => (
               <div key={i} className="text-center relative">
                 <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-violet-500/15 mb-3 sm:mb-4">
                   {item.step}
                 </div>
-                <h3 className="font-semibold text-sm sm:text-base lg:text-lg mb-1 sm:mb-2">{item.title}</h3>
-                <p className="text-gray-400 text-xs sm:text-sm">{item.desc}</p>
+                <h3 className="font-semibold text-base sm:text-base lg:text-lg mb-1.5 sm:mb-2">{item.title}</h3>
+                <p className="text-gray-400 text-sm sm:text-sm leading-relaxed">{item.desc}</p>
                 {i < 3 && (
                   <div className="hidden lg:block absolute top-6 left-[60%] w-[80%] h-px bg-gradient-to-r from-violet-500/20 to-transparent" />
                 )}
@@ -348,7 +348,7 @@ export default function Home() {
       </section>
 
       {/* ─── Pricing ─── */}
-      <section id="pricing" className="relative py-16 sm:py-24 lg:py-32">
+      <section id="pricing" className="relative py-20 sm:py-24 lg:py-32">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight">
@@ -405,7 +405,7 @@ export default function Home() {
       </section>
 
       {/* ─── CTA / Waitlist ─── */}
-      <section id="waitlist" className="relative py-16 sm:py-24 lg:py-32">
+      <section id="waitlist" className="relative py-20 sm:py-24 lg:py-32">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
           <div className="card p-6 sm:p-10 md:p-12 text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 to-blue-600/5" />

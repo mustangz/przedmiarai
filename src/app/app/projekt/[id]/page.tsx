@@ -75,27 +75,66 @@ export default function ProjectEditor() {
     setIsDragging(false);
 
     const file = e.dataTransfer.files[0];
-    if (file && (file.type.includes('image') || file.type.includes('pdf'))) {
+    if (file) {
       handleFile(file);
     }
   }, []);
 
-  const handleFile = (file: File) => {
-    // For images, create data URL
-    if (file.type.includes('image')) {
+  const handleFile = async (file: File) => {
+    const name = file.name.toLowerCase();
+
+    // DWG files — not supported yet
+    if (name.endsWith('.dwg') || name.endsWith('.dxf')) {
+      alert(
+        'Format DWG/DXF nie jest jeszcze obsługiwany.\nWyeksportuj rysunek do PDF lub PNG w swoim programie CAD.'
+      );
+      return;
+    }
+
+    // PDF — render first page to image via pdf.js
+    if (file.type === 'application/pdf' || name.endsWith('.pdf')) {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfjsLib = await import('pdfjs-dist');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 2 }); // 2x for quality
+
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d')!;
+
+        await page.render({ canvas, canvasContext: ctx, viewport }).promise;
+
+        const dataUrl = canvas.toDataURL('image/png');
+        setImageUrl(dataUrl);
+        setMeasurements([]);
+        setSelectedId(null);
+      } catch (err) {
+        console.error('PDF rendering failed:', err);
+        alert('Nie udało się wczytać pliku PDF. Spróbuj wyeksportować go jako PNG.');
+      }
+      return;
+    }
+
+    // Images — create data URL
+    if (file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
           setImageUrl(e.target.result as string);
-          setMeasurements([]); // Reset measurements for new image
+          setMeasurements([]);
           setSelectedId(null);
         }
       };
       reader.readAsDataURL(file);
-    } else {
-      // PDF - for now just show message (would need pdf.js)
-      alert('PDF support coming soon! For now, export your PDF as PNG.');
+      return;
     }
+
+    alert('Nieobsługiwany format pliku.\nWspierane formaty: PDF, PNG, JPG.');
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -252,11 +291,11 @@ export default function ProjectEditor() {
           >
             {!imageUrl ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
+                <div className="text-center px-4">
                   <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-violet-500/10 flex items-center justify-center border border-violet-500/30">
                     <Upload className="w-10 h-10 text-violet-400" />
                   </div>
-                  <p className="text-gray-400 mb-2">Przeciągnij plik PNG lub JPG</p>
+                  <p className="text-gray-400 mb-2">Przeciągnij plik PDF, PNG lub JPG</p>
                   <p className="text-gray-500 text-sm mb-4">lub</p>
                   <button
                     onClick={() => fileInputRef.current?.click()}
@@ -267,10 +306,13 @@ export default function ProjectEditor() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".png,.jpg,.jpeg"
+                    accept=".pdf,.png,.jpg,.jpeg"
                     onChange={handleFileSelect}
                     className="hidden"
                   />
+                  <p className="text-gray-600 text-xs mt-4">
+                    Obsługiwane: PDF, PNG, JPG &middot; DWG wkrótce
+                  </p>
                 </div>
               </div>
             ) : (
