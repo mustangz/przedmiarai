@@ -335,7 +335,7 @@ export default function Home() {
       {/* ═══════════════════════════════════════════════════════════════════════
           HERO SECTION
           ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="relative pt-28 pb-16 sm:pt-40 sm:pb-28 lg:pt-48 lg:pb-36">
+      <section className="relative pt-32 pb-16 sm:pt-40 sm:pb-28 lg:pt-48 lg:pb-36">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div 
             className="text-center"
@@ -354,7 +354,7 @@ export default function Home() {
             {/* Headline */}
             <motion.h1 
               variants={fadeInUp}
-              className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.15] mb-5 sm:mb-8 px-4"
+              className="text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.15] mb-5 sm:mb-8 px-4"
             >
               Przedmiar w{' '}
               <span className="text-gradient">sekundy</span>
