@@ -170,25 +170,43 @@ body {
   line-height: 1.7;
 }
 
-/* Inline hero email form */
-.hero-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: 440px;
+/* Hero signup card */
+.hero-card {
+  max-width: 480px;
   margin: 0 auto;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 @media (min-width: 480px) {
-  .hero-form {
-    flex-direction: row;
-  }
+  .hero-card { padding: 28px 32px; }
+}
+
+.hero-card-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #a1a1aa;
+  margin-bottom: 16px;
+}
+
+.hero-card-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 480px) {
+  .hero-card-form { flex-direction: row; }
 }
 
 .hero-input {
   flex: 1;
-  padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.06);
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   color: #fff;
@@ -198,17 +216,15 @@ body {
   font-family: inherit;
 }
 
-.hero-input::placeholder {
-  color: #71717a;
-}
+.hero-input::placeholder { color: #52525b; }
 
 .hero-input:focus {
   border-color: #8b5cf6;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .hero-submit {
-  padding: 14px 24px;
+  padding: 12px 22px;
   background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: #fff;
   font-weight: 600;
@@ -233,12 +249,6 @@ body {
   transform: none;
 }
 
-.hero-note {
-  margin-top: 14px;
-  font-size: 12px;
-  color: #52525b;
-}
-
 .hero-success {
   display: flex;
   align-items: center;
@@ -251,8 +261,6 @@ body {
   color: #4ade80;
   font-weight: 500;
   font-size: 14px;
-  max-width: 440px;
-  margin: 0 auto;
 }
 
 /* Product mockup */

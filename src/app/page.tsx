@@ -167,25 +167,30 @@ function HomeContent() {
   };
 
   const emailForm = (
-    <form onSubmit={handleSubmit} className="cta-form">
-      <input
-        type="email"
-        placeholder="twoj@email.pl"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        className="hero-input"
-      />
-      <button type="submit" disabled={loading} className="hero-submit">
-        {loading ? 'Wysyłam...' : 'Dołącz do beta'}
-      </button>
-    </form>
+    <div className="hero-card">
+      <p className="hero-card-label">Dołącz do zamkniętej beta — zostało kilkadziesiąt miejsc</p>
+      <form onSubmit={handleSubmit} className="hero-card-form">
+        <input
+          type="email"
+          placeholder="twoj@email.pl"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="hero-input"
+        />
+        <button type="submit" disabled={loading} className="hero-submit">
+          {loading ? 'Wysyłam...' : 'Dołącz do beta'}
+        </button>
+      </form>
+    </div>
   );
 
   const successMessage = (
-    <div className="hero-success">
-      <Icons.Check />
-      <span>Gotowe! Jesteś na liście. Odezwiemy się wkrótce.</span>
+    <div className="hero-card">
+      <div className="hero-success">
+        <Icons.Check />
+        <span>Gotowe! Jesteś na liście. Odezwiemy się wkrótce.</span>
+      </div>
     </div>
   );
 
@@ -219,13 +224,6 @@ function HomeContent() {
         </p>
 
         {submitted ? successMessage : emailForm}
-
-        <p className="hero-note">
-          {variant === 'a'
-            ? 'Darmowy dostęp do beta. Bez karty kredytowej.'
-            : 'Darmowy miesiąc Pro dla pierwszych 100 użytkowników.'
-          }
-        </p>
 
         <ProductMockup />
       </section>
