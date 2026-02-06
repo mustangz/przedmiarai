@@ -210,12 +210,12 @@ function HomeContent() {
         </div>
 
         <h1 className="hero-title">
-          Wgraj PDF, odbierz <span className="gradient-text">gotowy przedmiar</span>
+          Wgraj PDF lub DWG, odbierz <span className="gradient-text">gotowy przedmiar</span>
         </h1>
 
         <p className="hero-subtitle">
-          Sztuczna inteligencja rozpoznaje pomieszczenia z rysunków technicznych
-          i automatycznie oblicza powierzchnie. Bez ręcznego mierzenia.
+          Sztuczna inteligencja rozpoznaje pomieszczenia z rysunków PDF i DWG,
+          automatycznie oblicza powierzchnie. Bez ręcznego mierzenia.
         </p>
 
         {submitted ? successMessage : emailForm}
@@ -238,7 +238,7 @@ function HomeContent() {
             <div className="metric-label">szybciej niż ręcznie</div>
           </div>
           <div className="metric">
-            <div className="metric-value"><span className="gradient-text">PDF</span></div>
+            <div className="metric-value"><span className="gradient-text">PDF/DWG</span></div>
             <div className="metric-label">wgraj i gotowe</div>
           </div>
           <div className="metric">
@@ -318,7 +318,7 @@ function HomeContent() {
             <p className="section-label">Jak to działa</p>
             <h2 className="section-title">Trzy kroki do gotowego przedmiaru</h2>
             <p className="section-desc">
-              Od rysunku PDF do gotowego zestawienia w mniej niż minutę.
+              Od rysunku PDF lub DWG do gotowego zestawienia w mniej niż minutę.
             </p>
           </div>
 
@@ -328,9 +328,9 @@ function HomeContent() {
               <div className="step-icon" style={{ background: 'rgba(139, 92, 246, 0.1)' }}>
                 <span style={{ color: '#a78bfa' }}><Icons.Upload /></span>
               </div>
-              <h3 className="step-title">Wgraj rysunek PDF</h3>
+              <h3 className="step-title">Wgraj rysunek PDF lub DWG</h3>
               <p className="step-desc">
-                Przeciągnij plik na ekran. Obsługujemy rzuty, przekroje i plany pięter.
+                Przeciągnij plik na ekran. Obsługujemy PDF, DWG, rzuty, przekroje i plany pięter.
               </p>
             </div>
 
@@ -375,7 +375,7 @@ function HomeContent() {
               <div className="feature-icon"><Icons.Zap /></div>
               <div className="feature-content">
                 <div className="feature-title">Rozpoznawanie AI</div>
-                <div className="feature-desc">Automatyczna detekcja pomieszczeń z rysunków PDF</div>
+                <div className="feature-desc">Automatyczna detekcja pomieszczeń z PDF i DWG</div>
               </div>
             </div>
 

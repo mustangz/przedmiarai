@@ -3,12 +3,12 @@ import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PrzedmiarAI - Wgraj PDF, odbierz gotowy przedmiar",
-  description: "AI rozpoznaje pomieszczenia z rysunków technicznych i automatycznie oblicza powierzchnie. 10x szybciej niż ręcznie.",
+  title: "PrzedmiarAI - Wgraj PDF lub DWG, odbierz gotowy przedmiar",
+  description: "AI rozpoznaje pomieszczenia z rysunków PDF i DWG, automatycznie oblicza powierzchnie. 10x szybciej niż ręcznie.",
   keywords: "przedmiar, kosztorys, AI, PDF, pomiary, budowa, wycena, powierzchnia, m2",
   openGraph: {
-    title: "PrzedmiarAI - Wgraj PDF, odbierz gotowy przedmiar",
-    description: "AI rozpoznaje pomieszczenia z rysunków technicznych i automatycznie oblicza powierzchnie. 10x szybciej niż ręcznie.",
+    title: "PrzedmiarAI - Wgraj PDF lub DWG, odbierz gotowy przedmiar",
+    description: "AI rozpoznaje pomieszczenia z rysunków PDF i DWG, automatycznie oblicza powierzchnie. 10x szybciej niż ręcznie.",
     type: "website",
   },
 };
