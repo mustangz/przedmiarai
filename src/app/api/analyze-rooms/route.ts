@@ -96,9 +96,10 @@ Nie dodawaj żadnego tekstu poza JSON. Jeśli nie widzisz pomieszczeń, zwróć 
       rooms: parsed.rooms || [],
     });
   } catch (error) {
-    console.error('Analyze rooms error:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Analyze rooms error:', message);
     return NextResponse.json(
-      { error: 'Błąd analizy pomieszczeń' },
+      { error: `Błąd analizy pomieszczeń: ${message}` },
       { status: 500 }
     );
   }
