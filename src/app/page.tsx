@@ -201,41 +201,40 @@ export default function Home() {
       </nav>
 
       {/* ─── Hero ─── */}
-      <section className="relative pt-8 pb-16 sm:pt-40 sm:pb-20 lg:pt-48 lg:pb-28 mt-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-          <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 rounded-full px-4 py-1.5 mb-6 sm:mb-8">
-            <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+      <section className="relative pt-6 pb-12 sm:pt-32 sm:pb-20 lg:pt-40 lg:pb-28 mt-20 sm:mt-16">
+        <div className="max-w-6xl mx-auto px-6 sm:px-6 text-center">
+          <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 rounded-full px-3 py-1.5 mb-4 sm:mb-8">
+            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-violet-400" />
             <span className="text-xs sm:text-sm text-violet-300 font-medium">Powered by AI</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.15] tracking-tight mb-6 sm:mb-6 px-2">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight tracking-tight mb-4 sm:mb-6">
             Przedmiar w{' '}
             <span className="gradient-text">sekundy</span>
-            <br className="hidden xs:block" />
-            <span className="xs:hidden"> </span>
+            <br />
             nie godziny
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-8 sm:mb-10 px-2 sm:px-0 leading-relaxed">
+          <p className="text-sm sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-6 sm:mb-10 px-4 sm:px-0 leading-relaxed">
             AI automatycznie mierzy powierzchnie z rysunków PDF.{' '}
             <span className="text-white font-medium">Oszczędź 80% czasu</span> na wycenach.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10 sm:mb-12">
-            <a href="#waitlist" className="btn-primary w-full sm:w-auto gap-2">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-12 px-4 sm:px-0">
+            <a href="#waitlist" className="btn-primary w-full sm:w-auto gap-2 text-sm sm:text-base">
               Wypróbuj za darmo <ArrowRight className="w-4 h-4" />
             </a>
-            <a href="#how-it-works" className="btn-secondary w-full sm:w-auto gap-2">
+            <a href="#how-it-works" className="btn-secondary w-full sm:w-auto gap-2 text-sm sm:text-base">
               Zobacz jak działa
             </a>
           </div>
 
-          <div className="flex items-center justify-center gap-3 text-sm text-gray-500">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 px-4">
             <span className="flex -space-x-2">
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br ${
+                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br ${
                     i % 2 === 0 ? 'from-violet-500 to-blue-500' : 'from-blue-500 to-cyan-500'
                   } border-2 border-[var(--background)]`}
                 />
@@ -248,14 +247,14 @@ export default function Home() {
         </div>
 
         {/* Hero visual */}
-        <div className="max-w-4xl mx-auto mt-12 sm:mt-16 lg:mt-20 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto mt-8 sm:mt-16 lg:mt-20 px-6 sm:px-6">
           <div className="card p-1.5 sm:p-2 overflow-hidden">
             <div className="bg-gradient-to-br from-violet-900/20 to-blue-900/20 rounded-xl aspect-[16/10] sm:aspect-video flex items-center justify-center border border-violet-500/10">
               <div className="text-center px-4">
-                <div className="w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 rounded-2xl bg-gradient-to-br from-violet-500/20 to-blue-500/20 flex items-center justify-center border border-violet-500/20">
-                  <Upload className="w-7 h-7 sm:w-10 sm:h-10 text-violet-400" />
+                <div className="w-12 h-12 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-4 rounded-2xl bg-gradient-to-br from-violet-500/20 to-blue-500/20 flex items-center justify-center border border-violet-500/20">
+                  <Upload className="w-6 h-6 sm:w-10 sm:h-10 text-violet-400" />
                 </div>
-                <p className="text-gray-500 text-sm sm:text-base">Podgląd interfejsu</p>
+                <p className="text-gray-500 text-xs sm:text-base">Podgląd interfejsu</p>
               </div>
             </div>
           </div>
@@ -263,26 +262,26 @@ export default function Home() {
       </section>
 
       {/* ─── Problem ─── */}
-      <section id="problem" className="relative py-20 sm:py-24 lg:py-32">
+      <section id="problem" className="relative py-12 sm:py-24 lg:py-32">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-950/5 to-transparent pointer-events-none" />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight">
+        <div className="max-w-6xl mx-auto px-6 sm:px-6 relative">
+          <div className="text-center mb-8 sm:mb-16">
+            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 tracking-tight px-2">
               Ile godzin <span className="gradient-text">tracisz</span> mierząc PDF-y?
             </h2>
-            <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
+            <p className="text-gray-400 text-sm sm:text-lg max-w-xl mx-auto px-4">
               Codzienne frustracje kosztorysanta — poznajemy je dobrze.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {problems.map((item, i) => (
-              <div key={i} className="card group">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-4 group-hover:bg-red-500/20 transition">
-                  <item.icon className="w-5 h-5 sm:w-6 sm:h-6 text-red-400" />
+              <div key={i} className="card group p-4 sm:p-6">
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-3 sm:mb-4 group-hover:bg-red-500/20 transition">
+                  <item.icon className="w-4 h-4 sm:w-6 sm:h-6 text-red-400" />
                 </div>
-                <h3 className="font-semibold text-base sm:text-lg mb-2">{item.title}</h3>
-                <p className="text-gray-400 text-sm sm:text-base leading-relaxed sm:leading-relaxed">{item.desc}</p>
+                <h3 className="font-semibold text-sm sm:text-lg mb-1 sm:mb-2">{item.title}</h3>
+                <p className="text-gray-400 text-xs sm:text-base leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -290,30 +289,30 @@ export default function Home() {
       </section>
 
       {/* ─── Solution ─── */}
-      <section id="features" className="relative py-20 sm:py-24 lg:py-32">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight">
+      <section id="features" className="relative py-12 sm:py-24 lg:py-32">
+        <div className="max-w-6xl mx-auto px-6 sm:px-6">
+          <div className="text-center mb-8 sm:mb-16">
+            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 tracking-tight">
               Rozwiązanie? <span className="gradient-text">PrzedmiarAI</span>
             </h2>
-            <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
+            <p className="text-gray-400 text-sm sm:text-lg max-w-xl mx-auto">
               Trzy proste kroki do gotowego przedmiaru.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
             {solutions.map((item, i) => (
-              <div key={i} className="card relative overflow-hidden group">
+              <div key={i} className="card relative overflow-hidden group p-5 sm:p-8">
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${item.accent} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
                 />
                 <div
-                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${item.accent} flex items-center justify-center mb-5 sm:mb-6`}
+                  className={`w-10 h-10 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${item.accent} flex items-center justify-center mb-4 sm:mb-6`}
                 >
-                  <item.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                  <item.icon className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
                 </div>
-                <h3 className="font-bold text-lg sm:text-xl mb-2.5 sm:mb-3">{item.title}</h3>
-                <p className="text-gray-400 text-sm sm:text-base leading-relaxed sm:leading-relaxed">{item.desc}</p>
+                <h3 className="font-bold text-base sm:text-xl mb-2 sm:mb-3">{item.title}</h3>
+                <p className="text-gray-400 text-xs sm:text-base leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -321,23 +320,23 @@ export default function Home() {
       </section>
 
       {/* ─── How it works ─── */}
-      <section id="how-it-works" className="relative py-20 sm:py-24 lg:py-32">
+      <section id="how-it-works" className="relative py-12 sm:py-24 lg:py-32">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-950/5 to-transparent pointer-events-none" />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight">
+        <div className="max-w-6xl mx-auto px-6 sm:px-6 relative">
+          <div className="text-center mb-8 sm:mb-16">
+            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 tracking-tight">
               Jak to <span className="gradient-text">działa</span>?
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
             {steps.map((item, i) => (
               <div key={i} className="text-center relative">
-                <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-violet-500/15 mb-3 sm:mb-4">
+                <div className="text-3xl sm:text-5xl lg:text-6xl font-bold text-violet-500/15 mb-2 sm:mb-4">
                   {item.step}
                 </div>
-                <h3 className="font-semibold text-base sm:text-base lg:text-lg mb-1.5 sm:mb-2">{item.title}</h3>
-                <p className="text-gray-400 text-sm sm:text-sm leading-relaxed">{item.desc}</p>
+                <h3 className="font-semibold text-sm sm:text-base lg:text-lg mb-1 sm:mb-2">{item.title}</h3>
+                <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">{item.desc}</p>
                 {i < 3 && (
                   <div className="hidden lg:block absolute top-6 left-[60%] w-[80%] h-px bg-gradient-to-r from-violet-500/20 to-transparent" />
                 )}
@@ -348,53 +347,53 @@ export default function Home() {
       </section>
 
       {/* ─── Pricing ─── */}
-      <section id="pricing" className="relative py-20 sm:py-24 lg:py-32">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight">
+      <section id="pricing" className="relative py-12 sm:py-24 lg:py-32">
+        <div className="max-w-6xl mx-auto px-6 sm:px-6">
+          <div className="text-center mb-8 sm:mb-16">
+            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 tracking-tight">
               Prosty <span className="gradient-text">cennik</span>
             </h2>
-            <p className="text-gray-400 text-base sm:text-lg">Wybierz plan dopasowany do Twoich potrzeb</p>
+            <p className="text-gray-400 text-sm sm:text-lg">Wybierz plan dopasowany do Twoich potrzeb</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6 max-w-4xl mx-auto">
             {plans.map((plan, i) => (
               <div
                 key={i}
-                className={`card relative flex flex-col ${
+                className={`card relative flex flex-col p-5 sm:p-8 ${
                   plan.popular
                     ? 'border-violet-500/50 md:-translate-y-2 shadow-[0_0_40px_rgba(124,58,237,0.1)]'
                     : ''
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 to-blue-500 text-white text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-500 to-blue-500 text-white text-[10px] sm:text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap">
                     Najpopularniejszy
                   </div>
                 )}
-                <h3 className="font-bold text-lg sm:text-xl mb-1">{plan.name}</h3>
-                <p className="text-gray-400 text-sm mb-4">{plan.desc}</p>
-                <div className="mb-5 sm:mb-6">
+                <h3 className="font-bold text-base sm:text-xl mb-1">{plan.name}</h3>
+                <p className="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4">{plan.desc}</p>
+                <div className="mb-4 sm:mb-6">
                   {plan.price === 'Kontakt' ? (
-                    <span className="text-2xl sm:text-3xl font-bold">{plan.price}</span>
+                    <span className="text-xl sm:text-3xl font-bold">{plan.price}</span>
                   ) : (
                     <>
-                      <span className="text-3xl sm:text-4xl font-bold">{plan.price}</span>
-                      <span className="text-gray-400 text-sm"> PLN/mies</span>
+                      <span className="text-2xl sm:text-4xl font-bold">{plan.price}</span>
+                      <span className="text-gray-400 text-xs sm:text-sm"> PLN/mies</span>
                     </>
                   )}
                 </div>
-                <ul className="space-y-2.5 mb-6 sm:mb-8 flex-1">
+                <ul className="space-y-2 sm:space-y-2.5 mb-5 sm:mb-8 flex-1">
                   {plan.features.map((f, j) => (
-                    <li key={j} className="flex items-start gap-2.5 text-gray-300 text-sm sm:text-base">
-                      <Check className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink-0 mt-0.5" />
+                    <li key={j} className="flex items-start gap-2 text-gray-300 text-xs sm:text-base">
+                      <Check className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-emerald-400 shrink-0 mt-0.5" />
                       {f}
                     </li>
                   ))}
                 </ul>
                 <a
                   href="#waitlist"
-                  className={`${plan.popular ? 'btn-primary' : 'btn-secondary'} w-full text-center`}
+                  className={`${plan.popular ? 'btn-primary' : 'btn-secondary'} w-full text-center text-sm sm:text-base`}
                 >
                   {plan.price === 'Kontakt' ? 'Skontaktuj się' : 'Wybierz plan'}
                 </a>
@@ -405,32 +404,32 @@ export default function Home() {
       </section>
 
       {/* ─── CTA / Waitlist ─── */}
-      <section id="waitlist" className="relative py-20 sm:py-24 lg:py-32">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          <div className="card p-6 sm:p-10 md:p-12 text-center relative overflow-hidden">
+      <section id="waitlist" className="relative py-12 sm:py-24 lg:py-32">
+        <div className="max-w-2xl mx-auto px-6 sm:px-6">
+          <div className="card p-5 sm:p-10 md:p-12 text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 to-blue-600/5" />
             <div className="relative">
-              <div className="inline-flex items-center gap-2 bg-violet-500/15 rounded-full px-4 py-1.5 mb-5 sm:mb-6">
-                <Zap className="w-3.5 h-3.5 text-violet-400" />
-                <span className="text-xs sm:text-sm text-violet-300 font-medium">Early Access</span>
+              <div className="inline-flex items-center gap-2 bg-violet-500/15 rounded-full px-3 py-1 mb-4 sm:mb-6">
+                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-violet-400" />
+                <span className="text-[10px] sm:text-sm text-violet-300 font-medium">Early Access</span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 tracking-tight">
+              <h2 className="text-xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4 tracking-tight">
                 Dołącz do <span className="gradient-text">beta</span>
               </h2>
-              <p className="text-gray-400 text-sm sm:text-base mb-6 sm:mb-8 max-w-md mx-auto leading-relaxed">
+              <p className="text-gray-400 text-xs sm:text-base mb-5 sm:mb-8 max-w-md mx-auto leading-relaxed">
                 Zapisz się na listę i bądź pierwszy, gdy wystartujemy.
                 Pierwsi użytkownicy otrzymają darmowy miesiąc Pro.
               </p>
 
               <WaitlistForm />
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-6 sm:mt-8 text-xs sm:text-sm text-gray-500">
-                <span className="flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5" /> Bez spamu
+              <div className="flex flex-row items-center justify-center gap-4 sm:gap-6 mt-5 sm:mt-8 text-[10px] sm:text-sm text-gray-500">
+                <span className="flex items-center gap-1">
+                  <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Bez spamu
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5" /> Darmowy miesiąc Pro
+                <span className="flex items-center gap-1">
+                  <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Darmowy miesiąc Pro
                 </span>
               </div>
             </div>
