@@ -7,6 +7,32 @@ interface RoomResult {
   y: number;
   width: number;
   height: number;
+  areaMFromTable?: number;
+}
+
+interface OutlineResult {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface TableRoom {
+  name: string;
+  areaMFromTable: number;
+}
+
+interface ScaleResult {
+  label: string;
+  estimatedPxPerM: number | null;
+}
+
+interface ParsedResponse {
+  floorName?: string;
+  outline?: OutlineResult;
+  scale?: ScaleResult;
+  tableRooms?: TableRoom[];
+  rooms: RoomResult[];
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -16,7 +42,6 @@ function clamp(value: number, min: number, max: number): number {
 function validateAndClampRooms(rooms: RoomResult[]): RoomResult[] {
   return rooms
     .filter((room) => {
-      // Must have valid numeric coordinates
       if (
         typeof room.x !== 'number' ||
         typeof room.y !== 'number' ||
@@ -25,13 +50,9 @@ function validateAndClampRooms(rooms: RoomResult[]): RoomResult[] {
       ) {
         return false;
       }
-      // width/height must be > 1%
       if (room.width <= 1 || room.height <= 1) return false;
-      // width/height must be <= 100%
       if (room.width > 100 || room.height > 100) return false;
-      // x/y must be in reasonable range
       if (room.x < 0 || room.x > 100 || room.y < 0 || room.y > 100) return false;
-      // x+width and y+height must not exceed 105% (tolerance)
       if (room.x + room.width > 105 || room.y + room.height > 105) return false;
       return true;
     })
@@ -41,10 +62,40 @@ function validateAndClampRooms(rooms: RoomResult[]): RoomResult[] {
       y: clamp(room.y, 0, 100),
       width: clamp(room.width, 1, 100 - clamp(room.x, 0, 99)),
       height: clamp(room.height, 1, 100 - clamp(room.y, 0, 99)),
+      ...(typeof room.areaMFromTable === 'number' ? { areaMFromTable: room.areaMFromTable } : {}),
     }));
 }
 
-function parseJsonFromResponse(content: string): { rooms: RoomResult[] } | null {
+function validateOutline(outline: unknown): OutlineResult | null {
+  if (!outline || typeof outline !== 'object') return null;
+  const o = outline as Record<string, unknown>;
+  if (
+    typeof o.x !== 'number' || typeof o.y !== 'number' ||
+    typeof o.width !== 'number' || typeof o.height !== 'number'
+  ) return null;
+  if (o.width <= 1 || o.height <= 1) return null;
+  return {
+    x: clamp(o.x as number, 0, 100),
+    y: clamp(o.y as number, 0, 100),
+    width: clamp(o.width as number, 1, 100),
+    height: clamp(o.height as number, 1, 100),
+  };
+}
+
+function validateRoomsAgainstOutline(rooms: RoomResult[], outline: OutlineResult | null): RoomResult[] {
+  if (!outline) return rooms;
+  const tolerance = 2; // 2% tolerance
+  return rooms.filter((room) => {
+    return (
+      room.x >= outline.x - tolerance &&
+      room.y >= outline.y - tolerance &&
+      room.x + room.width <= outline.x + outline.width + tolerance &&
+      room.y + room.height <= outline.y + outline.height + tolerance
+    );
+  });
+}
+
+function parseJsonFromResponse(content: string): ParsedResponse | null {
   // Try extracting from ```json code block first
   const codeBlockMatch = content.match(/```json\s*([\s\S]*?)```/);
   if (codeBlockMatch) {
@@ -110,16 +161,19 @@ export async function POST(request: Request) {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
-      system: `Jesteś ekspertem architektem i analitykiem rysunków technicznych budynków. Twoje zadanie to precyzyjna identyfikacja pomieszczeń na rzutach architektonicznych.
+      system: `Jesteś ekspertem architektem. Analizujesz rzuty architektoniczne warstwa po warstwie, od zewnątrz do wewnątrz.
+
+HIERARCHIA WARSTW:
+1. WYMIARY ZEWNĘTRZNE — linie wymiarowe poza budynkiem, to absolutna granica rysunku
+2. ŚCIANY ZEWNĘTRZNE — najgrubsze linie, obrys budynku, z otworami (okna, drzwi wejściowe)
+3. ŚCIANY WEWNĘTRZNE — nośne (grubsze) i działowe (cieńsze), dzielą budynek na pomieszczenia
+4. POMIESZCZENIA — zamknięte przestrzenie ograniczone ścianami, z etykietami i metrażem
 
 ZASADY:
-- Identyfikuj WYŁĄCZNIE zamknięte pomieszczenia (pokoje, kuchnie, łazienki, korytarze, balkony itp.)
-- IGNORUJ: legendy, tabelki, pieczątki projektowe, ramki rysunku, opisy techniczne, przekroje
-- Bounding box każdego pomieszczenia musi precyzyjnie obejmować jego ściany (nie za duży, nie za mały)
-- Jeśli na rysunku jest kilka kondygnacji — analizuj każdą osobno
-- NIE wymyślaj pomieszczeń których nie ma na rysunku
-- Jeśli nie jesteś pewien czy coś jest pomieszczeniem — pomiń to
-- Współrzędne podawaj jako procent wymiarów obrazu (0-100)`,
+- Pomieszczenia istnieją WYŁĄCZNIE wewnątrz obrysu ścian zewnętrznych
+- IGNORUJ legendy, tabelki pomieszczeń, pieczątki, ramki — to NIE są pomieszczenia
+- Tabela zestawienia pomieszczeń to źródło prawdy o nazwach i powierzchniach
+- Współrzędne jako % wymiarów obrazu (0-100)`,
       messages: [
         {
           role: 'user',
@@ -137,27 +191,52 @@ ZASADY:
               text: `Przeanalizuj ten rysunek architektoniczny krok po kroku:
 
 KROK 1 — OPIS RYSUNKU:
-Opisz co widzisz na rysunku. Gdzie jest legenda/pieczątka/tabelka (jeśli jest)? Ile kondygnacji przedstawia rysunek? Gdzie znajduje się właściwy rzut?
+Co widzisz? Gdzie jest rzut, legenda, pieczątka, tabela pomieszczeń? Jaka kondygnacja?
 
-KROK 2 — LISTA POMIESZCZEŃ:
-Wymień wszystkie zamknięte pomieszczenia które widzisz na rzucie (TYLKO na rzucie, nie w legendach/tabelkach). Podaj ich nazwy.
+KROK 2 — TABELA POMIESZCZEŃ:
+Odczytaj tabelę zestawienia pomieszczeń (jeśli jest). Lista: nazwa + powierzchnia (m²).
+To będzie checklist do weryfikacji.
 
-KROK 3 — PRECYZYJNE WSPÓŁRZĘDNE:
-Dla każdego pomieszczenia określ precyzyjne współrzędne bounding box jako procent wymiarów CAŁEGO obrazu:
-- x: lewa krawędź pomieszczenia (0 = lewa krawędź obrazu, 100 = prawa)
-- y: górna krawędź pomieszczenia (0 = górna krawędź obrazu, 100 = dolna)
-- width: szerokość pomieszczenia jako % szerokości obrazu
-- height: wysokość pomieszczenia jako % wysokości obrazu
+KROK 3 — OBRYS BUDYNKU:
+Zidentyfikuj ściany zewnętrzne (najgrubsze linie). Podaj bounding box CAŁEGO rzutu
+(obrys ścian zewnętrznych) jako % obrazu: x, y, width, height.
+
+KROK 4 — SKALA I WYMIARY:
+Znajdź skalę rysunku (np. "1:100") i wymiary zewnętrzne (np. "12.50 m").
+Jeśli widzisz wymiar i możesz oszacować ile pikseli zajmuje — podaj proporcję.
+
+KROK 5 — POMIESZCZENIA:
+Wykryj pomieszczenia WYŁĄCZNIE wewnątrz obrysu z kroku 3.
+Dopasuj nazwy do tabeli z kroku 2. Podaj bounding box każdego jako % obrazu.
+
+KROK 6 — WERYFIKACJA:
+- Czy liczba pokoi zgadza się z tabelą?
+- Czy każdy pokój mieści się w obrysie budynku?
+- Czy proporcje powierzchni są sensowne?
 
 Na końcu podaj wynik jako JSON w bloku:
 \`\`\`json
-{"rooms": [{"name": "Salon", "x": 10, "y": 15, "width": 30, "height": 25}, ...]}
+{
+  "floorName": "Rzut parteru",
+  "outline": { "x": 15, "y": 10, "width": 60, "height": 75 },
+  "scale": { "label": "1:100", "estimatedPxPerM": 45 },
+  "tableRooms": [
+    { "name": "Salon", "areaMFromTable": 25.5 }
+  ],
+  "rooms": [
+    { "name": "Salon", "x": 20, "y": 15, "width": 25, "height": 30, "areaMFromTable": 25.5 }
+  ]
+}
 \`\`\`
 
 Jeśli nie widzisz żadnych pomieszczeń, zwróć:
 \`\`\`json
 {"rooms": []}
-\`\`\``,
+\`\`\`
+
+Uwagi:
+- outline, scale, tableRooms mogą być null jeśli nie udało się ich wykryć
+- areaMFromTable w rooms to powierzchnia z tabeli (jeśli znaleziono dopasowanie)`,
             },
           ],
         },
@@ -183,11 +262,34 @@ Jeśli nie widzisz żadnych pomieszczeń, zwróć:
       );
     }
 
-    const validatedRooms = validateAndClampRooms(parsed.rooms);
+    const outline = validateOutline(parsed.outline);
+    let validatedRooms = validateAndClampRooms(parsed.rooms);
+    validatedRooms = validateRoomsAgainstOutline(validatedRooms, outline);
+
+    const tableRooms: TableRoom[] | null = Array.isArray(parsed.tableRooms)
+      ? parsed.tableRooms.filter(
+          (t) => typeof t.name === 'string' && typeof t.areaMFromTable === 'number'
+        )
+      : null;
+
+    const scaleResult: ScaleResult | null =
+      parsed.scale && typeof parsed.scale.label === 'string'
+        ? {
+            label: parsed.scale.label,
+            estimatedPxPerM:
+              typeof parsed.scale.estimatedPxPerM === 'number'
+                ? parsed.scale.estimatedPxPerM
+                : null,
+          }
+        : null;
 
     return NextResponse.json({
       success: true,
       rooms: validatedRooms,
+      outline,
+      floorName: typeof parsed.floorName === 'string' ? parsed.floorName : null,
+      scale: scaleResult,
+      tableRooms: tableRooms && tableRooms.length > 0 ? tableRooms : null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

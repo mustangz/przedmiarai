@@ -21,6 +21,7 @@ export interface DetectedRoom {
   y: number;      // % of image height
   width: number;  // % of image width
   height: number; // % of image height
+  areaMFromTable?: number;
 }
 
 interface Props {
@@ -33,6 +34,7 @@ interface Props {
   scale: number; // pixels per meter
   detectedRooms?: DetectedRoom[];
   hoveredId?: string | null;
+  buildingOutline?: { x: number; y: number; width: number; height: number } | null;
 }
 
 export default function MeasurementCanvas({
@@ -45,6 +47,7 @@ export default function MeasurementCanvas({
   scale,
   detectedRooms = [],
   hoveredId,
+  buildingOutline,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
@@ -240,6 +243,21 @@ export default function MeasurementCanvas({
               y={imageY}
               scaleX={imageScale}
               scaleY={imageScale}
+            />
+          )}
+
+          {/* Building outline from AI */}
+          {image && buildingOutline && (
+            <Rect
+              x={imageX + (buildingOutline.x / 100) * image.width * imageScale}
+              y={imageY + (buildingOutline.y / 100) * image.height * imageScale}
+              width={(buildingOutline.width / 100) * image.width * imageScale}
+              height={(buildingOutline.height / 100) * image.height * imageScale}
+              fill="rgba(251, 146, 60, 0.05)"
+              stroke="#FB923C"
+              strokeWidth={2}
+              dash={[10, 6]}
+              listening={false}
             />
           )}
 

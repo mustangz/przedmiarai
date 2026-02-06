@@ -23,14 +23,23 @@ export interface DetectedRoom {
   y: number;      // % of image height
   width: number;  // % of image width
   height: number; // % of image height
+  areaMFromTable?: number;
+}
+
+export interface AnalysisResult {
+  rooms: DetectedRoom[];
+  outline: { x: number; y: number; width: number; height: number } | null;
+  floorName: string | null;
+  scale: { label: string; estimatedPxPerM: number | null } | null;
+  tableRooms: { name: string; areaMFromTable: number }[] | null;
 }
 
 interface Props {
   imageUrl: string | null;
-  onRoomsDetected: (rooms: DetectedRoom[]) => void;
+  onAnalysisComplete: (result: AnalysisResult) => void;
 }
 
-export default function AnalyzeButton({ imageUrl, onRoomsDetected }: Props) {
+export default function AnalyzeButton({ imageUrl, onAnalysisComplete }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,16 +65,23 @@ export default function AnalyzeButton({ imageUrl, onRoomsDetected }: Props) {
 
       if (data.rooms && data.rooms.length > 0) {
         const rooms: DetectedRoom[] = data.rooms.map(
-          (r: { name: string; x: number; y: number; width: number; height: number }, i: number) => ({
+          (r: { name: string; x: number; y: number; width: number; height: number; areaMFromTable?: number }, i: number) => ({
             id: `ai_${Date.now()}_${i}`,
             name: r.name,
             x: r.x,
             y: r.y,
             width: r.width,
             height: r.height,
+            ...(typeof r.areaMFromTable === 'number' ? { areaMFromTable: r.areaMFromTable } : {}),
           })
         );
-        onRoomsDetected(rooms);
+        onAnalysisComplete({
+          rooms,
+          outline: data.outline || null,
+          floorName: data.floorName || null,
+          scale: data.scale || null,
+          tableRooms: data.tableRooms || null,
+        });
       } else {
         setError('Nie wykryto pomieszczeń');
       }

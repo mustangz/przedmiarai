@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import MeasurementList from '@/components/MeasurementList';
 import ScaleCalibration from '@/components/ScaleCalibration';
 import AnalyzeButton from '@/components/AnalyzeButton';
+import type { AnalysisResult } from '@/components/AnalyzeButton';
 import type { Measurement, DetectedRoom } from '@/components/MeasurementCanvas';
 
 // ─── Inline SVG icons ─────────────────────────────────────────
@@ -106,6 +107,10 @@ export default function ProjectEditor() {
   const [isDragging, setIsDragging] = useState(false);
   const [detectedRooms, setDetectedRooms] = useState<DetectedRoom[]>([]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [buildingOutline, setBuildingOutline] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [floorName, setFloorName] = useState<string | null>(null);
+  const [aiScale, setAiScale] = useState<{ label: string; estimatedPxPerM: number | null } | null>(null);
+  const [tableRooms, setTableRooms] = useState<{ name: string; areaMFromTable: number }[] | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load from localStorage on mount
@@ -239,12 +244,20 @@ export default function ProjectEditor() {
       setMeasurements([]);
       setSelectedId(null);
       setDetectedRooms([]);
+      setBuildingOutline(null);
+      setFloorName(null);
+      setAiScale(null);
+      setTableRooms(null);
       localStorage.removeItem(STORAGE_KEY);
     }
   };
 
-  const handleRoomsDetected = (rooms: DetectedRoom[]) => {
-    setDetectedRooms(rooms);
+  const handleAnalysisComplete = (result: AnalysisResult) => {
+    setDetectedRooms(result.rooms);
+    setBuildingOutline(result.outline);
+    setFloorName(result.floorName);
+    setAiScale(result.scale);
+    setTableRooms(result.tableRooms);
   };
 
   const approveRoom = (room: DetectedRoom) => {
@@ -418,7 +431,7 @@ export default function ProjectEditor() {
 
             <AnalyzeButton
               imageUrl={imageUrl}
-              onRoomsDetected={handleRoomsDetected}
+              onAnalysisComplete={handleAnalysisComplete}
             />
           </div>
 
@@ -470,6 +483,7 @@ export default function ProjectEditor() {
                 scale={scale}
                 detectedRooms={detectedRooms}
                 hoveredId={hoveredId}
+                buildingOutline={buildingOutline}
               />
             )}
           </div>
@@ -489,6 +503,24 @@ export default function ProjectEditor() {
 
         {/* Right panel - measurements */}
         <aside className="app-editor-sidebar">
+          {/* AI metadata info bar */}
+          {(floorName || aiScale) && (
+            <div className="app-ai-meta">
+              {floorName && (
+                <div className="app-ai-meta-item">
+                  <span className="app-ai-meta-label">Kondygnacja</span>
+                  <span className="app-ai-meta-value">{floorName}</span>
+                </div>
+              )}
+              {aiScale && (
+                <div className="app-ai-meta-item">
+                  <span className="app-ai-meta-label">Skala</span>
+                  <span className="app-ai-meta-value">{aiScale.label}</span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* AI Detected rooms panel */}
           {detectedRooms.length > 0 && (
             <div className="app-ai-panel">
@@ -516,7 +548,12 @@ export default function ProjectEditor() {
                     onMouseEnter={() => setHoveredId(room.id)}
                     onMouseLeave={() => setHoveredId(null)}
                   >
-                    <span className="app-ai-room-name">{room.name}</span>
+                    <div className="app-ai-room-info">
+                      <span className="app-ai-room-name">{room.name}</span>
+                      {room.areaMFromTable && (
+                        <span className="app-ai-room-area">{room.areaMFromTable} m²</span>
+                      )}
+                    </div>
                     <div className="app-ai-room-actions">
                       <button
                         type="button"
@@ -538,6 +575,19 @@ export default function ProjectEditor() {
                   </div>
                 ))}
               </div>
+
+              {/* Table rooms cross-reference */}
+              {tableRooms && tableRooms.length > 0 && (
+                <div className="app-ai-table-ref">
+                  <span className="app-ai-table-ref-title">Tabela pomieszczeń</span>
+                  {tableRooms.map((tr, i) => (
+                    <div key={i} className="app-ai-table-ref-item">
+                      <span className="app-ai-table-ref-name">{tr.name}</span>
+                      <span className="app-ai-table-ref-area">{tr.areaMFromTable} m²</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <hr className="app-ai-divider" />
             </div>
