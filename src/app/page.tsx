@@ -1,17 +1,98 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  Calculator, Upload, MousePointer2, FileSpreadsheet, 
-  Clock, Target, RefreshCw, Repeat2, Check, ArrowRight, 
-  Sparkles, Zap, Shield, Menu, X, TrendingUp
-} from 'lucide-react';
+
+// Simple inline SVG icons - no external dependencies issues
+const Icons = {
+  Calculator: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="2" width="16" height="20" rx="2" />
+      <line x1="8" x2="16" y1="6" y2="6" />
+      <line x1="16" x2="16" y1="14" y2="18" />
+      <path d="M16 10h.01" />
+      <path d="M12 10h.01" />
+      <path d="M8 10h.01" />
+      <path d="M12 14h.01" />
+      <path d="M8 14h.01" />
+      <path d="M12 18h.01" />
+      <path d="M8 18h.01" />
+    </svg>
+  ),
+  Sparkles: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    </svg>
+  ),
+  ArrowRight: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </svg>
+  ),
+  Clock: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
+  Shuffle: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22" />
+      <path d="m18 2 4 4-4 4" />
+      <path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2" />
+      <path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8" />
+      <path d="m18 14 4 4-4 4" />
+    </svg>
+  ),
+  Target: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  ),
+  Repeat: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m17 2 4 4-4 4" />
+      <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+      <path d="m7 22-4-4 4-4" />
+      <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+    </svg>
+  ),
+  Upload: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" x2="12" y1="3" y2="15" />
+    </svg>
+  ),
+  Pointer: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+      <path d="m13 13 6 6" />
+    </svg>
+  ),
+  FileSpreadsheet: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+      <polyline points="14 2 14 8 20 8" />
+      <path d="M8 13h2" />
+      <path d="M8 17h2" />
+      <path d="M14 13h2" />
+      <path d="M14 17h2" />
+    </svg>
+  ),
+  Check: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
+};
 
 export default function Home() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,388 +107,261 @@ export default function Home() {
         setSubmitted(true);
         setEmail('');
       }
-    } catch {}
+    } catch {
+      // ignore
+    }
     setLoading(false);
   };
 
   return (
-    <main className="min-h-screen relative">
-      {/* Background glow */}
-      <div className="bg-glow" aria-hidden="true" />
-      
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 nav-glass">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <div className="h-16 flex items-center justify-between">
-            <a href="#" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
-                <Calculator className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-semibold text-lg tracking-tight">PrzedmiarAI</span>
-            </a>
-            
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#problem" className="text-sm text-zinc-400 hover:text-white transition">Problem</a>
-              <a href="#solution" className="text-sm text-zinc-400 hover:text-white transition">Rozwiązanie</a>
-              <a href="#how" className="text-sm text-zinc-400 hover:text-white transition">Jak działa</a>
-              <a href="#pricing" className="text-sm text-zinc-400 hover:text-white transition">Cennik</a>
+    <>
+      {/* ══════════════════════════════════════════
+          NAVIGATION
+          ══════════════════════════════════════════ */}
+      <nav className="navbar">
+        <div className="navbar-inner">
+          <a href="#" className="logo">
+            <div className="logo-icon">
+              <Icons.Calculator />
             </div>
-            
-            <a href="#waitlist" className="hidden md:flex btn btn-primary !py-2.5 !px-5 text-sm">
-              Dołącz do beta
-            </a>
-            
-            <button 
-              className="md:hidden p-2 text-zinc-400 hover:text-white" 
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+            <span className="logo-text">PrzedmiarAI</span>
+          </a>
+          <a href="#cta" className="nav-cta">
+            Dołącz za darmo
+          </a>
         </div>
-        
-        {/* Mobile menu */}
-        {menuOpen && (
-          <div className="md:hidden border-t border-white/5 bg-[#0a0a0f]/95 backdrop-blur-xl">
-            <div className="px-5 py-5 flex flex-col gap-1">
-              <a href="#problem" className="py-2.5 text-zinc-300" onClick={() => setMenuOpen(false)}>Problem</a>
-              <a href="#solution" className="py-2.5 text-zinc-300" onClick={() => setMenuOpen(false)}>Rozwiązanie</a>
-              <a href="#how" className="py-2.5 text-zinc-300" onClick={() => setMenuOpen(false)}>Jak działa</a>
-              <a href="#pricing" className="py-2.5 text-zinc-300" onClick={() => setMenuOpen(false)}>Cennik</a>
-              <a href="#waitlist" className="btn btn-primary mt-3" onClick={() => setMenuOpen(false)}>
-                Dołącz do beta
-              </a>
-            </div>
-          </div>
-        )}
       </nav>
 
-      {/* ═══════════════════════════════════════════════════
+      {/* ══════════════════════════════════════════
           HERO
-          ═══════════════════════════════════════════════════ */}
-      <section className="pt-32 sm:pt-40 pb-20 sm:pb-28 px-5 sm:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="badge mb-8">
-            <Sparkles className="w-4 h-4" />
-            <span>Zasilane przez AI</span>
+          ══════════════════════════════════════════ */}
+      <section className="hero">
+        <div className="hero-badge">
+          <Icons.Sparkles />
+          <span>AI dla kosztorysantów</span>
+        </div>
+        
+        <h1 className="hero-title">
+          Przedmiar w <span className="gradient-text">minutę</span>,
+          <br />
+          nie godzinę
+        </h1>
+        
+        <p className="hero-subtitle">
+          Wgraj rysunek PDF — sztuczna inteligencja automatycznie zmierzy wszystkie pomieszczenia. 
+          Zero ręcznego klikania.
+        </p>
+        
+        <a href="#cta" className="hero-cta">
+          Wypróbuj za darmo
+          <Icons.ArrowRight />
+        </a>
+        
+        <p className="hero-note">
+          Dołącz do <strong>500+</strong> kosztorysantów na liście oczekujących
+        </p>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          PROBLEM
+          ══════════════════════════════════════════ */}
+      <section className="section" style={{ background: 'rgba(255,255,255,0.01)' }}>
+        <div className="container">
+          <div className="section-header">
+            <p className="section-label">Problem</p>
+            <h2 className="section-title">Brzmi znajomo?</h2>
+            <p className="section-desc">
+              Każdy kosztorysant traci godziny na zadania, które AI robi w sekundy.
+            </p>
           </div>
           
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] mb-6 px-2">
-            Przedmiar w <span className="text-gradient">minutę</span>,
-            <br />
-            nie godzinę
-          </h1>
+          <div className="card-grid card-grid-4">
+            <div className="card">
+              <div className="card-icon" style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
+                <span style={{ color: '#ef4444' }}><Icons.Clock /></span>
+              </div>
+              <h3 className="card-title">Ręczne mierzenie</h3>
+              <p className="card-desc">Godziny z linijką na ekranie zamiast produktywnej pracy</p>
+            </div>
+            
+            <div className="card">
+              <div className="card-icon" style={{ background: 'rgba(249, 115, 22, 0.1)' }}>
+                <span style={{ color: '#f97316' }}><Icons.Shuffle /></span>
+              </div>
+              <h3 className="card-title">Przeklikiwanie</h3>
+              <p className="card-desc">CAD → PDF → Excel → CAD. Ciągle w kółko</p>
+            </div>
+            
+            <div className="card">
+              <div className="card-icon" style={{ background: 'rgba(234, 179, 8, 0.1)' }}>
+                <span style={{ color: '#eab308' }}><Icons.Target /></span>
+              </div>
+              <h3 className="card-title">Kosztowne błędy</h3>
+              <p className="card-desc">Każda pomyłka = tysiące złotych straty</p>
+            </div>
+            
+            <div className="card">
+              <div className="card-icon" style={{ background: 'rgba(236, 72, 153, 0.1)' }}>
+                <span style={{ color: '#ec4899' }}><Icons.Repeat /></span>
+              </div>
+              <h3 className="card-title">Powtarzanie</h3>
+              <p className="card-desc">Te same pomiary od nowa przy każdej zmianie</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          SOLUTION
+          ══════════════════════════════════════════ */}
+      <section className="section">
+        <div className="container">
+          <div className="section-header">
+            <p className="section-label">Rozwiązanie</p>
+            <h2 className="section-title">Trzy proste kroki</h2>
+            <p className="section-desc">
+              Od rysunku do gotowego przedmiaru w mniej niż minutę.
+            </p>
+          </div>
           
-          <p className="text-sm sm:text-lg text-zinc-400 max-w-xl mx-auto mb-8 leading-relaxed px-4">
-            Wgraj rysunek PDF — AI zmierzy pomieszczenia za Ciebie. 
-            <span className="text-white font-medium"> Oszczędź 80% czasu.</span>
+          <div className="steps-grid">
+            <div className="step">
+              <div className="step-number">01</div>
+              <div className="card-icon" style={{ background: 'rgba(139, 92, 246, 0.1)', margin: '0 auto 16px' }}>
+                <span style={{ color: '#8b5cf6' }}><Icons.Upload /></span>
+              </div>
+              <h3 className="step-title">Wgraj PDF</h3>
+              <p className="step-desc">Przeciągnij rysunek — AI rozpozna pomieszczenia</p>
+            </div>
+            
+            <div className="step">
+              <div className="step-number">02</div>
+              <div className="card-icon" style={{ background: 'rgba(59, 130, 246, 0.1)', margin: '0 auto 16px' }}>
+                <span style={{ color: '#3b82f6' }}><Icons.Pointer /></span>
+              </div>
+              <h3 className="step-title">Kliknij i mierz</h3>
+              <p className="step-desc">Zaznacz obszar — system obliczy m² i obwód</p>
+            </div>
+            
+            <div className="step">
+              <div className="step-number">03</div>
+              <div className="card-icon" style={{ background: 'rgba(6, 182, 212, 0.1)', margin: '0 auto 16px' }}>
+                <span style={{ color: '#06b6d4' }}><Icons.FileSpreadsheet /></span>
+              </div>
+              <h3 className="step-title">Eksportuj</h3>
+              <p className="step-desc">Pobierz przedmiar jako Excel lub PDF</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          PRICING
+          ══════════════════════════════════════════ */}
+      <section className="section" style={{ background: 'rgba(255,255,255,0.01)' }}>
+        <div className="container">
+          <div className="section-header">
+            <p className="section-label">Cennik</p>
+            <h2 className="section-title">Prosty cennik</h2>
+            <p className="section-desc">
+              Bez ukrytych opłat. Zacznij za darmo.
+            </p>
+          </div>
+          
+          <div className="pricing-grid">
+            <div className="pricing-card">
+              <h3 className="pricing-name">Starter</h3>
+              <p className="pricing-desc">Dla freelancerów</p>
+              <div className="pricing-price">199 <span>PLN/mies</span></div>
+              <ul className="pricing-features">
+                <li><Icons.Check /> 10 projektów / miesiąc</li>
+                <li><Icons.Check /> Export Excel / PDF</li>
+                <li><Icons.Check /> Email support</li>
+              </ul>
+              <a href="#cta" className="pricing-cta pricing-cta-secondary">Wybierz plan</a>
+            </div>
+            
+            <div className="pricing-card popular">
+              <div className="pricing-badge">Najpopularniejszy</div>
+              <h3 className="pricing-name">Pro</h3>
+              <p className="pricing-desc">Dla profesjonalistów</p>
+              <div className="pricing-price">499 <span>PLN/mies</span></div>
+              <ul className="pricing-features">
+                <li><Icons.Check /> Bez limitu projektów</li>
+                <li><Icons.Check /> Priorytetowy support</li>
+                <li><Icons.Check /> Dostęp API</li>
+                <li><Icons.Check /> Własne szablony</li>
+              </ul>
+              <a href="#cta" className="pricing-cta pricing-cta-primary">Wybierz plan</a>
+            </div>
+            
+            <div className="pricing-card">
+              <h3 className="pricing-name">Enterprise</h3>
+              <p className="pricing-desc">Dla zespołów</p>
+              <div className="pricing-price">Custom</div>
+              <ul className="pricing-features">
+                <li><Icons.Check /> Wszystko z Pro</li>
+                <li><Icons.Check /> Dedykowany opiekun</li>
+                <li><Icons.Check /> SLA 99.9%</li>
+                <li><Icons.Check /> Integracje</li>
+              </ul>
+              <a href="#cta" className="pricing-cta pricing-cta-secondary">Kontakt</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          CTA
+          ══════════════════════════════════════════ */}
+      <section id="cta" className="cta-section">
+        <div className="cta-box">
+          <h2 className="cta-title">Dołącz do beta</h2>
+          <p className="cta-desc">
+            Bądź wśród pierwszych. Dostaniesz darmowy miesiąc Pro.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10 px-4">
-            <a href="#waitlist" className="btn btn-primary">
-              Wypróbuj za darmo
-              <ArrowRight className="w-4 h-4" />
-            </a>
-            <a href="#how" className="btn btn-secondary">
-              Zobacz jak działa
-            </a>
-          </div>
-          
-          {/* Social proof */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-zinc-500">
-            <div className="flex items-center gap-2">
-              <div className="flex -space-x-2">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 border-2 border-[#0a0a0f]" />
-                ))}
-              </div>
-              <span><strong className="text-white">500+</strong> na liście</span>
+          {submitted ? (
+            <div className="cta-success">
+              <Icons.Check />
+              <span>Dziękujemy! Jesteś na liście.</span>
             </div>
-            <div className="hidden sm:block w-px h-4 bg-zinc-700" />
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-green-400" />
-              <span>Oszczędność <strong className="text-white">4h</strong> dziennie</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════
-          PROBLEM
-          ═══════════════════════════════════════════════════ */}
-      <section id="problem" className="py-20 sm:py-28 px-5 sm:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="section-label">Problem</p>
-            <h2 className="text-2xl sm:text-4xl font-bold mb-4">Brzmi znajomo?</h2>
-            <p className="text-zinc-400 text-base sm:text-lg max-w-xl mx-auto">
-              Każdy kosztorysant traci godziny na rzeczy, które AI może zrobić w sekundy.
-            </p>
-          </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="cta-form">
+              <input
+                type="email"
+                placeholder="twoj@email.pl"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="cta-input"
+              />
+              <button type="submit" disabled={loading} className="cta-submit">
+                {loading ? 'Wysyłam...' : 'Dołącz'}
+              </button>
+            </form>
+          )}
           
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {[
-              { 
-                icon: Clock, 
-                title: 'Ręczne mierzenie', 
-                desc: 'Godziny z linijką na ekranie zamiast produktywnej pracy',
-                color: 'bg-red-500/10 text-red-400'
-              },
-              { 
-                icon: RefreshCw, 
-                title: 'Ciągłe przeklikiwanie', 
-                desc: 'CAD → PDF → Excel → CAD. W kółko, przy każdym projekcie',
-                color: 'bg-orange-500/10 text-orange-400'
-              },
-              { 
-                icon: Target, 
-                title: 'Kosztowne błędy', 
-                desc: 'Jeden błąd w pomiarze = tysiące strat na projekcie',
-                color: 'bg-yellow-500/10 text-yellow-400'
-              },
-              { 
-                icon: Repeat2, 
-                title: 'Powtarzanie pracy', 
-                desc: 'Te same pomiary od nowa, przy każdej zmianie projektu',
-                color: 'bg-pink-500/10 text-pink-400'
-              },
-            ].map((item, i) => (
-              <div key={i} className="card card-glow">
-                <div className={`icon-box ${item.color}`}>
-                  <item.icon className="w-5 h-5" />
-                </div>
-                <h3 className="font-semibold text-base sm:text-lg mb-2">{item.title}</h3>
-                <p className="text-zinc-500 text-sm leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
+          <p className="cta-note">
+            Zero spamu. Możesz wypisać się w każdej chwili.
+          </p>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════
-          SOLUTION
-          ═══════════════════════════════════════════════════ */}
-      <section id="solution" className="py-20 sm:py-28 px-5 sm:px-8 bg-gradient-to-b from-transparent via-violet-950/5 to-transparent">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="section-label">Rozwiązanie</p>
-            <h2 className="text-2xl sm:text-4xl font-bold mb-4">Trzy proste kroki</h2>
-            <p className="text-zinc-400 text-base sm:text-lg max-w-xl mx-auto">
-              Od PDF do gotowego przedmiaru w mniej niż minutę.
-            </p>
-          </div>
-          
-          <div className="grid sm:grid-cols-3 gap-5 sm:gap-8">
-            {[
-              { 
-                icon: Upload, 
-                step: '01', 
-                title: 'Wgraj PDF', 
-                desc: 'Przeciągnij rysunek — AI automatycznie rozpozna wszystkie pomieszczenia i elementy.',
-                color: 'bg-violet-500/10 text-violet-400',
-                stat: 'PDF, PNG, DWG*'
-              },
-              { 
-                icon: MousePointer2, 
-                step: '02', 
-                title: 'Zaznacz obszary', 
-                desc: 'Kliknij pomieszczenie — system natychmiast oblicza metry kwadratowe i obwód.',
-                color: 'bg-blue-500/10 text-blue-400',
-                stat: 'Dokładność 99.2%'
-              },
-              { 
-                icon: FileSpreadsheet, 
-                step: '03', 
-                title: 'Eksportuj', 
-                desc: 'Pobierz gotowy przedmiar jako Excel lub PDF. Jednym kliknięciem.',
-                color: 'bg-cyan-500/10 text-cyan-400',
-                stat: 'Excel, PDF, CSV'
-              },
-            ].map((item, i) => (
-              <div key={i} className="card card-glow text-center sm:text-left">
-                <div className={`icon-box ${item.color} mx-auto sm:mx-0`}>
-                  <item.icon className="w-5 h-5" />
-                </div>
-                <p className="text-zinc-600 text-xs font-mono mb-2">{item.step}</p>
-                <h3 className="font-semibold text-lg sm:text-xl mb-3">{item.title}</h3>
-                <p className="text-zinc-400 text-sm leading-relaxed mb-4">{item.desc}</p>
-                <p className="text-xs text-violet-400 font-medium">{item.stat}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════
-          HOW IT WORKS
-          ═══════════════════════════════════════════════════ */}
-      <section id="how" className="py-20 sm:py-28 px-5 sm:px-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="section-label">Jak to działa</p>
-            <h2 className="text-2xl sm:text-4xl font-bold mb-4">AI robi robotę za Ciebie</h2>
-          </div>
-          
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { num: '01', title: 'Wgraj rysunek', desc: 'PDF lub PNG — przeciągnij i upuść' },
-              { num: '02', title: 'AI analizuje', desc: 'Rozpoznaje pomieszczenia i wymiary' },
-              { num: '03', title: 'Zatwierdź', desc: 'Sprawdź i popraw jeśli trzeba' },
-              { num: '04', title: 'Pobierz', desc: 'Gotowy przedmiar w wybranym formacie' },
-            ].map((item, i) => (
-              <div key={i} className="text-center">
-                <div className="text-5xl sm:text-6xl font-bold text-violet-500/10 mb-3">{item.num}</div>
-                <h3 className="font-semibold text-base sm:text-lg mb-2">{item.title}</h3>
-                <p className="text-zinc-500 text-sm">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════
-          PRICING
-          ═══════════════════════════════════════════════════ */}
-      <section id="pricing" className="py-20 sm:py-28 px-5 sm:px-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="section-label">Cennik</p>
-            <h2 className="text-2xl sm:text-4xl font-bold mb-4">Prosty, uczciwy cennik</h2>
-            <p className="text-zinc-400 text-base sm:text-lg">Bez ukrytych opłat. Płacisz za to, czego używasz.</p>
-          </div>
-          
-          <div className="grid sm:grid-cols-3 gap-5">
-            {[
-              { 
-                name: 'Starter', 
-                price: '199', 
-                desc: 'Dla freelancerów',
-                features: ['10 projektów / miesiąc', 'Export Excel / PDF', 'Email support'],
-                popular: false 
-              },
-              { 
-                name: 'Pro', 
-                price: '499', 
-                desc: 'Dla profesjonalistów',
-                features: ['Bez limitu projektów', 'Priorytetowy support', 'API access', 'Własne szablony'],
-                popular: true 
-              },
-              { 
-                name: 'Enterprise', 
-                price: 'Custom', 
-                desc: 'Dla firm i zespołów',
-                features: ['Wszystko z Pro', 'Dedykowany opiekun', 'SLA 99.9%', 'Integracje'],
-                popular: false 
-              },
-            ].map((plan, i) => (
-              <div 
-                key={i} 
-                className={`card relative ${plan.popular ? 'border-violet-500/50 stat-card' : ''}`}
-              >
-                {plan.popular && <div className="badge-popular">Najpopularniejszy</div>}
-                
-                <h3 className="font-semibold text-xl mb-1">{plan.name}</h3>
-                <p className="text-zinc-500 text-sm mb-4">{plan.desc}</p>
-                
-                <div className="mb-6">
-                  <span className="text-3xl sm:text-4xl font-bold">{plan.price}</span>
-                  {plan.price !== 'Custom' && <span className="text-zinc-500"> PLN/mies</span>}
-                </div>
-                
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f, j) => (
-                    <li key={j} className="flex items-start gap-3 text-zinc-300 text-sm">
-                      <Check className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                
-                <a 
-                  href="#waitlist" 
-                  className={`btn w-full ${plan.popular ? 'btn-primary' : 'btn-secondary'}`}
-                >
-                  {plan.price === 'Custom' ? 'Skontaktuj się' : 'Wybierz plan'}
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════
-          CTA / WAITLIST
-          ═══════════════════════════════════════════════════ */}
-      <section id="waitlist" className="py-20 sm:py-28 px-5 sm:px-8">
-        <div className="max-w-xl mx-auto">
-          <div className="card stat-card p-8 sm:p-10 text-center">
-            <div className="badge mb-6 mx-auto">
-              <Zap className="w-4 h-4" />
-              <span>Early Access</span>
-            </div>
-            
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Dołącz do beta</h2>
-            <p className="text-zinc-400 mb-8 max-w-sm mx-auto">
-              Bądź wśród pierwszych użytkowników. Dostaniesz <strong className="text-white">darmowy miesiąc Pro</strong> na start.
-            </p>
-            
-            {submitted ? (
-              <div className="flex items-center justify-center gap-3 text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl p-5">
-                <Check className="w-5 h-5" />
-                <span className="font-medium">Dziękujemy! Jesteś na liście.</span>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="email"
-                  placeholder="twoj@email.pl"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="input flex-1"
-                />
-                <button 
-                  type="submit" 
-                  disabled={loading} 
-                  className="btn btn-primary sm:!w-auto disabled:opacity-50"
-                >
-                  {loading ? 'Wysyłam...' : 'Dołącz'}
-                </button>
-              </form>
-            )}
-            
-            <div className="flex items-center justify-center gap-6 mt-6 text-xs text-zinc-500">
-              <span className="flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5" /> Bez spamu
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5" /> Darmowy Pro
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════
+      {/* ══════════════════════════════════════════
           FOOTER
-          ═══════════════════════════════════════════════════ */}
-      <footer className="py-10 px-5 sm:px-8 border-t border-white/5">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-              <Calculator className="w-4 h-4 text-white" />
+          ══════════════════════════════════════════ */}
+      <footer className="footer">
+        <div className="footer-inner">
+          <a href="#" className="logo">
+            <div className="logo-icon" style={{ width: 28, height: 28 }}>
+              <Icons.Calculator />
             </div>
-            <span className="font-medium">PrzedmiarAI</span>
-          </div>
-          
-          <div className="flex items-center gap-6 text-sm text-zinc-500">
-            <a href="#" className="hover:text-white transition">Kontakt</a>
-            <a href="#" className="hover:text-white transition">Prywatność</a>
-          </div>
-          
-          <p className="text-sm text-zinc-600">© 2026 PrzedmiarAI</p>
+            <span className="logo-text" style={{ fontSize: 16 }}>PrzedmiarAI</span>
+          </a>
+          <p className="footer-text">© 2026 PrzedmiarAI. Wszystkie prawa zastrzeżone.</p>
         </div>
       </footer>
-    </main>
+    </>
   );
 }
