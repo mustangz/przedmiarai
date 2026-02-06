@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey || apiKey === 'your_openai_key') {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
       return NextResponse.json(
-        { error: 'Brak skonfigurowanego klucza OPENAI_API_KEY' },
+        { error: 'Brak skonfigurowanego klucza ANTHROPIC_API_KEY' },
         { status: 500 }
       );
     }
@@ -20,14 +20,35 @@ export async function POST(request: Request) {
       );
     }
 
-    const openai = new OpenAI({ apiKey });
+    const anthropic = new Anthropic({ apiKey });
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+    // Extract base64 data and media type
+    let base64Data = imageBase64;
+    let mediaType: 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp' = 'image/png';
+    
+    if (imageBase64.startsWith('data:')) {
+      const match = imageBase64.match(/^data:(image\/\w+);base64,(.+)$/);
+      if (match) {
+        mediaType = match[1] as typeof mediaType;
+        base64Data = match[2];
+      }
+    }
+
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
       messages: [
         {
           role: 'user',
           content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: mediaType,
+                data: base64Data,
+              },
+            },
             {
               type: 'text',
               text: `Zidentyfikuj wszystkie pomieszczenia na tym rysunku architektonicznym. Dla każdego pomieszczenia podaj:
@@ -42,21 +63,14 @@ Odpowiedz WYŁĄCZNIE poprawnym JSON w formacie:
 
 Nie dodawaj żadnego tekstu poza JSON. Jeśli nie widzisz pomieszczeń, zwróć {"rooms": []}.`,
             },
-            {
-              type: 'image_url',
-              image_url: {
-                url: imageBase64.startsWith('data:')
-                  ? imageBase64
-                  : `data:image/png;base64,${imageBase64}`,
-              },
-            },
           ],
         },
       ],
-      max_tokens: 1024,
     });
 
-    const content = response.choices[0]?.message?.content?.trim();
+    const textBlock = response.content.find((block) => block.type === 'text');
+    const content = textBlock && 'text' in textBlock ? textBlock.text.trim() : '';
+    
     if (!content) {
       return NextResponse.json(
         { error: 'Brak odpowiedzi z AI' },
