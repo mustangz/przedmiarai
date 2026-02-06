@@ -92,19 +92,18 @@ export default function Home() {
             <span>Zasilane przez AI</span>
           </div>
           
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
-            Oszczędź <span className="text-gradient">80% czasu</span>
-            <br className="hidden sm:block" />
-            <span className="sm:hidden"> </span>
-            na przedmiarach
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15] mb-6 px-2">
+            Przedmiar w <span className="text-gradient">minutę</span>,
+            <br />
+            nie godzinę
           </h1>
           
-          <p className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Wgraj PDF z rysunkiem — AI automatycznie zmierzy wszystkie pomieszczenia. 
-            Koniec z ręcznym klikaniem w CAD.
+          <p className="text-sm sm:text-lg text-zinc-400 max-w-xl mx-auto mb-8 leading-relaxed px-4">
+            Wgraj rysunek PDF — AI zmierzy pomieszczenia za Ciebie. 
+            <span className="text-white font-medium"> Oszczędź 80% czasu.</span>
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10 px-4">
             <a href="#waitlist" className="btn btn-primary">
               Wypróbuj za darmo
               <ArrowRight className="w-4 h-4" />
