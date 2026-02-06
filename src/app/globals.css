@@ -281,8 +281,13 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
   overflow: hidden;
-  aspect-ratio: 16 / 9;
   position: relative;
+}
+
+@media (min-width: 641px) {
+  .hero-mockup {
+    aspect-ratio: 16 / 9;
+  }
 }
 
 .mockup-header {
@@ -341,8 +346,19 @@ body {
 }
 
 @media (max-width: 640px) {
-  .mockup-body { grid-template-columns: 1fr; }
-  .mockup-sidebar { display: none; }
+  .mockup-body {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .mockup-canvas {
+    padding: 16px;
+  }
+  .mockup-sidebar {
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 12px;
+    gap: 6px;
+  }
 }
 
 .mockup-canvas {
@@ -521,6 +537,14 @@ body {
 .mockup-room-3 { top: 52%; left: 3%; width: 56%; height: 44%; }
 .mockup-room-4 { top: 52%; left: 61%; width: 36%; height: 44%; }
 
+@media (max-width: 640px) {
+  .room-dims { font-size: 9px; }
+  .mockup-room.measured .room-dims { font-size: 10px; }
+  .room-name { font-size: 7px; }
+  .wall-dim { font-size: 7px; padding: 1px 3px; }
+  .mockup-floorplan { max-width: 100%; }
+}
+
 /* Sidebar */
 .mockup-sidebar {
   border-left: 1px solid rgba(255, 255, 255, 0.06);
@@ -606,6 +630,29 @@ body {
   font-weight: 500;
   margin-top: 3px;
   animation: fadeScaleIn 0.2s ease-out;
+}
+
+@media (max-width: 640px) {
+  .mockup-sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .mockup-sidebar-title {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+    font-size: 10px;
+  }
+  .mockup-measurement {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  .mockup-measurement-name {
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+  .mockup-measurement-area { font-size: 12px; }
+  .mockup-measurement-perim { font-size: 9px; }
 }
 
 /* Glow under mockup */
