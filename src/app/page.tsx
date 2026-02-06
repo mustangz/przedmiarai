@@ -201,7 +201,7 @@ export default function Home() {
       </nav>
 
       {/* ─── Hero ─── */}
-      <section className="relative pt-28 pb-16 sm:pt-36 sm:pb-20 lg:pt-44 lg:pb-28">
+      <section className="relative pt-32 pb-16 sm:pt-40 sm:pb-20 lg:pt-48 lg:pb-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 rounded-full px-4 py-1.5 mb-6 sm:mb-8">
             <Sparkles className="w-3.5 h-3.5 text-violet-400" />
