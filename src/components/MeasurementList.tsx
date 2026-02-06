@@ -1,8 +1,39 @@
 'use client';
 
-import { Trash2, Ruler, Edit2, Check, X } from 'lucide-react';
 import { useState } from 'react';
 import type { Measurement } from './MeasurementCanvas';
+
+// ─── Inline SVG icons ─────────────────────────────────────────
+const Icons = {
+  Trash: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </svg>
+  ),
+  Ruler: () => (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" />
+      <path d="m14.5 12.5 2-2" /><path d="m11.5 9.5 2-2" /><path d="m8.5 6.5 2-2" /><path d="m17.5 15.5 2-2" />
+    </svg>
+  ),
+  Edit: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+      <path d="m15 5 4 4" />
+    </svg>
+  ),
+  Check: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
+  X: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+    </svg>
+  ),
+};
 
 interface Props {
   measurements: Measurement[];
@@ -38,30 +69,26 @@ export default function MeasurementList({ measurements, selectedId, onSelect, on
 
   if (measurements.length === 0) {
     return (
-      <div className="text-center text-gray-500 py-8">
-        <Ruler className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">Brak pomiarów</p>
-        <p className="text-xs mt-1">Wybierz narzędzie &quot;Mierz&quot; i zaznacz obszar</p>
+      <div className="app-measurement-empty">
+        <Icons.Ruler />
+        <p className="app-measurement-empty-title">Brak pomiarów</p>
+        <p className="app-measurement-empty-hint">Wybierz narzędzie &quot;Mierz&quot; i zaznacz obszar</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="space-y-3 mb-6">
+      <div className="app-measurement-list">
         {measurements.map((m) => (
           <div
             key={m.id}
             onClick={() => onSelect(m.id)}
-            className={`p-4 rounded-xl cursor-pointer transition-all ${
-              selectedId === m.id
-                ? 'bg-violet-500/20 border border-violet-500'
-                : 'bg-[var(--card-bg)] border border-[var(--card-border)] hover:border-violet-500/50'
-            }`}
+            className={`app-measurement-card ${selectedId === m.id ? 'selected' : ''}`}
           >
-            <div className="flex items-center justify-between mb-2">
+            <div className="app-measurement-header">
               {editingId === m.id ? (
-                <div className="flex items-center gap-2 flex-1">
+                <div className="app-measurement-edit-row">
                   <input
                     type="text"
                     value={editName}
@@ -70,44 +97,48 @@ export default function MeasurementList({ measurements, selectedId, onSelect, on
                       if (e.key === 'Enter') saveEdit();
                       if (e.key === 'Escape') cancelEdit();
                     }}
-                    className="flex-1 px-2 py-1 bg-[var(--background)] border border-[var(--card-border)] rounded text-sm"
+                    className="app-measurement-edit-input"
                     autoFocus
                     onClick={(e) => e.stopPropagation()}
                   />
                   <button
+                    type="button"
                     onClick={(e) => { e.stopPropagation(); saveEdit(); }}
-                    className="p-1 hover:bg-emerald-500/20 rounded transition"
+                    className="app-ai-room-btn approve"
                   >
-                    <Check className="w-4 h-4 text-emerald-400" />
+                    <Icons.Check />
                   </button>
                   <button
+                    type="button"
                     onClick={(e) => { e.stopPropagation(); cancelEdit(); }}
-                    className="p-1 hover:bg-red-500/20 rounded transition"
+                    className="app-ai-room-btn reject"
                   >
-                    <X className="w-4 h-4 text-red-400" />
+                    <Icons.X />
                   </button>
                 </div>
               ) : (
                 <>
-                  <span className="font-medium">{m.name}</span>
-                  <div className="flex items-center gap-1">
+                  <span className="app-measurement-name">{m.name}</span>
+                  <div className="app-measurement-actions">
                     <button
+                      type="button"
                       onClick={(e) => { e.stopPropagation(); startEdit(m); }}
-                      className="p-1 hover:bg-violet-500/20 rounded transition"
+                      className="app-measurement-action-btn"
                     >
-                      <Edit2 className="w-4 h-4 text-gray-400" />
+                      <Icons.Edit />
                     </button>
                     <button
+                      type="button"
                       onClick={(e) => { e.stopPropagation(); onDelete(m.id); }}
-                      className="p-1 hover:bg-red-500/20 rounded transition"
+                      className="app-measurement-action-btn delete"
                     >
-                      <Trash2 className="w-4 h-4 text-red-400" />
+                      <Icons.Trash />
                     </button>
                   </div>
                 </>
               )}
             </div>
-            <div className="text-lg font-bold text-violet-400">
+            <div className="app-measurement-area">
               {m.areaM2.toFixed(2)} m²
             </div>
           </div>
@@ -115,9 +146,9 @@ export default function MeasurementList({ measurements, selectedId, onSelect, on
       </div>
 
       {/* Total */}
-      <div className="p-4 rounded-xl bg-gradient-to-br from-violet-500/20 to-blue-500/20 border border-violet-500/30">
-        <div className="text-sm text-gray-400 mb-1">Suma powierzchni</div>
-        <div className="text-2xl font-bold gradient-text">{totalArea.toFixed(2)} m²</div>
+      <div className="app-total-area">
+        <div className="app-total-label">Suma powierzchni</div>
+        <div className="app-total-value">{totalArea.toFixed(2)} m²</div>
       </div>
     </>
   );

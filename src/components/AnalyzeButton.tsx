@@ -1,7 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Loader2 } from 'lucide-react';
+
+// ─── Inline SVG icons ─────────────────────────────────────────
+const Icons = {
+  Sparkles: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    </svg>
+  ),
+  Loader: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="panel-spin">
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
+  ),
+};
 
 export interface DetectedRoom {
   id: string;
@@ -66,21 +79,21 @@ export default function AnalyzeButton({ imageUrl, onRoomsDetected }: Props) {
   if (!imageUrl) return null;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="app-analyze-inline">
       <button
+        type="button"
         onClick={handleAnalyze}
         disabled={loading}
-        className="flex items-center gap-2 p-2 px-4 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 rounded-lg text-sm font-medium text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="app-analyze-btn"
       >
-        {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <Sparkles className="w-4 h-4" />
-        )}
-        {loading ? 'Analizuję...' : 'AI Wykryj pomieszczenia'}
+        <span className="app-analyze-btn-glow" />
+        <span className="app-analyze-btn-inner">
+          {loading ? <Icons.Loader /> : <Icons.Sparkles />}
+          {loading ? 'Analizuję...' : 'AI Wykryj pomieszczenia'}
+        </span>
       </button>
       {error && (
-        <span className="text-xs text-red-400">{error}</span>
+        <span className="app-analyze-error">{error}</span>
       )}
     </div>
   );

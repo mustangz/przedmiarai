@@ -1,7 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { Ruler, Check, X } from 'lucide-react';
+
+// ─── Inline SVG icons ─────────────────────────────────────────
+const Icons = {
+  Ruler: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" />
+      <path d="m14.5 12.5 2-2" /><path d="m11.5 9.5 2-2" /><path d="m8.5 6.5 2-2" /><path d="m17.5 15.5 2-2" />
+    </svg>
+  ),
+  Check: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
+  X: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+    </svg>
+  ),
+};
 
 interface Props {
   scale: number; // pixels per meter
@@ -19,7 +38,7 @@ export default function ScaleCalibration({ scale, onScaleChange, isOpen, onClose
   const handleSave = () => {
     const pxValue = parseFloat(pixels);
     const mValue = parseFloat(meters);
-    
+
     if (pxValue > 0 && mValue > 0) {
       onScaleChange(pxValue / mValue);
       onClose();
@@ -27,37 +46,37 @@ export default function ScaleCalibration({ scale, onScaleChange, isOpen, onClose
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 max-w-md w-full mx-4">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
-            <Ruler className="w-5 h-5 text-violet-400" />
+    <div className="app-modal-overlay">
+      <div className="app-modal">
+        <div className="app-modal-header">
+          <div className="app-modal-icon">
+            <Icons.Ruler />
           </div>
           <div>
-            <h3 className="font-semibold text-lg">Kalibracja skali</h3>
-            <p className="text-sm text-gray-400">Podaj znany wymiar z rysunku</p>
+            <div className="app-modal-title">Kalibracja skali</div>
+            <div className="app-modal-subtitle">Podaj znany wymiar z rysunku</div>
           </div>
         </div>
 
-        <div className="space-y-4 mb-6">
+        <div className="app-modal-fields">
           <div>
-            <label className="block text-sm text-gray-400 mb-2">
+            <label className="app-modal-label">
               Zmierzona długość (piksele)
             </label>
             <input
               type="number"
               value={pixels}
               onChange={(e) => setPixels(e.target.value)}
-              className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--card-border)] rounded-xl focus:border-violet-500 focus:outline-none"
+              className="app-modal-input"
               placeholder="np. 200"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="app-modal-hint">
               Narysuj prostokąt o znanej długości i odczytaj piksele
             </p>
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-2">
+            <label className="app-modal-label">
               Rzeczywista długość (metry)
             </label>
             <input
@@ -65,31 +84,33 @@ export default function ScaleCalibration({ scale, onScaleChange, isOpen, onClose
               value={meters}
               onChange={(e) => setMeters(e.target.value)}
               step="0.1"
-              className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--card-border)] rounded-xl focus:border-violet-500 focus:outline-none"
+              className="app-modal-input"
               placeholder="np. 5"
             />
           </div>
 
-          <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/30">
-            <p className="text-sm text-gray-300">
-              <strong>Skala:</strong> {scale > 0 ? `${scale.toFixed(1)} px = 1 m` : 'Nie ustawiona'}
-            </p>
+          <div className="app-modal-scale-info">
+            <strong>Skala:</strong> {scale > 0 ? `${scale.toFixed(1)} px = 1 m` : 'Nie ustawiona'}
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="app-modal-buttons">
           <button
+            type="button"
             onClick={onClose}
-            className="flex-1 btn-secondary flex items-center justify-center gap-2"
+            className="panel-action-btn"
+            style={{ flex: 1, justifyContent: 'center' }}
           >
-            <X className="w-4 h-4" />
+            <Icons.X />
             Anuluj
           </button>
           <button
+            type="button"
             onClick={handleSave}
-            className="flex-1 btn-primary flex items-center justify-center gap-2"
+            className="panel-action-btn primary"
+            style={{ flex: 1, justifyContent: 'center' }}
           >
-            <Check className="w-4 h-4" />
+            <Icons.Check />
             Zapisz
           </button>
         </div>

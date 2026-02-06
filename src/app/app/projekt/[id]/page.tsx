@@ -3,29 +3,87 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import {
-  ArrowLeft,
-  Upload,
-  MousePointer2,
-  Ruler,
-  Download,
-  Settings,
-  ZoomIn,
-  ZoomOut,
-  Check,
-  X,
-} from 'lucide-react';
 import MeasurementList from '@/components/MeasurementList';
 import ScaleCalibration from '@/components/ScaleCalibration';
 import AnalyzeButton from '@/components/AnalyzeButton';
 import type { Measurement, DetectedRoom } from '@/components/MeasurementCanvas';
 
+// ─── Inline SVG icons ─────────────────────────────────────────
+const Icons = {
+  Calculator: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="2" width="16" height="20" rx="2" />
+      <line x1="8" x2="16" y1="6" y2="6" />
+      <line x1="16" x2="16" y1="14" y2="18" />
+      <path d="M16 10h.01" /><path d="M12 10h.01" /><path d="M8 10h.01" />
+      <path d="M12 14h.01" /><path d="M8 14h.01" />
+      <path d="M12 18h.01" /><path d="M8 18h.01" />
+    </svg>
+  ),
+  ArrowLeft: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
+    </svg>
+  ),
+  Upload: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" />
+    </svg>
+  ),
+  Download: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" />
+    </svg>
+  ),
+  MousePointer: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m4 4 7.07 17 2.51-7.39L21 11.07z" />
+    </svg>
+  ),
+  Ruler: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" />
+      <path d="m14.5 12.5 2-2" /><path d="m11.5 9.5 2-2" /><path d="m8.5 6.5 2-2" /><path d="m17.5 15.5 2-2" />
+    </svg>
+  ),
+  ZoomIn: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" />
+      <line x1="11" x2="11" y1="8" y2="14" /><line x1="8" x2="14" y1="11" y2="11" />
+    </svg>
+  ),
+  ZoomOut: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" />
+      <line x1="8" x2="14" y1="11" y2="11" />
+    </svg>
+  ),
+  Settings: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ),
+  Check: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
+  X: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+    </svg>
+  ),
+};
+
 // Dynamic import for react-konva (SSR issue)
 const MeasurementCanvas = dynamic(() => import('@/components/MeasurementCanvas'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-neutral-900/50">
-      <p className="text-gray-400">Ładowanie canvas...</p>
+    <div className="app-canvas-loading">
+      <p>Ładowanie canvas...</p>
     </div>
   ),
 });
@@ -189,13 +247,10 @@ export default function ProjectEditor() {
   };
 
   const approveRoom = (room: DetectedRoom) => {
-    // Convert % coordinates to pixel coordinates on the rendered image
-    // We need the image dimensions — load them from imageUrl
     const img = new window.Image();
     img.src = imageUrl!;
     img.onload = () => {
-      // Recreate the same scaling logic as MeasurementCanvas
-      const container = document.querySelector('.w-full.h-full.bg-neutral-900\\/50');
+      const container = document.querySelector('.app-canvas-loading')?.parentElement || document.querySelector('.app-canvas');
       const stageW = container?.clientWidth || 800;
       const stageH = container?.clientHeight || 600;
       const scaleX = stageW / img.width;
@@ -228,7 +283,7 @@ export default function ProjectEditor() {
     const img = new window.Image();
     img.src = imageUrl!;
     img.onload = () => {
-      const container = document.querySelector('.w-full.h-full.bg-neutral-900\\/50');
+      const container = document.querySelector('.app-canvas-loading')?.parentElement || document.querySelector('.app-canvas');
       const stageW = container?.clientWidth || 800;
       const stageH = container?.clientHeight || 600;
       const scaleX = stageW / img.width;
@@ -268,39 +323,38 @@ export default function ProjectEditor() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex flex-col">
-      {/* Header */}
-      <header className="border-b border-[var(--card-border)] px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/app"
-              className="p-2 hover:bg-[var(--card-bg)] rounded-lg transition"
-            >
-              <ArrowLeft className="w-5 h-5" />
+    <div className="app-editor">
+      {/* Header — navbar style */}
+      <header className="app-editor-header">
+        <div className="app-editor-header-inner">
+          <div className="app-editor-header-left">
+            <Link href="/app" className="app-editor-back">
+              <Icons.ArrowLeft />
             </Link>
             <div>
-              <h1 className="font-semibold">Edytor przedmiaru</h1>
-              <p className="text-sm text-gray-400">
+              <div className="app-editor-title">Edytor przedmiaru</div>
+              <div className="app-editor-subtitle">
                 {imageUrl ? 'Zaznacz obszary do pomiaru' : 'Wgraj rysunek'}
-              </p>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="app-editor-actions">
             {measurements.length > 0 && (
               <button
+                type="button"
                 onClick={exportToCSV}
-                className="btn-secondary flex items-center gap-2 !py-2 !px-4"
+                className="panel-action-btn primary"
               >
-                <Download className="w-4 h-4" />
+                <Icons.Download />
                 Export CSV
               </button>
             )}
             {imageUrl && (
               <button
+                type="button"
                 onClick={clearProject}
-                className="text-sm text-gray-400 hover:text-red-400 transition px-3"
+                className="panel-action-btn"
               >
                 Nowy projekt
               </button>
@@ -309,58 +363,55 @@ export default function ProjectEditor() {
         </div>
       </header>
 
-      <div className="flex-1 flex">
+      <div className="app-editor-body">
         {/* Canvas area */}
-        <div className="flex-1 p-4 flex flex-col">
+        <div className="app-canvas-area">
           {/* Toolbar */}
-          <div className="flex items-center gap-2 mb-4">
-            <div className="flex items-center gap-1 p-1 bg-[var(--card-bg)] rounded-lg border border-[var(--card-border)]">
+          <div className="app-toolbar">
+            <div className="app-toolbar-group">
               <button
+                type="button"
                 onClick={() => setTool('select')}
                 title="Wybierz (przesuń/zmień rozmiar)"
-                className={`p-2 rounded-md transition ${
-                  tool === 'select'
-                    ? 'bg-violet-500 text-white'
-                    : 'hover:bg-[var(--background)]'
-                }`}
+                className={`app-toolbar-btn ${tool === 'select' ? 'active' : ''}`}
               >
-                <MousePointer2 className="w-5 h-5" />
+                <Icons.MousePointer />
               </button>
               <button
+                type="button"
                 onClick={() => setTool('measure')}
                 title="Mierz (rysuj prostokąt)"
-                className={`p-2 rounded-md transition ${
-                  tool === 'measure'
-                    ? 'bg-violet-500 text-white'
-                    : 'hover:bg-[var(--background)]'
-                }`}
+                className={`app-toolbar-btn ${tool === 'measure' ? 'active' : ''}`}
               >
-                <Ruler className="w-5 h-5" />
+                <Icons.Ruler />
               </button>
             </div>
 
-            <div className="flex items-center gap-1 p-1 bg-[var(--card-bg)] rounded-lg border border-[var(--card-border)]">
+            <div className="app-toolbar-group">
               <button
+                type="button"
                 title="Powiększ (coming soon)"
-                className="p-2 rounded-md hover:bg-[var(--background)] transition opacity-50 cursor-not-allowed"
+                className="app-toolbar-btn"
                 disabled
               >
-                <ZoomIn className="w-5 h-5" />
+                <Icons.ZoomIn />
               </button>
               <button
+                type="button"
                 title="Pomniejsz (coming soon)"
-                className="p-2 rounded-md hover:bg-[var(--background)] transition opacity-50 cursor-not-allowed"
+                className="app-toolbar-btn"
                 disabled
               >
-                <ZoomOut className="w-5 h-5" />
+                <Icons.ZoomOut />
               </button>
             </div>
 
             <button
+              type="button"
               onClick={() => setShowCalibration(true)}
-              className="flex items-center gap-2 p-2 px-4 bg-[var(--card-bg)] rounded-lg border border-[var(--card-border)] hover:border-violet-500/50 transition text-sm"
+              className="app-toolbar-scale"
             >
-              <Settings className="w-4 h-4" />
+              <Icons.Settings />
               Skala: {scale.toFixed(0)} px/m
             </button>
 
@@ -372,9 +423,7 @@ export default function ProjectEditor() {
 
           {/* Canvas */}
           <div
-            className={`flex-1 card p-0 overflow-hidden relative ${
-              isDragging ? 'border-violet-500' : ''
-            }`}
+            className={`app-canvas ${isDragging ? 'dragging' : ''}`}
             onDragOver={(e) => {
               e.preventDefault();
               setIsDragging(true);
@@ -383,16 +432,17 @@ export default function ProjectEditor() {
             onDrop={handleDrop}
           >
             {!imageUrl ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center px-4">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-violet-500/10 flex items-center justify-center border border-violet-500/30">
-                    <Upload className="w-10 h-10 text-violet-400" />
+              <div className="app-canvas-dropzone">
+                <div className="app-canvas-dropzone-inner">
+                  <div className="app-canvas-dropzone-icon">
+                    <Icons.Upload />
                   </div>
-                  <p className="text-gray-400 mb-2">Przeciągnij plik PDF, PNG lub JPG</p>
-                  <p className="text-gray-500 text-sm mb-4">lub</p>
+                  <p className="app-canvas-dropzone-title">Przeciągnij plik PDF, PNG lub JPG</p>
+                  <p className="app-canvas-dropzone-hint">lub</p>
                   <button
+                    type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="btn-secondary !py-2 !px-4"
+                    className="panel-action-btn"
                   >
                     Wybierz plik
                   </button>
@@ -401,9 +451,9 @@ export default function ProjectEditor() {
                     type="file"
                     accept=".pdf,.png,.jpg,.jpeg"
                     onChange={handleFileSelect}
-                    className="hidden"
+                    className="panel-hidden"
                   />
-                  <p className="text-gray-600 text-xs mt-4">
+                  <p className="app-canvas-dropzone-formats">
                     Obsługiwane: PDF, PNG, JPG &middot; DWG wkrótce
                   </p>
                 </div>
@@ -424,7 +474,7 @@ export default function ProjectEditor() {
 
           {/* Instructions */}
           {imageUrl && (
-            <div className="mt-3 text-xs text-gray-500 flex items-center gap-4">
+            <div className="app-canvas-instructions">
               <span>
                 <strong>Mierz:</strong> kliknij i przeciągnij aby zaznaczyć obszar
               </span>
@@ -436,68 +486,61 @@ export default function ProjectEditor() {
         </div>
 
         {/* Right panel - measurements */}
-        <aside className="w-80 border-l border-[var(--card-border)] p-6 overflow-y-auto">
+        <aside className="app-editor-sidebar">
           {/* AI Detected rooms panel */}
           {detectedRooms.length > 0 && (
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="font-semibold text-lg text-green-400">AI Wykryte</h2>
-                <span className="text-xs text-gray-400">{detectedRooms.length} pomieszczeń</span>
+            <div className="app-ai-panel">
+              <div className="app-ai-header">
+                <span className="app-ai-title">AI Wykryte</span>
+                <span className="app-ai-count">{detectedRooms.length} pomieszczeń</span>
               </div>
 
-              <div className="flex gap-2 mb-3">
-                <button
-                  onClick={approveAllRooms}
-                  className="flex-1 flex items-center justify-center gap-1 py-1.5 px-3 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 rounded-lg text-xs text-green-400 transition"
-                >
-                  <Check className="w-3 h-3" />
+              <div className="app-ai-bulk-actions">
+                <button type="button" onClick={approveAllRooms} className="app-ai-approve-all">
+                  <Icons.Check />
                   Zatwierdź wszystkie
                 </button>
-                <button
-                  onClick={rejectAllRooms}
-                  className="flex-1 flex items-center justify-center gap-1 py-1.5 px-3 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 rounded-lg text-xs text-red-400 transition"
-                >
-                  <X className="w-3 h-3" />
+                <button type="button" onClick={rejectAllRooms} className="app-ai-reject-all">
+                  <Icons.X />
                   Odrzuć wszystkie
                 </button>
               </div>
 
-              <div className="space-y-2">
+              <div className="app-ai-rooms">
                 {detectedRooms.map((room) => (
-                  <div
-                    key={room.id}
-                    className="flex items-center justify-between p-2 bg-green-500/5 border border-green-500/20 rounded-lg"
-                  >
-                    <span className="text-sm text-green-300">{room.name}</span>
-                    <div className="flex items-center gap-1">
+                  <div key={room.id} className="app-ai-room">
+                    <span className="app-ai-room-name">{room.name}</span>
+                    <div className="app-ai-room-actions">
                       <button
+                        type="button"
                         onClick={() => approveRoom(room)}
                         title="Zatwierdź"
-                        className="p-1 hover:bg-green-500/20 rounded transition"
+                        className="app-ai-room-btn approve"
                       >
-                        <Check className="w-4 h-4 text-green-400" />
+                        <Icons.Check />
                       </button>
                       <button
+                        type="button"
                         onClick={() => rejectRoom(room.id)}
                         title="Odrzuć"
-                        className="p-1 hover:bg-red-500/20 rounded transition"
+                        className="app-ai-room-btn reject"
                       >
-                        <X className="w-4 h-4 text-red-400" />
+                        <Icons.X />
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-3 border-b border-[var(--card-border)]" />
+              <hr className="app-ai-divider" />
             </div>
           )}
 
-          <div className="mb-6">
-            <h2 className="font-semibold text-lg mb-1">Pomiary</h2>
-            <p className="text-sm text-gray-400">
+          <div style={{ marginBottom: 20 }}>
+            <div className="app-editor-sidebar-title">Pomiary</div>
+            <div className="app-editor-sidebar-count">
               {measurements.length} {measurements.length === 1 ? 'obszar' : 'obszarów'}
-            </p>
+            </div>
           </div>
 
           <MeasurementList

@@ -2,16 +2,45 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { 
-  Plus, 
-  FileText, 
-  Calendar, 
-  ChevronRight,
-  Calculator,
-  LayoutDashboard,
-  Settings,
-  LogOut
-} from 'lucide-react';
+
+// ─── Inline SVG icons (same pattern as panel/page.tsx) ─────────
+const Icons = {
+  Calculator: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="2" width="16" height="20" rx="2" />
+      <line x1="8" x2="16" y1="6" y2="6" />
+      <line x1="16" x2="16" y1="14" y2="18" />
+      <path d="M16 10h.01" /><path d="M12 10h.01" /><path d="M8 10h.01" />
+      <path d="M12 14h.01" /><path d="M8 14h.01" />
+      <path d="M12 18h.01" /><path d="M8 18h.01" />
+    </svg>
+  ),
+  Plus: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" x2="12" y1="5" y2="19" /><line x1="5" x2="19" y1="12" y2="12" />
+    </svg>
+  ),
+  FileText: () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" />
+      <line x1="10" x2="8" y1="9" y2="9" />
+    </svg>
+  ),
+  Calendar: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="18" height="18" x="3" y="4" rx="2" />
+      <line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" />
+      <line x1="3" x2="21" y1="10" y2="10" />
+    </svg>
+  ),
+  ChevronRight: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  ),
+};
 
 // Mock projects for MVP
 const mockProjects = [
@@ -23,119 +52,94 @@ const mockProjects = [
 export default function Dashboard() {
   const [projects] = useState(mockProjects);
 
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      completed: 'bg-emerald-500/20 text-emerald-400',
-      in_progress: 'bg-blue-500/20 text-blue-400',
-      draft: 'bg-gray-500/20 text-gray-400',
-    };
-    const labels = {
-      completed: 'Zakończony',
-      in_progress: 'W trakcie',
-      draft: 'Szkic',
-    };
-    return (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[status as keyof typeof styles]}`}>
-        {labels[status as keyof typeof labels]}
-      </span>
-    );
+  const statusLabels: Record<string, string> = {
+    completed: 'Zakończony',
+    in_progress: 'W trakcie',
+    draft: 'Szkic',
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-[var(--card-border)] p-6 flex flex-col">
-        <div className="flex items-center gap-2 mb-10">
-          <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-blue-500 rounded-lg flex items-center justify-center">
-            <Calculator className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-bold text-lg">PrzedmiarAI</span>
+    <>
+      {/* Navbar — identical to LP */}
+      <nav className="navbar">
+        <div className="navbar-inner">
+          <a href="/" className="logo">
+            <div className="logo-icon"><Icons.Calculator /></div>
+            <span className="logo-text">PrzedmiarAI</span>
+          </a>
         </div>
+      </nav>
 
-        <nav className="flex-1 space-y-2">
-          <Link 
-            href="/app" 
-            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-violet-500/10 text-violet-400"
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            Projekty
-          </Link>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-[var(--card-bg)] transition">
-            <Settings className="w-5 h-5" />
-            Ustawienia
-          </button>
-        </nav>
-
-        <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-[var(--card-bg)] transition">
-          <LogOut className="w-5 h-5" />
-          Wyloguj
-        </button>
-      </aside>
-
-      {/* Main content */}
-      <main className="flex-1 p-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
+      <div className="app-dashboard">
+        <div className="app-dashboard-inner">
+          <div className="app-dashboard-header">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Moje projekty</h1>
-              <p className="text-gray-400">Zarządzaj swoimi przedmiarami</p>
+              <h1 className="app-dashboard-title">Moje projekty</h1>
+              <p className="app-dashboard-subtitle">Zarządzaj swoimi przedmiarami</p>
             </div>
-            <Link 
-              href="/app/projekt/new" 
-              className="btn-primary flex items-center gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              Nowy projekt
+            <Link href="/app/projekt/new" className="app-new-btn">
+              <span className="app-new-btn-glow" />
+              <span className="app-new-btn-inner">
+                <Icons.Plus />
+                Nowy projekt
+              </span>
             </Link>
           </div>
 
           {/* Projects grid */}
-          <div className="grid gap-4">
-            {projects.map((project) => (
-              <Link 
-                key={project.id}
-                href={`/app/projekt/${project.id}`}
-                className="card flex items-center gap-6 hover:border-violet-500/50"
-              >
-                <div className="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-violet-400" />
-                </div>
-                
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">{project.name}</h3>
-                  <div className="flex items-center gap-4 text-sm text-gray-400">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      {project.date}
-                    </span>
-                    {project.rooms > 0 && (
-                      <span>{project.rooms} pomieszczeń</span>
-                    )}
+          {projects.length > 0 ? (
+            <div className="app-projects-grid">
+              {projects.map((project) => (
+                <Link
+                  key={project.id}
+                  href={`/app/projekt/${project.id}`}
+                  className="app-project-card"
+                >
+                  <div className="app-project-icon">
+                    <Icons.FileText />
                   </div>
-                </div>
 
-                {getStatusBadge(project.status)}
+                  <div className="app-project-info">
+                    <div className="app-project-name">{project.name}</div>
+                    <div className="app-project-meta">
+                      <span className="app-project-meta-item">
+                        <Icons.Calendar />
+                        {project.date}
+                      </span>
+                      {project.rooms > 0 && (
+                        <span>{project.rooms} pomieszczeń</span>
+                      )}
+                    </div>
+                  </div>
 
-                <ChevronRight className="w-5 h-5 text-gray-500" />
-              </Link>
-            ))}
-          </div>
+                  <span className={`app-status-badge ${project.status}`}>
+                    {statusLabels[project.status]}
+                  </span>
 
-          {projects.length === 0 && (
-            <div className="card text-center py-16">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-violet-500/10 flex items-center justify-center">
-                <FileText className="w-8 h-8 text-violet-400" />
+                  <span className="app-project-chevron">
+                    <Icons.ChevronRight />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="app-empty">
+              <div className="app-empty-icon">
+                <Icons.FileText />
               </div>
-              <h3 className="font-semibold text-lg mb-2">Brak projektów</h3>
-              <p className="text-gray-400 mb-6">Utwórz swój pierwszy przedmiar</p>
-              <Link href="/app/projekt/new" className="btn-primary inline-flex items-center gap-2">
-                <Plus className="w-5 h-5" />
-                Nowy projekt
+              <div className="app-empty-title">Brak projektów</div>
+              <p className="app-empty-desc">Utwórz swój pierwszy przedmiar</p>
+              <Link href="/app/projekt/new" className="app-new-btn">
+                <span className="app-new-btn-glow" />
+                <span className="app-new-btn-inner">
+                  <Icons.Plus />
+                  Nowy projekt
+                </span>
               </Link>
             </div>
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }
