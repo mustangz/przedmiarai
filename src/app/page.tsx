@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { track } from '@vercel/analytics';
+import { useState, useEffect } from 'react';
 
 /* ─── Inline SVG icons ─── */
 const Icons = {
@@ -283,70 +281,11 @@ function ProductMockup() {
   );
 }
 
+/* ─── Presale link ─── */
+const PRESALE_URL = 'https://secure.tpay.com/?h=5ebabdbbba03abb3496e58f9845d9d515a39ec13';
+
 /* ─── Main Content ─── */
 function HomeContent() {
-  const searchParams = useSearchParams();
-  const [variant, setVariant] = useState<'a' | 'b'>('a');
-  const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const v = searchParams.get('v');
-    if (v === 'b') setVariant('b');
-    else if (v === 'a') setVariant('a');
-    else setVariant(Math.random() > 0.5 ? 'b' : 'a');
-  }, [searchParams]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    track('signup_submit', { variant });
-    try {
-      const res = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, variant }),
-      });
-      if (res.ok) {
-        setSubmitted(true);
-        setEmail('');
-        track('signup_success', { variant });
-      }
-    } catch {
-      // ignore
-    }
-    setLoading(false);
-  };
-
-  const emailForm = (
-    <div className="hero-card">
-      <p className="hero-card-label">Dołącz do zamkniętej beta — zostało kilkadziesiąt miejsc</p>
-      <form onSubmit={handleSubmit} className="hero-card-form">
-        <input
-          type="email"
-          placeholder="twoj@email.pl"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="hero-input"
-        />
-        <button type="submit" disabled={loading} className="hero-submit">
-          {loading ? 'Wysyłam...' : 'Dołącz do beta'}
-        </button>
-      </form>
-    </div>
-  );
-
-  const successMessage = (
-    <div className="hero-card">
-      <div className="hero-success">
-        <Icons.Check />
-        <span>Gotowe! Jesteś na liście. Odezwiemy się wkrótce.</span>
-      </div>
-    </div>
-  );
-
   return (
     <>
       {/* NAV */}
@@ -356,7 +295,7 @@ function HomeContent() {
             <div className="logo-icon"><Icons.Calculator /></div>
             <span className="logo-text">PrzedmiarAI</span>
           </a>
-          <a href="#cta" className="nav-cta">Dołącz do beta</a>
+          <a href={PRESALE_URL} className="nav-cta">Kup presale — 299 PLN/mies</a>
         </div>
       </nav>
 
@@ -364,7 +303,7 @@ function HomeContent() {
       <section className="hero">
         <div className="hero-badge">
           <Icons.Sparkles />
-          <span>AI dla kosztorysantów</span>
+          <span>Presale — tylko 10 miejsc</span>
         </div>
 
         <h1 className="hero-title">
@@ -376,7 +315,21 @@ function HomeContent() {
           automatycznie oblicza powierzchnie. Bez ręcznego mierzenia.
         </p>
 
-        {submitted ? successMessage : emailForm}
+        <div className="hero-card">
+          <div className="presale-pricing">
+            <span className="price-old">499 PLN/mies</span>
+            <span className="price-new">299 PLN/mies</span>
+          </div>
+          <p className="hero-card-label">Tylko 10 miejsc w cenie presale. Później 499 PLN/mies.</p>
+          <a href={PRESALE_URL} className="hero-submit presale-cta">
+            Kup presale — 299 PLN/mies
+            <Icons.ArrowRight />
+          </a>
+          <ul className="presale-benefits">
+            <li><Icons.Check /><span>Cena zamrożona na zawsze</span></li>
+            <li><Icons.Check /><span>Pierwszy dostęp do nowych funkcji</span></li>
+          </ul>
+        </div>
 
         <ProductMockup />
       </section>
@@ -578,32 +531,24 @@ function HomeContent() {
         <div className="cta-box">
           <h2 className="cta-title">Zacznij oszczędzać czas</h2>
           <p className="cta-desc">
-            Dołącz do beta i otrzymaj darmowy miesiąc Pro.
-            Pierwsi użytkownicy dostaną dostęp w ciągu tygodnia.
+            Zostało tylko 10 miejsc w cenie presale.
+            Później cena wzrośnie do 499 PLN/mies.
           </p>
 
-          {submitted ? (
-            <div className="cta-success">
-              <Icons.Check />
-              <span>Gotowe! Jesteś na liście. Odezwiemy się wkrótce.</span>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="cta-form">
-              <input
-                type="email"
-                placeholder="twoj@email.pl"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="cta-input"
-              />
-              <button type="submit" disabled={loading} className="cta-submit">
-                {loading ? 'Wysyłam...' : 'Dołącz'}
-              </button>
-            </form>
-          )}
+          <div className="cta-presale-pricing">
+            <span className="price-old">499 PLN/mies</span>
+            <span className="price-new">299 PLN/mies</span>
+          </div>
 
-          <p className="cta-note">Bez spamu. Bez karty kredytowej.</p>
+          <a href={PRESALE_URL} className="cta-submit presale-cta">
+            Kup presale — 299 PLN/mies
+            <Icons.ArrowRight />
+          </a>
+
+          <ul className="presale-benefits cta-benefits">
+            <li><Icons.Check /><span>Cena zamrożona na zawsze</span></li>
+            <li><Icons.Check /><span>Pierwszy dostęp do nowych funkcji</span></li>
+          </ul>
         </div>
       </section>
 
@@ -622,9 +567,5 @@ function HomeContent() {
 }
 
 export default function Home() {
-  return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#09090b' }} />}>
-      <HomeContent />
-    </Suspense>
-  );
+  return <HomeContent />;
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase';
-import { addContactToGetResponse } from '@/lib/getresponse';
+
+const WEB3FORMS_KEY = process.env.WEB3FORMS_ACCESS_KEY;
 
 export async function POST(request: Request) {
   try {
@@ -13,41 +13,37 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = createServerSupabase();
-
-    // Check if email already exists
-    const { data: existing } = await supabase
-      .from('waitlist')
-      .select('id')
-      .eq('email', email)
-      .single();
-
-    if (existing) {
+    if (!WEB3FORMS_KEY) {
+      console.error('WEB3FORMS_ACCESS_KEY not configured');
       return NextResponse.json(
-        { error: 'Ten email jest już na liście' },
-        { status: 400 }
-      );
-    }
-
-    // Insert into Supabase
-    const { error } = await supabase
-      .from('waitlist')
-      .insert([{ email, variant }]);
-
-    if (error) {
-      console.error('Supabase error:', error);
-      return NextResponse.json(
-        { error: 'Błąd zapisu do bazy' },
+        { error: 'Serwer nie skonfigurowany' },
         { status: 500 }
       );
     }
 
-    // Add to GetResponse (non-blocking — don't fail the request if GR is down)
-    addContactToGetResponse(email, { variant }).catch((err) =>
-      console.error('GetResponse async error:', err)
-    );
+    const res = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_KEY,
+        subject: 'Nowy lead — PrzedmiarAI waitlista',
+        from_name: 'PrzedmiarAI',
+        email,
+        variant: variant || 'unknown',
+      }),
+    });
 
-    return NextResponse.json({ success: true });
+    const data = await res.json();
+
+    if (data.success) {
+      return NextResponse.json({ success: true });
+    }
+
+    console.error('Web3Forms error:', data);
+    return NextResponse.json(
+      { error: 'Błąd zapisu' },
+      { status: 500 }
+    );
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(
