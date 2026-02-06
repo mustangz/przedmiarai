@@ -208,11 +208,11 @@ export default function Home() {
             <span className="text-xs sm:text-sm text-violet-300 font-medium">Powered by AI</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.15] tracking-tight mb-6 sm:mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.15] tracking-tight mb-6 sm:mb-6 px-2">
             Przedmiar w{' '}
             <span className="gradient-text">sekundy</span>
-            <br className="hidden sm:block" />
-            <span className="sm:hidden">, </span>
+            <br className="hidden xs:block" />
+            <span className="xs:hidden"> </span>
             nie godziny
           </h1>
 
