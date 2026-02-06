@@ -276,7 +276,7 @@ export default function Home() {
           ═══════════════════════════════════════════════════════════════════════ */}
       <nav className="fixed top-0 left-0 right-0 z-50 navbar-glass">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <div className="h-16 sm:h-20 flex items-center justify-between">
+          <div className="h-14 sm:h-20 flex items-center justify-between">
             {/* Logo */}
             <a href="#" className="flex items-center gap-2.5 group">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-shadow">
@@ -335,7 +335,7 @@ export default function Home() {
       {/* ═══════════════════════════════════════════════════════════════════════
           HERO SECTION
           ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 lg:pt-48 lg:pb-36">
+      <section className="relative pt-28 pb-16 sm:pt-40 sm:pb-28 lg:pt-48 lg:pb-36">
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <motion.div 
             className="text-center"
@@ -354,7 +354,7 @@ export default function Home() {
             {/* Headline */}
             <motion.h1 
               variants={fadeInUp}
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 sm:mb-8"
+              className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.15] mb-5 sm:mb-8 px-4"
             >
               Przedmiar w{' '}
               <span className="text-gradient">sekundy</span>
@@ -365,7 +365,7 @@ export default function Home() {
             {/* Subheadline */}
             <motion.p 
               variants={fadeInUp}
-              className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4"
+              className="text-base sm:text-xl text-zinc-400 max-w-2xl mx-auto mb-6 sm:mb-12 leading-relaxed px-6"
             >
               AI automatycznie mierzy powierzchnie z rysunków PDF.
               <span className="text-white font-medium"> Oszczędź 80% czasu</span> na przedmiarach i wycenach.
