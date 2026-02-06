@@ -244,115 +244,101 @@ export default function PanelPage() {
   const isProcessingPdf = state === 'preview' && pageImages.length === 0;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b]">
-      {/* Subtle gradient background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-violet-950/20 via-transparent to-cyan-950/10 pointer-events-none" />
+    <div className="min-h-screen bg-[#09090b] text-[#fafafa]">
+      {/* Subtle radial glow - same as LP */}
+      <div className="fixed top-[-200px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[radial-gradient(ellipse,rgba(139,92,246,0.12)_0%,transparent_70%)] pointer-events-none" />
       
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-cyan-500 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-                <FileSpreadsheet size={20} className="text-white" />
-              </div>
+      {/* Navbar - exact LP style */}
+      <nav className="fixed top-0 left-0 right-0 z-50 px-5 sm:px-8 py-3.5 bg-[rgba(9,9,11,0.85)] backdrop-blur-xl border-b border-white/[0.06]">
+        <div className="max-w-[1120px] mx-auto flex items-center justify-between">
+          <a href="/" className="flex items-center gap-2.5 no-underline text-white">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#8b5cf6] to-[#06b6d4] flex items-center justify-center">
+              <FileSpreadsheet size={16} className="text-white" />
             </div>
-            <span className="font-semibold text-lg text-white">PrzedmiarAI</span>
+            <span className="font-bold text-[17px] tracking-tight">PrzedmiarAI</span>
           </a>
           {state === 'results' && (
             <button
               type="button"
               onClick={handleExport}
-              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-emerald-500/25"
+              className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#e4e4e7] text-[#09090b] text-[13px] font-semibold rounded-lg transition-all"
             >
-              <Download size={16} />
+              <Download size={14} />
               Eksport Excel
             </button>
           )}
         </div>
       </nav>
 
-      <main className="relative pt-24 pb-16 px-4 sm:px-6 min-h-screen">
-        <div className="max-w-5xl mx-auto">
+      <main className="relative pt-[120px] sm:pt-[140px] pb-16 px-5 sm:px-8 min-h-screen">
+        <div className="max-w-[1120px] mx-auto">
 
           {/* ═══════════════════════════════════════════════════════════
               UPLOAD STATE
           ═══════════════════════════════════════════════════════════ */}
           {state === 'upload' && (
             <div className="max-w-xl mx-auto pt-8 sm:pt-16">
-              {/* Header */}
+              {/* Header - LP style */}
               <div className="text-center mb-10">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-sm text-white/70 mb-6">
-                  <Zap size={14} className="text-amber-400" />
-                  AI-powered analysis
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[rgba(139,92,246,0.1)] border border-[rgba(139,92,246,0.2)] rounded-full text-xs font-semibold text-[#a78bfa] tracking-wide mb-7">
+                  <Sparkles size={12} />
+                  AI Analiza
                 </div>
-                <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight">
-                  Wgraj przedmiar
+                <h1 className="text-[clamp(28px,7vw,48px)] font-extrabold tracking-[-0.035em] leading-[1.08] mb-5">
+                  Wgraj przedmiar <span className="bg-gradient-to-br from-[#a78bfa] to-[#38bdf8] bg-clip-text text-transparent">PDF</span>
                 </h1>
-                <p className="text-lg text-white/50 max-w-md mx-auto">
-                  AI wyciągnie pozycje, ilości i jednostki. Eksport do Excel jednym klikiem.
+                <p className="text-[clamp(15px,3.5vw,17px)] text-[#a1a1aa] max-w-[480px] mx-auto leading-relaxed">
+                  AI wyciągnie wszystkie pozycje, ilości i jednostki. Wyeksportujesz do Excela jednym klikiem.
                 </p>
               </div>
 
-              {/* Drop Zone */}
+              {/* Drop Zone - LP hero-card style */}
               <div
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className="relative group cursor-pointer"
-              >
-                {/* Animated border */}
-                <div className={`absolute -inset-px rounded-2xl transition-opacity duration-500 ${dragActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-violet-500 via-cyan-500 to-violet-500 animate-gradient-x" />
-                </div>
-                
-                {/* Content */}
-                <div className={`relative rounded-2xl border-2 border-dashed p-12 sm:p-16 transition-all duration-300 ${
+                className={`relative cursor-pointer rounded-2xl p-7 sm:p-10 transition-all duration-200 backdrop-blur-lg ${
                   dragActive 
-                    ? 'bg-violet-500/10 border-transparent' 
-                    : 'bg-white/[0.02] border-white/10 group-hover:border-transparent group-hover:bg-white/[0.04]'
-                }`}>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileInput}
-                    className="hidden"
-                  />
-                  
-                  <div className="flex flex-col items-center">
-                    {/* Icon */}
-                    <div className={`relative mb-6 transition-transform duration-300 ${dragActive ? 'scale-110' : 'group-hover:scale-105'}`}>
-                      <div className="absolute inset-0 bg-violet-500/20 rounded-2xl blur-xl" />
-                      <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center">
-                        <Upload size={32} className={`transition-colors duration-300 ${dragActive ? 'text-violet-400' : 'text-white/40 group-hover:text-violet-400'}`} />
-                      </div>
-                    </div>
-                    
-                    {/* Text */}
-                    <p className="text-xl font-semibold text-white mb-2">
-                      {dragActive ? 'Upuść plik' : 'Przeciągnij PDF lub kliknij'}
-                    </p>
-                    <p className="text-sm text-white/40 mb-6">
-                      Przedmiar budowlany do 50 MB
-                    </p>
-                    
-                    {/* Tags */}
-                    <div className="flex items-center gap-2">
-                      <span className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white/50">
-                        PDF
-                      </span>
-                      <span className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white/50">
-                        Skany
-                      </span>
-                      <span className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white/50">
-                        Pliki cyfrowe
-                      </span>
-                    </div>
+                    ? 'bg-[rgba(139,92,246,0.08)] border border-[rgba(139,92,246,0.3)]' 
+                    : 'bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.12)]'
+                }`}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileInput}
+                  className="hidden"
+                />
+                
+                <div className="flex flex-col items-center text-center">
+                  {/* Icon */}
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-all duration-200 ${
+                    dragActive 
+                      ? 'bg-[rgba(139,92,246,0.15)]' 
+                      : 'bg-[rgba(139,92,246,0.1)]'
+                  }`}>
+                    <Upload size={24} className={`transition-colors ${dragActive ? 'text-[#a78bfa]' : 'text-[#a78bfa]'}`} />
                   </div>
+                  
+                  {/* Text */}
+                  <p className="text-lg font-semibold mb-2">
+                    {dragActive ? 'Upuść plik tutaj' : 'Przeciągnij PDF lub kliknij'}
+                  </p>
+                  <p className="text-sm text-[#a1a1aa] mb-5">
+                    Przedmiar budowlany w formacie PDF, do 50 MB
+                  </p>
+                  
+                  {/* CTA Button - LP style */}
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center gap-2 w-full max-w-[280px] py-3.5 px-6 bg-gradient-to-br from-[#8b5cf6] to-[#7c3aed] hover:shadow-[0_4px_24px_rgba(139,92,246,0.5)] text-white font-bold text-[15px] rounded-xl transition-all shadow-[0_2px_16px_rgba(139,92,246,0.3)]"
+                  >
+                    <Upload size={18} />
+                    Wybierz plik PDF
+                  </button>
                 </div>
               </div>
 
