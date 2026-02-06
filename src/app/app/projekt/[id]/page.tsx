@@ -105,6 +105,7 @@ export default function ProjectEditor() {
   const [showCalibration, setShowCalibration] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [detectedRooms, setDetectedRooms] = useState<DetectedRoom[]>([]);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load from localStorage on mount
@@ -468,6 +469,7 @@ export default function ProjectEditor() {
                 tool={tool}
                 scale={scale}
                 detectedRooms={detectedRooms}
+                hoveredId={hoveredId}
               />
             )}
           </div>
@@ -508,7 +510,12 @@ export default function ProjectEditor() {
 
               <div className="app-ai-rooms">
                 {detectedRooms.map((room) => (
-                  <div key={room.id} className="app-ai-room">
+                  <div
+                    key={room.id}
+                    className={`app-ai-room ${hoveredId === room.id ? 'hovered' : ''}`}
+                    onMouseEnter={() => setHoveredId(room.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
                     <span className="app-ai-room-name">{room.name}</span>
                     <div className="app-ai-room-actions">
                       <button
@@ -549,6 +556,8 @@ export default function ProjectEditor() {
             onSelect={setSelectedId}
             onDelete={handleDelete}
             onRename={handleRename}
+            hoveredId={hoveredId}
+            onHover={setHoveredId}
           />
         </aside>
       </div>

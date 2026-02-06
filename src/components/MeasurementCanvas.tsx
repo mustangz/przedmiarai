@@ -32,6 +32,7 @@ interface Props {
   tool: 'select' | 'measure';
   scale: number; // pixels per meter
   detectedRooms?: DetectedRoom[];
+  hoveredId?: string | null;
 }
 
 export default function MeasurementCanvas({
@@ -43,6 +44,7 @@ export default function MeasurementCanvas({
   tool,
   scale,
   detectedRooms = [],
+  hoveredId,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
@@ -242,24 +244,36 @@ export default function MeasurementCanvas({
           )}
 
           {/* Existing measurements */}
-          {measurements.map((m) => (
-            <Rect
-              key={m.id}
-              id={m.id}
-              x={m.x}
-              y={m.y}
-              width={m.width}
-              height={m.height}
-              fill={selectedId === m.id ? 'rgba(139, 92, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)'}
-              stroke={selectedId === m.id ? '#8B5CF6' : '#3B82F6'}
-              strokeWidth={2}
-              draggable={tool === 'select'}
-              onClick={() => onSelect(m.id)}
-              onTap={() => onSelect(m.id)}
-              onDragEnd={(e) => handleDragEnd(m.id, e.target)}
-              onTransformEnd={(e) => handleTransformEnd(m.id, e.target)}
-            />
-          ))}
+          {measurements.map((m) => {
+            const isHovered = hoveredId === m.id;
+            const isSelected = selectedId === m.id;
+            return (
+              <Rect
+                key={m.id}
+                id={m.id}
+                x={m.x}
+                y={m.y}
+                width={m.width}
+                height={m.height}
+                fill={
+                  isSelected ? 'rgba(139, 92, 246, 0.3)'
+                  : isHovered ? 'rgba(96, 165, 250, 0.35)'
+                  : 'rgba(59, 130, 246, 0.2)'
+                }
+                stroke={
+                  isSelected ? '#8B5CF6'
+                  : isHovered ? '#60A5FA'
+                  : '#3B82F6'
+                }
+                strokeWidth={isHovered ? 3 : 2}
+                draggable={tool === 'select'}
+                onClick={() => onSelect(m.id)}
+                onTap={() => onSelect(m.id)}
+                onDragEnd={(e) => handleDragEnd(m.id, e.target)}
+                onTransformEnd={(e) => handleTransformEnd(m.id, e.target)}
+              />
+            );
+          })}
 
           {/* Labels */}
           {measurements.map((m) => (
@@ -294,6 +308,7 @@ export default function MeasurementCanvas({
             const ry = imageY + (room.y / 100) * image.height * imageScale;
             const rw = (room.width / 100) * image.width * imageScale;
             const rh = (room.height / 100) * image.height * imageScale;
+            const isHovered = hoveredId === room.id;
             return (
               <Rect
                 key={room.id}
@@ -301,9 +316,9 @@ export default function MeasurementCanvas({
                 y={ry}
                 width={rw}
                 height={rh}
-                fill="rgba(34, 197, 94, 0.15)"
-                stroke="#22C55E"
-                strokeWidth={2}
+                fill={isHovered ? 'rgba(74, 222, 128, 0.3)' : 'rgba(34, 197, 94, 0.15)'}
+                stroke={isHovered ? '#4ADE80' : '#22C55E'}
+                strokeWidth={isHovered ? 3 : 2}
                 dash={[6, 4]}
               />
             );
@@ -311,14 +326,16 @@ export default function MeasurementCanvas({
           {image && detectedRooms.map((room) => {
             const rx = imageX + (room.x / 100) * image.width * imageScale;
             const ry = imageY + (room.y / 100) * image.height * imageScale;
+            const isHovered = hoveredId === room.id;
             return (
               <Text
                 key={`ai_label_${room.id}`}
                 x={rx}
                 y={ry - 18}
                 text={`🤖 ${room.name}`}
-                fontSize={12}
-                fill="#22C55E"
+                fontSize={isHovered ? 14 : 12}
+                fontStyle={isHovered ? 'bold' : 'normal'}
+                fill={isHovered ? '#4ADE80' : '#22C55E'}
                 padding={3}
               />
             );

@@ -41,9 +41,11 @@ interface Props {
   onSelect: (id: string | null) => void;
   onDelete: (id: string) => void;
   onRename: (id: string, name: string) => void;
+  hoveredId?: string | null;
+  onHover?: (id: string | null) => void;
 }
 
-export default function MeasurementList({ measurements, selectedId, onSelect, onDelete, onRename }: Props) {
+export default function MeasurementList({ measurements, selectedId, onSelect, onDelete, onRename, hoveredId, onHover }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
 
@@ -84,7 +86,9 @@ export default function MeasurementList({ measurements, selectedId, onSelect, on
           <div
             key={m.id}
             onClick={() => onSelect(m.id)}
-            className={`app-measurement-card ${selectedId === m.id ? 'selected' : ''}`}
+            onMouseEnter={() => onHover?.(m.id)}
+            onMouseLeave={() => onHover?.(null)}
+            className={`app-measurement-card ${selectedId === m.id ? 'selected' : ''} ${hoveredId === m.id ? 'hovered' : ''}`}
           >
             <div className="app-measurement-header">
               {editingId === m.id ? (
