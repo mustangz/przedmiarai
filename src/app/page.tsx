@@ -91,10 +91,10 @@ const Icons = {
 
 /* ─── Animated Product Mockup ─── */
 const rooms = [
-  { name: 'Salon',    dims: '5.2 × 4.6 m', area: '24.1 m²', perimeter: '19.6 m', cls: 'mockup-room-1' },
-  { name: 'Sypialnia', dims: '4.3 × 4.3 m', area: '18.5 m²', perimeter: '17.2 m', cls: 'mockup-room-2' },
-  { name: 'Kuchnia',  dims: '4.1 × 3.0 m', area: '12.3 m²', perimeter: '14.2 m', cls: 'mockup-room-3' },
-  { name: 'Łazienka', dims: '3.2 × 2.7 m', area: '8.7 m²',  perimeter: '11.8 m', cls: 'mockup-room-4' },
+  { name: 'Salon',     dims: '5.2 × 4.6 m', w: '5.2 m', h: '4.6 m', area: '24.1 m²', perimeter: '19.6 m', cls: 'mockup-room-1' },
+  { name: 'Sypialnia', dims: '4.3 × 4.3 m', w: '4.3 m', h: '4.3 m', area: '18.5 m²', perimeter: '17.2 m', cls: 'mockup-room-2' },
+  { name: 'Kuchnia',   dims: '4.1 × 3.0 m', w: '4.1 m', h: '3.0 m', area: '12.3 m²', perimeter: '14.2 m', cls: 'mockup-room-3' },
+  { name: 'Łazienka',  dims: '3.2 × 2.7 m', w: '3.2 m', h: '2.7 m', area: '8.7 m²',  perimeter: '11.8 m', cls: 'mockup-room-4' },
 ];
 
 // Room display phases: hidden → detected (show dims) → measured (show area)
@@ -104,6 +104,7 @@ function ProductMockup() {
   const [phase, setPhase] = useState<'idle' | 'scanning' | 'measuring' | 'done'>('idle');
   const [roomPhases, setRoomPhases] = useState<RoomPhase[]>(['hidden', 'hidden', 'hidden', 'hidden']);
   const [scanProgress, setScanProgress] = useState(0);
+  const [hoveredRoom, setHoveredRoom] = useState<number | null>(null);
 
   const setRoomPhase = (index: number, p: RoomPhase) => {
     setRoomPhases((prev) => {
@@ -223,13 +224,26 @@ function ProductMockup() {
               {rooms.map((room, i) => (
                 <div
                   key={room.name}
-                  className={`mockup-room ${room.cls} ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''}`}
+                  className={`mockup-room ${room.cls} ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''} ${hoveredRoom === i ? 'hovered' : ''}`}
+                  onMouseEnter={() => isMeasured(i) && setHoveredRoom(i)}
+                  onMouseLeave={() => setHoveredRoom(null)}
                 >
                   {isVisible(i) && (
-                    <div className="room-label">
-                      <span className="room-dims">{isMeasured(i) ? room.area : room.dims}</span>
-                      {isMeasured(i) && <span className="room-name">{room.name}</span>}
-                    </div>
+                    <>
+                      <div className="room-label">
+                        <span className="room-dims">{isMeasured(i) ? room.area : room.dims}</span>
+                        {isMeasured(i) && <span className="room-name">{room.name}</span>}
+                      </div>
+                      {/* Wall dimensions on hover */}
+                      {hoveredRoom === i && isMeasured(i) && (
+                        <>
+                          <span className="wall-dim wall-top">{room.w}</span>
+                          <span className="wall-dim wall-bottom">{room.w}</span>
+                          <span className="wall-dim wall-left">{room.h}</span>
+                          <span className="wall-dim wall-right">{room.h}</span>
+                        </>
+                      )}
+                    </>
                   )}
                 </div>
               ))}
@@ -240,16 +254,25 @@ function ProductMockup() {
             {rooms.map((room, i) => (
               <div
                 key={room.name}
-                className={`mockup-measurement ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''}`}
+                className={`mockup-measurement ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''} ${hoveredRoom === i ? 'highlighted' : ''}`}
+                onMouseEnter={() => isMeasured(i) && setHoveredRoom(i)}
+                onMouseLeave={() => setHoveredRoom(null)}
               >
                 <div className="mockup-measurement-name">{room.name}</div>
                 {!isMeasured(i) ? (
                   <div className="mockup-measurement-dims">{room.dims}</div>
                 ) : (
-                  <div className="mockup-measurement-result">
-                    <span className="mockup-measurement-area">{room.area}</span>
-                    <span className="mockup-measurement-perim">obw. {room.perimeter}</span>
-                  </div>
+                  <>
+                    <div className="mockup-measurement-result">
+                      <span className="mockup-measurement-area">{room.area}</span>
+                      <span className="mockup-measurement-perim">obw. {room.perimeter}</span>
+                    </div>
+                    {hoveredRoom === i && (
+                      <div className="mockup-measurement-walls">
+                        {room.w} &times; {room.h}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}
