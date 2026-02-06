@@ -294,11 +294,12 @@ export default function PanelPage() {
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 className={`
-                  relative cursor-pointer rounded-2xl border-2 border-dashed p-12 sm:p-16 text-center
-                  transition-all duration-200
+                  relative cursor-pointer rounded-2xl border-2 border-dashed p-8 sm:p-16
+                  flex flex-col items-center justify-center text-center
+                  transition-all duration-300 ease-out
                   ${dragActive
-                    ? 'border-violet-500 bg-violet-500/10 scale-[1.02]'
-                    : 'border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]'
+                    ? 'border-violet-500 bg-gradient-to-b from-violet-500/15 to-violet-500/5 scale-[1.02] shadow-xl shadow-violet-500/10'
+                    : 'border-white/15 bg-gradient-to-b from-white/[0.03] to-transparent hover:border-violet-500/50 hover:bg-violet-500/5 hover:shadow-lg hover:shadow-violet-500/5'
                   }
                 `}
               >
@@ -310,17 +311,23 @@ export default function PanelPage() {
                   className="hidden"
                 />
                 <div className={`
-                  w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center transition-colors
-                  ${dragActive ? 'bg-violet-500/20' : 'bg-white/[0.04]'}
+                  w-20 h-20 mb-6 rounded-2xl flex items-center justify-center transition-all duration-300
+                  ${dragActive 
+                    ? 'bg-violet-500/20 scale-110' 
+                    : 'bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border border-white/10'
+                  }
                 `}>
-                  <Upload size={28} className={dragActive ? 'text-violet-400' : 'text-[#71717a]'} />
+                  <Upload size={32} className={`transition-colors duration-300 ${dragActive ? 'text-violet-400' : 'text-violet-400/70'}`} />
                 </div>
-                <p className="text-lg font-semibold mb-2">
+                <p className="text-xl font-bold mb-2 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
                   {dragActive ? 'Upuść plik tutaj' : 'Przeciągnij PDF lub kliknij'}
                 </p>
                 <p className="text-sm text-[#71717a]">
                   Przedmiar budowlany w formacie PDF, do 50 MB
                 </p>
+                <div className="mt-6 px-4 py-2 bg-violet-500/10 border border-violet-500/20 rounded-full text-xs font-medium text-violet-400">
+                  Obsługujemy skany i pliki cyfrowe
+                </div>
               </div>
 
               {error && (
