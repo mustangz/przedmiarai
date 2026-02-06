@@ -241,6 +241,7 @@ export default function PanelPage() {
 
   // Count actual data rows (not section headers)
   const dataRows = pozycje.filter((p) => p.jednostka || p.ilosc);
+  const isProcessingPdf = state === 'preview' && pageImages.length === 0;
 
   return (
     <div className="min-h-screen bg-[#09090b] text-[#fafafa]">
@@ -255,6 +256,7 @@ export default function PanelPage() {
           </a>
           {state === 'results' && (
             <button
+              type="button"
               onClick={handleExport}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg transition-colors"
             >
@@ -339,98 +341,140 @@ export default function PanelPage() {
 
           {/* ─── Preview State ─────────────────────── */}
           {state === 'preview' && (
-            <div className="mt-4 sm:mt-8 pb-24">
-              {/* File info bar */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-                    <FileText size={20} className="text-violet-400" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold truncate">{file?.name}</p>
-                    <p className="text-sm text-[#71717a]">
-                      {pageImages.length} {pageImages.length === 1 ? 'strona' : pageImages.length < 5 ? 'strony' : 'stron'}
-                      {' · '}
-                      {file ? (file.size / 1024 / 1024).toFixed(1) : 0} MB
-                    </p>
+            <div className="mt-2 sm:mt-4 pb-24 sm:pb-4">
+              {/* Desktop: PDF left + sidebar right */}
+              <div className="flex flex-col lg:flex-row gap-5">
+                {/* PDF preview area */}
+                <div className="flex-1 min-w-0">
+                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden">
+                    {/* Page navigation */}
+                    {pageImages.length > 1 && (
+                      <div className="flex items-center justify-between px-4 py-2.5 bg-white/[0.02] border-b border-white/[0.06]">
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                          disabled={currentPage === 0}
+                          className="p-1.5 rounded-md hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <ChevronLeft size={18} />
+                        </button>
+                        <span className="text-sm text-[#a1a1aa]">
+                          Strona {currentPage + 1} z {pageImages.length}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage((p) => Math.min(pageImages.length - 1, p + 1))}
+                          disabled={currentPage === pageImages.length - 1}
+                          className="p-1.5 rounded-md hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <ChevronRight size={18} />
+                        </button>
+                      </div>
+                    )}
+                    {/* Image */}
+                    <div className="p-4 sm:p-6 flex justify-center bg-[#111113]">
+                      {pageImages[currentPage] && (
+                        <img
+                          src={pageImages[currentPage]}
+                          alt={`Strona ${currentPage + 1}`}
+                          className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
+                        />
+                      )}
+                      {progress && (
+                        <div className="flex items-center gap-3 text-violet-400 text-sm py-20">
+                          <Loader2 size={16} className="animate-spin" />
+                          {progress}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="hidden sm:flex items-center gap-2">
-                  <button
-                    onClick={reset}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#a1a1aa] hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={15} />
-                    Usuń
-                  </button>
-                  <button
-                    onClick={analyze}
-                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white text-sm font-bold rounded-lg transition-all shadow-lg shadow-violet-500/20"
-                  >
-                    <Sparkles size={16} />
-                    Analizuj AI
-                  </button>
+
+                {/* Desktop sidebar */}
+                <div className="hidden lg:flex flex-col gap-4 w-[280px] flex-shrink-0">
+                  {/* File info */}
+                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
+                        <FileText size={20} className="text-violet-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm truncate">{file?.name}</p>
+                        <p className="text-xs text-[#71717a]">
+                          {pageImages.length} {pageImages.length === 1 ? 'strona' : pageImages.length < 5 ? 'strony' : 'stron'}
+                          {' · '}
+                          {file ? (file.size / 1024 / 1024).toFixed(1) : 0} MB
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Analyze button */}
+                    <button
+                      type="button"
+                      onClick={analyze}
+                      disabled={isProcessingPdf}
+                      className={`w-full flex items-center justify-center gap-2.5 py-3 text-white font-bold rounded-xl transition-all ${
+                        isProcessingPdf
+                          ? 'bg-violet-600/50 cursor-not-allowed opacity-60'
+                          : 'bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 cursor-pointer shadow-lg shadow-violet-500/25'
+                      }`}
+                    >
+                      {isProcessingPdf ? (
+                        <Loader2 size={18} className="animate-spin" />
+                      ) : (
+                        <Sparkles size={18} />
+                      )}
+                      {isProcessingPdf ? 'Ładowanie PDF...' : 'Analizuj AI'}
+                    </button>
+
+                    {/* Remove file */}
+                    <button
+                      type="button"
+                      onClick={reset}
+                      className="w-full mt-2.5 flex items-center justify-center gap-2 py-2.5 text-sm text-[#71717a] hover:text-white border border-white/[0.06] hover:border-white/15 rounded-xl transition-colors"
+                    >
+                      <Trash2 size={14} />
+                      Usuń plik
+                    </button>
+                  </div>
+
+                  {/* Tips */}
+                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 text-xs text-[#71717a] space-y-2">
+                    <p className="text-[#a1a1aa] font-semibold text-xs uppercase tracking-wider mb-3">Jak to działa</p>
+                    <p>1. AI czyta każdą stronę PDF</p>
+                    <p>2. Wyciąga pozycje, ilości, jednostki</p>
+                    <p>3. Eksportujesz wynik do Excela</p>
+                  </div>
                 </div>
               </div>
 
-              {/* Sticky bottom bar for mobile */}
-              <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#09090b]/95 backdrop-blur-xl border-t border-white/10 z-50">
+              {/* Mobile sticky bottom bar */}
+              <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#09090b]/95 backdrop-blur-xl border-t border-white/10 z-50">
                 <div className="flex items-center gap-3">
                   <button
+                    type="button"
                     onClick={reset}
                     className="flex items-center justify-center p-3 text-[#a1a1aa] border border-white/10 rounded-xl"
                   >
                     <Trash2 size={20} />
                   </button>
                   <button
+                    type="button"
                     onClick={analyze}
-                    className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-violet-600 to-violet-500 text-white font-bold rounded-xl shadow-lg shadow-violet-500/25"
+                    disabled={isProcessingPdf}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-white font-bold rounded-xl shadow-lg shadow-violet-500/25 ${
+                      isProcessingPdf
+                        ? 'bg-violet-600/50 cursor-not-allowed opacity-60'
+                        : 'bg-gradient-to-r from-violet-600 to-violet-500 cursor-pointer'
+                    }`}
                   >
-                    <Sparkles size={18} />
-                    Analizuj AI
+                    {isProcessingPdf ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <Sparkles size={18} />
+                    )}
+                    {isProcessingPdf ? 'Ładowanie PDF...' : 'Analizuj AI'}
                   </button>
-                </div>
-              </div>
-
-              {/* Page preview */}
-              <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden">
-                {/* Page navigation */}
-                {pageImages.length > 1 && (
-                  <div className="flex items-center justify-between px-4 py-2.5 bg-white/[0.02] border-b border-white/[0.06]">
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                      disabled={currentPage === 0}
-                      className="p-1.5 rounded-md hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <ChevronLeft size={18} />
-                    </button>
-                    <span className="text-sm text-[#a1a1aa]">
-                      Strona {currentPage + 1} z {pageImages.length}
-                    </span>
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.min(pageImages.length - 1, p + 1))}
-                      disabled={currentPage === pageImages.length - 1}
-                      className="p-1.5 rounded-md hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <ChevronRight size={18} />
-                    </button>
-                  </div>
-                )}
-                {/* Image */}
-                <div className="p-4 sm:p-6 flex justify-center bg-[#111113]">
-                  {pageImages[currentPage] && (
-                    <img
-                      src={pageImages[currentPage]}
-                      alt={`Strona ${currentPage + 1}`}
-                      className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-2xl"
-                    />
-                  )}
-                  {progress && (
-                    <div className="flex items-center gap-3 text-violet-400 text-sm py-20">
-                      <Loader2 size={16} className="animate-spin" />
-                      {progress}
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -495,6 +539,7 @@ export default function PanelPage() {
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <button
+                    type="button"
                     onClick={() => setState('preview')}
                     className="flex items-center gap-2 px-3 py-2.5 text-sm text-[#a1a1aa] hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition-colors"
                   >
@@ -502,6 +547,7 @@ export default function PanelPage() {
                     Podgląd PDF
                   </button>
                   <button
+                    type="button"
                     onClick={reset}
                     className="flex items-center gap-2 px-3 py-2.5 text-sm text-[#a1a1aa] hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition-colors"
                   >
@@ -509,6 +555,7 @@ export default function PanelPage() {
                     Nowy plik
                   </button>
                   <button
+                    type="button"
                     onClick={handleExport}
                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition-colors"
                   >
