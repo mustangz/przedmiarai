@@ -14,6 +14,8 @@ import {
   Sparkles,
   Table,
   Eye,
+  FileSpreadsheet,
+  Zap,
 } from 'lucide-react';
 
 // ─── Types ──────────────────────────────────────────────────
@@ -39,7 +41,7 @@ async function pdfToImages(file: File): Promise<string[]> {
 
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
-    const scale = 1.5; // good quality for OCR, manageable file size
+    const scale = 1.5;
     const viewport = page.getViewport({ scale });
 
     const canvas = document.createElement('canvas');
@@ -69,14 +71,13 @@ async function exportToExcel(pozycje: PozycjaPrzedmiaru[], fileName: string) {
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.json_to_sheet(data);
 
-  // Column widths
   ws['!cols'] = [
-    { wch: 8 },   // L.p.
-    { wch: 20 },  // Podstawa
-    { wch: 60 },  // Opis
-    { wch: 10 },  // Jednostka
-    { wch: 12 },  // Ilość
-    { wch: 30 },  // Uwagi
+    { wch: 8 },
+    { wch: 20 },
+    { wch: 60 },
+    { wch: 10 },
+    { wch: 12 },
+    { wch: 30 },
   ];
 
   XLSX.utils.book_append_sheet(wb, ws, 'Przedmiar');
@@ -94,9 +95,9 @@ export default function PanelPage() {
   const [progress, setProgress] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [usage, setUsage] = useState<{ input_tokens: number; output_tokens: number } | null>(null);
+  const [analyzeProgress, setAnalyzeProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Drag & drop handlers
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -151,16 +152,15 @@ export default function PanelPage() {
     }
   }, [processFile]);
 
-  // Analysis
   const analyze = useCallback(async () => {
     if (pageImages.length === 0) return;
 
     setState('analyzing');
     setError(null);
     setProgress(`Analizuję ${pageImages.length} stron...`);
+    setAnalyzeProgress(0);
 
     try {
-      // For large documents, process in batches of 10 pages
       const BATCH_SIZE = 10;
       const allPozycje: PozycjaPrzedmiaru[] = [];
       let totalInputTokens = 0;
@@ -171,10 +171,10 @@ export default function PanelPage() {
         const batchNum = Math.floor(i / BATCH_SIZE) + 1;
         const totalBatches = Math.ceil(pageImages.length / BATCH_SIZE);
 
+        setAnalyzeProgress(Math.round((i / pageImages.length) * 100));
+
         if (totalBatches > 1) {
-          setProgress(`Analizuję partię ${batchNum}/${totalBatches} (strony ${i + 1}-${Math.min(i + BATCH_SIZE, pageImages.length)})...`);
-        } else {
-          setProgress(`Analizuję ${pageImages.length} stron...`);
+          setProgress(`Partia ${batchNum}/${totalBatches}`);
         }
 
         const res = await fetch('/api/analyze-przedmiar', {
@@ -200,6 +200,7 @@ export default function PanelPage() {
 
       setPozycje(allPozycje);
       setUsage({ input_tokens: totalInputTokens, output_tokens: totalOutputTokens });
+      setAnalyzeProgress(100);
       setState('results');
       setProgress('');
     } catch (err) {
@@ -218,6 +219,7 @@ export default function PanelPage() {
     setProgress('');
     setUsage(null);
     setCurrentPage(0);
+    setAnalyzeProgress(0);
     setState('upload');
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
@@ -228,7 +230,6 @@ export default function PanelPage() {
     exportToExcel(pozycje, `${baseName}_analiza.xlsx`);
   }, [pozycje, file]);
 
-  // Keyboard navigation for preview
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (state !== 'preview' && state !== 'results') return;
@@ -239,26 +240,31 @@ export default function PanelPage() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [state, pageImages.length]);
 
-  // Count actual data rows (not section headers)
   const dataRows = pozycje.filter((p) => p.jednostka || p.ilosc);
   const isProcessingPdf = state === 'preview' && pageImages.length === 0;
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-[#fafafa]">
+    <div className="min-h-screen bg-[#0a0a0b]">
+      {/* Subtle gradient background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-violet-950/20 via-transparent to-cyan-950/10 pointer-events-none" />
+      
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 py-3.5 bg-[#09090b]/85 backdrop-blur-xl border-b border-white/[0.06]">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2.5 no-underline text-white">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-              <FileText size={16} className="text-white" />
+      <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <a href="/" className="flex items-center gap-3 group">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-cyan-500 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
+                <FileSpreadsheet size={20} className="text-white" />
+              </div>
             </div>
-            <span className="font-bold text-[17px] tracking-tight">PrzedmiarAI</span>
+            <span className="font-semibold text-lg text-white">PrzedmiarAI</span>
           </a>
           {state === 'results' && (
             <button
               type="button"
               onClick={handleExport}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-emerald-500/25"
             >
               <Download size={16} />
               Eksport Excel
@@ -267,78 +273,100 @@ export default function PanelPage() {
         </div>
       </nav>
 
-      <main className="pt-20 pb-12 px-4 sm:px-8">
-        <div className="max-w-[1400px] mx-auto">
+      <main className="relative pt-24 pb-16 px-4 sm:px-6 min-h-screen">
+        <div className="max-w-5xl mx-auto">
 
-          {/* ─── Upload State ──────────────────────── */}
+          {/* ═══════════════════════════════════════════════════════════
+              UPLOAD STATE
+          ═══════════════════════════════════════════════════════════ */}
           {state === 'upload' && (
-            <div className="max-w-2xl mx-auto mt-8 sm:mt-16">
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-500/10 border border-violet-500/20 rounded-full text-xs font-semibold text-violet-400 mb-5">
-                  <Sparkles size={12} />
-                  AI Analiza Przedmiarów
+            <div className="max-w-xl mx-auto pt-8 sm:pt-16">
+              {/* Header */}
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-sm text-white/70 mb-6">
+                  <Zap size={14} className="text-amber-400" />
+                  AI-powered analysis
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">
-                  Wgraj przedmiar <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">PDF</span>
+                <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight">
+                  Wgraj przedmiar
                 </h1>
-                <p className="text-[#a1a1aa] text-base sm:text-lg max-w-md mx-auto">
-                  AI wyciągnie wszystkie pozycje, ilości i jednostki. Wyeksportujesz do Excela jednym klikiem.
+                <p className="text-lg text-white/50 max-w-md mx-auto">
+                  AI wyciągnie pozycje, ilości i jednostki. Eksport do Excel jednym klikiem.
                 </p>
               </div>
 
-              {/* Drop zone */}
+              {/* Drop Zone */}
               <div
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className={`
-                  relative cursor-pointer rounded-2xl border-2 border-dashed p-8 sm:p-16
-                  flex flex-col items-center justify-center text-center
-                  transition-all duration-300 ease-out
-                  ${dragActive
-                    ? 'border-violet-500 bg-gradient-to-b from-violet-500/15 to-violet-500/5 scale-[1.02] shadow-xl shadow-violet-500/10'
-                    : 'border-white/15 bg-gradient-to-b from-white/[0.03] to-transparent hover:border-violet-500/50 hover:bg-violet-500/5 hover:shadow-lg hover:shadow-violet-500/5'
-                  }
-                `}
+                className="relative group cursor-pointer"
               >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleFileInput}
-                  className="hidden"
-                />
-                <div className={`
-                  w-20 h-20 mb-6 rounded-2xl flex items-center justify-center transition-all duration-300
-                  ${dragActive 
-                    ? 'bg-violet-500/20 scale-110' 
-                    : 'bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border border-white/10'
-                  }
-                `}>
-                  <Upload size={32} className={`transition-colors duration-300 ${dragActive ? 'text-violet-400' : 'text-violet-400/70'}`} />
+                {/* Animated border */}
+                <div className={`absolute -inset-px rounded-2xl transition-opacity duration-500 ${dragActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-violet-500 via-cyan-500 to-violet-500 animate-gradient-x" />
                 </div>
-                <p className="text-xl font-bold mb-2 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                  {dragActive ? 'Upuść plik tutaj' : 'Przeciągnij PDF lub kliknij'}
-                </p>
-                <p className="text-sm text-[#71717a]">
-                  Przedmiar budowlany w formacie PDF, do 50 MB
-                </p>
-                <div className="mt-6 px-4 py-2 bg-violet-500/10 border border-violet-500/20 rounded-full text-xs font-medium text-violet-400">
-                  Obsługujemy skany i pliki cyfrowe
+                
+                {/* Content */}
+                <div className={`relative rounded-2xl border-2 border-dashed p-12 sm:p-16 transition-all duration-300 ${
+                  dragActive 
+                    ? 'bg-violet-500/10 border-transparent' 
+                    : 'bg-white/[0.02] border-white/10 group-hover:border-transparent group-hover:bg-white/[0.04]'
+                }`}>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileInput}
+                    className="hidden"
+                  />
+                  
+                  <div className="flex flex-col items-center">
+                    {/* Icon */}
+                    <div className={`relative mb-6 transition-transform duration-300 ${dragActive ? 'scale-110' : 'group-hover:scale-105'}`}>
+                      <div className="absolute inset-0 bg-violet-500/20 rounded-2xl blur-xl" />
+                      <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center">
+                        <Upload size={32} className={`transition-colors duration-300 ${dragActive ? 'text-violet-400' : 'text-white/40 group-hover:text-violet-400'}`} />
+                      </div>
+                    </div>
+                    
+                    {/* Text */}
+                    <p className="text-xl font-semibold text-white mb-2">
+                      {dragActive ? 'Upuść plik' : 'Przeciągnij PDF lub kliknij'}
+                    </p>
+                    <p className="text-sm text-white/40 mb-6">
+                      Przedmiar budowlany do 50 MB
+                    </p>
+                    
+                    {/* Tags */}
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white/50">
+                        PDF
+                      </span>
+                      <span className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white/50">
+                        Skany
+                      </span>
+                      <span className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white/50">
+                        Pliki cyfrowe
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
+              {/* Error */}
               {error && (
-                <div className="mt-4 flex items-center gap-3 px-4 py-3 bg-red-500/8 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                <div className="mt-6 flex items-center gap-3 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
                   <AlertCircle size={18} className="flex-shrink-0" />
                   {error}
                 </div>
               )}
 
+              {/* Progress */}
               {progress && (
-                <div className="mt-4 flex items-center justify-center gap-3 text-violet-400 text-sm">
+                <div className="mt-6 flex items-center justify-center gap-3 text-violet-400 text-sm">
                   <Loader2 size={16} className="animate-spin" />
                   {progress}
                 </div>
@@ -346,99 +374,97 @@ export default function PanelPage() {
             </div>
           )}
 
-          {/* ─── Preview State ─────────────────────── */}
+          {/* ═══════════════════════════════════════════════════════════
+              PREVIEW STATE
+          ═══════════════════════════════════════════════════════════ */}
           {state === 'preview' && (
-            <div className="mt-2 sm:mt-4 pb-24 sm:pb-4">
-              {/* Desktop: PDF left + sidebar right */}
-              <div className="flex flex-col lg:flex-row gap-5">
-                {/* PDF preview area */}
+            <div className="pb-24 lg:pb-8">
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* PDF Preview */}
                 <div className="flex-1 min-w-0">
-                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden">
-                    {/* Page navigation */}
+                  <div className="bg-white/[0.02] border border-white/10 rounded-2xl overflow-hidden">
+                    {/* Page nav */}
                     {pageImages.length > 1 && (
-                      <div className="flex items-center justify-between px-4 py-2.5 bg-white/[0.02] border-b border-white/[0.06]">
+                      <div className="flex items-center justify-between px-4 py-3 bg-white/[0.02] border-b border-white/10">
                         <button
                           type="button"
                           onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
                           disabled={currentPage === 0}
-                          className="p-1.5 rounded-md hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
-                          <ChevronLeft size={18} />
+                          <ChevronLeft size={18} className="text-white/70" />
                         </button>
-                        <span className="text-sm text-[#a1a1aa]">
-                          Strona {currentPage + 1} z {pageImages.length}
+                        <span className="text-sm text-white/50 font-medium">
+                          {currentPage + 1} / {pageImages.length}
                         </span>
                         <button
                           type="button"
                           onClick={() => setCurrentPage((p) => Math.min(pageImages.length - 1, p + 1))}
                           disabled={currentPage === pageImages.length - 1}
-                          className="p-1.5 rounded-md hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
-                          <ChevronRight size={18} />
+                          <ChevronRight size={18} className="text-white/70" />
                         </button>
                       </div>
                     )}
                     {/* Image */}
-                    <div className="p-4 sm:p-6 flex justify-center bg-[#111113]">
-                      {pageImages[currentPage] && (
+                    <div className="p-4 sm:p-6 bg-[#0f0f10]">
+                      {pageImages[currentPage] ? (
                         <img
                           src={pageImages[currentPage]}
                           alt={`Strona ${currentPage + 1}`}
-                          className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
+                          className="max-w-full max-h-[70vh] mx-auto object-contain rounded-lg"
                         />
-                      )}
-                      {progress && (
-                        <div className="flex items-center gap-3 text-violet-400 text-sm py-20">
-                          <Loader2 size={16} className="animate-spin" />
-                          {progress}
+                      ) : (
+                        <div className="flex items-center justify-center py-32">
+                          <Loader2 size={24} className="text-violet-400 animate-spin" />
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Desktop sidebar */}
-                <div className="hidden lg:flex flex-col gap-4 w-[280px] flex-shrink-0">
+                {/* Sidebar - Desktop */}
+                <div className="hidden lg:flex flex-col gap-4 w-72 flex-shrink-0">
                   {/* File info */}
-                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-                        <FileText size={20} className="text-violet-400" />
+                  <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center">
+                        <FileText size={22} className="text-violet-400" />
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-sm truncate">{file?.name}</p>
-                        <p className="text-xs text-[#71717a]">
-                          {pageImages.length} {pageImages.length === 1 ? 'strona' : pageImages.length < 5 ? 'strony' : 'stron'}
-                          {' · '}
-                          {file ? (file.size / 1024 / 1024).toFixed(1) : 0} MB
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-white text-sm truncate">{file?.name}</p>
+                        <p className="text-xs text-white/40">
+                          {pageImages.length} {pageImages.length === 1 ? 'strona' : 'stron'} · {file ? (file.size / 1024 / 1024).toFixed(1) : 0} MB
                         </p>
                       </div>
                     </div>
 
-                    {/* Analyze button */}
                     <button
                       type="button"
                       onClick={analyze}
                       disabled={isProcessingPdf}
-                      className={`w-full flex items-center justify-center gap-2.5 py-3 text-white font-bold rounded-xl transition-all ${
-                        isProcessingPdf
-                          ? 'bg-violet-600/50 cursor-not-allowed opacity-60'
-                          : 'bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 cursor-pointer shadow-lg shadow-violet-500/25'
-                      }`}
+                      className="w-full relative group"
                     >
-                      {isProcessingPdf ? (
-                        <Loader2 size={18} className="animate-spin" />
-                      ) : (
-                        <Sparkles size={18} />
-                      )}
-                      {isProcessingPdf ? 'Ładowanie PDF...' : 'Analizuj AI'}
+                      <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl blur opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <div className={`relative flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold transition-all ${
+                        isProcessingPdf 
+                          ? 'bg-white/10 text-white/50 cursor-not-allowed' 
+                          : 'bg-gradient-to-r from-violet-600 to-violet-500 text-white'
+                      }`}>
+                        {isProcessingPdf ? (
+                          <Loader2 size={18} className="animate-spin" />
+                        ) : (
+                          <Sparkles size={18} />
+                        )}
+                        {isProcessingPdf ? 'Ładowanie...' : 'Analizuj AI'}
+                      </div>
                     </button>
 
-                    {/* Remove file */}
                     <button
                       type="button"
                       onClick={reset}
-                      className="w-full mt-2.5 flex items-center justify-center gap-2 py-2.5 text-sm text-[#71717a] hover:text-white border border-white/[0.06] hover:border-white/15 rounded-xl transition-colors"
+                      className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 text-sm text-white/40 hover:text-white/70 border border-white/10 hover:border-white/20 rounded-xl transition-all"
                     >
                       <Trash2 size={14} />
                       Usuń plik
@@ -446,22 +472,33 @@ export default function PanelPage() {
                   </div>
 
                   {/* Tips */}
-                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 text-xs text-[#71717a] space-y-2">
-                    <p className="text-[#a1a1aa] font-semibold text-xs uppercase tracking-wider mb-3">Jak to działa</p>
-                    <p>1. AI czyta każdą stronę PDF</p>
-                    <p>2. Wyciąga pozycje, ilości, jednostki</p>
-                    <p>3. Eksportujesz wynik do Excela</p>
+                  <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5">
+                    <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-4">Jak to działa</p>
+                    <div className="space-y-3 text-sm text-white/50">
+                      <div className="flex gap-3">
+                        <span className="text-violet-400 font-mono">1.</span>
+                        <span>AI czyta każdą stronę</span>
+                      </div>
+                      <div className="flex gap-3">
+                        <span className="text-violet-400 font-mono">2.</span>
+                        <span>Wyciąga pozycje i ilości</span>
+                      </div>
+                      <div className="flex gap-3">
+                        <span className="text-violet-400 font-mono">3.</span>
+                        <span>Eksportujesz do Excela</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Mobile sticky bottom bar */}
-              <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#09090b]/95 backdrop-blur-xl border-t border-white/10 z-50">
+              {/* Mobile Bottom Bar */}
+              <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#0a0a0b]/95 backdrop-blur-xl border-t border-white/10 z-50">
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={reset}
-                    className="flex items-center justify-center p-3 text-[#a1a1aa] border border-white/10 rounded-xl"
+                    className="p-3.5 text-white/40 border border-white/10 rounded-xl"
                   >
                     <Trash2 size={20} />
                   </button>
@@ -469,24 +506,20 @@ export default function PanelPage() {
                     type="button"
                     onClick={analyze}
                     disabled={isProcessingPdf}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-white font-bold rounded-xl shadow-lg shadow-violet-500/25 ${
-                      isProcessingPdf
-                        ? 'bg-violet-600/50 cursor-not-allowed opacity-60'
-                        : 'bg-gradient-to-r from-violet-600 to-violet-500 cursor-pointer'
+                    className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-semibold transition-all ${
+                      isProcessingPdf 
+                        ? 'bg-white/10 text-white/50' 
+                        : 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-lg shadow-violet-500/25'
                     }`}
                   >
-                    {isProcessingPdf ? (
-                      <Loader2 size={18} className="animate-spin" />
-                    ) : (
-                      <Sparkles size={18} />
-                    )}
-                    {isProcessingPdf ? 'Ładowanie PDF...' : 'Analizuj AI'}
+                    {isProcessingPdf ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+                    {isProcessingPdf ? 'Ładowanie...' : 'Analizuj AI'}
                   </button>
                 </div>
               </div>
 
               {error && (
-                <div className="mt-4 flex items-center gap-3 px-4 py-3 bg-red-500/8 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                <div className="mt-4 flex items-center gap-3 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
                   <AlertCircle size={18} className="flex-shrink-0" />
                   {error}
                 </div>
@@ -494,100 +527,148 @@ export default function PanelPage() {
             </div>
           )}
 
-          {/* ─── Analyzing State ───────────────────── */}
+          {/* ═══════════════════════════════════════════════════════════
+              ANALYZING STATE
+          ═══════════════════════════════════════════════════════════ */}
           {state === 'analyzing' && (
-            <div className="mt-8 sm:mt-16 text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-violet-500/10 mb-6">
-                <Loader2 size={36} className="text-violet-400 animate-spin" />
+            <div className="max-w-lg mx-auto pt-16 text-center">
+              {/* Progress ring */}
+              <div className="relative w-32 h-32 mx-auto mb-8">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle
+                    cx="64"
+                    cy="64"
+                    r="56"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="none"
+                    className="text-white/10"
+                  />
+                  <circle
+                    cx="64"
+                    cy="64"
+                    r="56"
+                    stroke="url(#gradient)"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeDasharray={`${analyzeProgress * 3.52} 352`}
+                    className="transition-all duration-500"
+                  />
+                  <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#8b5cf6" />
+                      <stop offset="100%" stopColor="#06b6d4" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-3xl font-bold text-white">{analyzeProgress}%</span>
+                </div>
               </div>
-              <h2 className="text-2xl font-bold mb-3">AI analizuje przedmiar</h2>
-              <p className="text-[#a1a1aa] mb-6 max-w-md mx-auto">
-                Claude czyta każdą stronę i wyciąga pozycje kosztorysowe. To może potrwać do minuty.
+
+              <h2 className="text-2xl font-bold text-white mb-3">Analizuję przedmiar</h2>
+              <p className="text-white/50 mb-8">
+                AI czyta {pageImages.length} {pageImages.length === 1 ? 'stronę' : 'stron'} i wyciąga pozycje
               </p>
+
               {progress && (
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/10 border border-violet-500/20 rounded-full text-sm text-violet-400">
-                  <Loader2 size={14} className="animate-spin" />
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-white/60">
+                  <Loader2 size={14} className="animate-spin text-violet-400" />
                   {progress}
                 </div>
               )}
 
-              {/* Mini preview of pages being analyzed */}
-              <div className="mt-10 flex justify-center gap-2 flex-wrap max-w-lg mx-auto">
-                {pageImages.slice(0, 12).map((img, i) => (
-                  <div key={i} className="w-12 h-16 rounded-md overflow-hidden border border-white/10 opacity-40">
+              {/* Page thumbnails */}
+              <div className="mt-10 flex justify-center gap-1.5 flex-wrap max-w-sm mx-auto">
+                {pageImages.slice(0, 10).map((img, i) => (
+                  <div
+                    key={i}
+                    className={`w-10 h-14 rounded-md overflow-hidden border transition-all duration-300 ${
+                      i < Math.ceil((analyzeProgress / 100) * pageImages.length)
+                        ? 'border-violet-500/50 opacity-100'
+                        : 'border-white/10 opacity-30'
+                    }`}
+                  >
                     <img src={img} alt="" className="w-full h-full object-cover" />
                   </div>
                 ))}
-                {pageImages.length > 12 && (
-                  <div className="w-12 h-16 rounded-md border border-white/10 flex items-center justify-center text-xs text-[#71717a]">
-                    +{pageImages.length - 12}
+                {pageImages.length > 10 && (
+                  <div className="w-10 h-14 rounded-md border border-white/10 flex items-center justify-center text-xs text-white/30">
+                    +{pageImages.length - 10}
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* ─── Results State ─────────────────────── */}
+          {/* ═══════════════════════════════════════════════════════════
+              RESULTS STATE
+          ═══════════════════════════════════════════════════════════ */}
           {state === 'results' && (
-            <div className="mt-4 sm:mt-6">
-              {/* Summary bar */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <CheckCircle2 size={20} className="text-emerald-400" />
-                    <h2 className="text-xl font-bold">Analiza zakończona</h2>
-                  </div>
-                  <p className="text-sm text-[#71717a]">
-                    {dataRows.length} pozycji kosztorysowych
-                    {pozycje.length !== dataRows.length && ` · ${pozycje.length - dataRows.length} sekcji`}
-                    {' · '}{pageImages.length} stron
-                    {usage && ` · ${((usage.input_tokens + usage.output_tokens) * 0.000003 * 4.2).toFixed(2)} PLN`}
-                  </p>
+            <div>
+              {/* Stats bar */}
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={20} className="text-emerald-400" />
+                  <span className="font-semibold text-white">Analiza zakończona</span>
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex items-center gap-4 text-sm text-white/50">
+                  <span>{dataRows.length} pozycji</span>
+                  <span>·</span>
+                  <span>{pageImages.length} stron</span>
+                  {usage && (
+                    <>
+                      <span>·</span>
+                      <span>{((usage.input_tokens + usage.output_tokens) * 0.000003 * 4.2).toFixed(2)} PLN</span>
+                    </>
+                  )}
+                </div>
+                <div className="flex-1" />
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setState('preview')}
-                    className="flex items-center gap-2 px-3 py-2.5 text-sm text-[#a1a1aa] hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-white/50 hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition-colors"
                   >
-                    <Eye size={15} />
-                    Podgląd PDF
+                    <Eye size={14} />
+                    PDF
                   </button>
                   <button
                     type="button"
                     onClick={reset}
-                    className="flex items-center gap-2 px-3 py-2.5 text-sm text-[#a1a1aa] hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-white/50 hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition-colors"
                   >
-                    <Upload size={15} />
-                    Nowy plik
+                    <Upload size={14} />
+                    Nowy
                   </button>
                   <button
                     type="button"
                     onClick={handleExport}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-lg transition-colors"
                   >
-                    <Download size={16} />
-                    Eksport Excel
+                    <Download size={14} />
+                    Excel
                   </button>
                 </div>
               </div>
 
               {/* Results table */}
-              <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden">
-                <div className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-white/[0.02] border-b border-white/[0.06]">
+              <div className="bg-white/[0.02] border border-white/10 rounded-2xl overflow-hidden">
+                <div className="flex items-center gap-2 px-5 py-4 bg-white/[0.02] border-b border-white/10">
                   <Table size={16} className="text-violet-400" />
-                  <span className="text-sm font-semibold text-[#a1a1aa]">Pozycje przedmiaru</span>
+                  <span className="text-sm font-medium text-white/70">Pozycje przedmiaru</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-white/[0.06] text-left">
-                        <th className="px-4 sm:px-6 py-3 text-xs font-semibold text-[#71717a] uppercase tracking-wider w-[60px]">L.p.</th>
-                        <th className="px-4 sm:px-6 py-3 text-xs font-semibold text-[#71717a] uppercase tracking-wider w-[160px]">Podstawa</th>
-                        <th className="px-4 sm:px-6 py-3 text-xs font-semibold text-[#71717a] uppercase tracking-wider min-w-[300px]">Opis robót</th>
-                        <th className="px-4 sm:px-6 py-3 text-xs font-semibold text-[#71717a] uppercase tracking-wider w-[80px]">Jedn.</th>
-                        <th className="px-4 sm:px-6 py-3 text-xs font-semibold text-[#71717a] uppercase tracking-wider w-[100px] text-right">Ilość</th>
-                        <th className="px-4 sm:px-6 py-3 text-xs font-semibold text-[#71717a] uppercase tracking-wider min-w-[160px]">Uwagi</th>
+                      <tr className="border-b border-white/10 text-left">
+                        <th className="px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-wider w-[60px]">L.p.</th>
+                        <th className="px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-wider w-[140px]">Podstawa</th>
+                        <th className="px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-wider min-w-[280px]">Opis robót</th>
+                        <th className="px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-wider w-[70px]">Jedn.</th>
+                        <th className="px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-wider w-[90px] text-right">Ilość</th>
+                        <th className="px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-wider min-w-[140px]">Uwagi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -596,30 +677,28 @@ export default function PanelPage() {
                         return (
                           <tr
                             key={i}
-                            className={`
-                              border-b border-white/[0.03] transition-colors
-                              ${isSection
-                                ? 'bg-violet-500/[0.04]'
+                            className={`border-b border-white/5 transition-colors ${
+                              isSection
+                                ? 'bg-violet-500/5'
                                 : 'hover:bg-white/[0.02]'
-                              }
-                            `}
+                            }`}
                           >
-                            <td className={`px-4 sm:px-6 py-3 ${isSection ? 'font-bold text-violet-400' : 'text-[#a1a1aa]'}`}>
+                            <td className={`px-5 py-3 ${isSection ? 'font-semibold text-violet-400' : 'text-white/40'}`}>
                               {p.lp}
                             </td>
-                            <td className="px-4 sm:px-6 py-3 text-[#a1a1aa] font-mono text-xs">
+                            <td className="px-5 py-3 text-white/40 font-mono text-xs">
                               {p.podstawa}
                             </td>
-                            <td className={`px-4 sm:px-6 py-3 ${isSection ? 'font-bold text-violet-300 uppercase text-xs tracking-wide' : 'text-[#d4d4d8]'}`}>
+                            <td className={`px-5 py-3 ${isSection ? 'font-semibold text-violet-300 uppercase text-xs tracking-wide' : 'text-white/80'}`}>
                               {p.opis}
                             </td>
-                            <td className="px-4 sm:px-6 py-3 text-[#a1a1aa] text-center">
+                            <td className="px-5 py-3 text-white/40 text-center">
                               {p.jednostka}
                             </td>
-                            <td className="px-4 sm:px-6 py-3 text-right font-mono font-semibold text-white">
+                            <td className="px-5 py-3 text-right font-mono font-medium text-white">
                               {p.ilosc}
                             </td>
-                            <td className="px-4 sm:px-6 py-3 text-[#71717a] text-xs">
+                            <td className="px-5 py-3 text-white/30 text-xs">
                               {p.uwagi}
                             </td>
                           </tr>
@@ -629,16 +708,15 @@ export default function PanelPage() {
                   </table>
                 </div>
                 {pozycje.length === 0 && (
-                  <div className="px-6 py-16 text-center text-[#71717a]">
+                  <div className="px-6 py-20 text-center text-white/40">
                     <AlertCircle size={32} className="mx-auto mb-3 opacity-50" />
-                    <p>AI nie znalazł pozycji przedmiarowych w tym dokumencie.</p>
-                    <p className="text-xs mt-1">Upewnij się, że plik zawiera tabele z pozycjami kosztorysowymi.</p>
+                    <p>AI nie znalazł pozycji przedmiarowych</p>
                   </div>
                 )}
               </div>
 
               {error && (
-                <div className="mt-4 flex items-center gap-3 px-4 py-3 bg-red-500/8 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                <div className="mt-4 flex items-center gap-3 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
                   <AlertCircle size={18} className="flex-shrink-0" />
                   {error}
                 </div>
@@ -647,8 +725,18 @@ export default function PanelPage() {
           )}
         </div>
       </main>
+
+      {/* Global styles for gradient animation */}
+      <style jsx global>{`
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-x {
+          background-size: 200% 200%;
+          animation: gradient-x 3s ease infinite;
+        }
+      `}</style>
     </div>
   );
 }
-// cache bust 1770386098
-// 1770387363
