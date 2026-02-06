@@ -91,62 +91,90 @@ const Icons = {
 
 /* ─── Animated Product Mockup ─── */
 const rooms = [
-  { name: 'Salon', value: '24.1 m²', perimeter: '20.4 m', cls: 'mockup-room-1', label: '24.1 m²' },
-  { name: 'Sypialnia', value: '18.5 m²', perimeter: '17.2 m', cls: 'mockup-room-2', label: '18.5 m²' },
-  { name: 'Kuchnia', value: '12.3 m²', perimeter: '14.8 m', cls: 'mockup-room-3', label: '12.3 m²' },
-  { name: 'Łazienka', value: '8.7 m²', perimeter: '12.1 m', cls: 'mockup-room-4', label: '8.7 m²' },
+  { name: 'Salon',    dims: '5.2 × 4.6 m', area: '24.1 m²', perimeter: '19.6 m', cls: 'mockup-room-1' },
+  { name: 'Sypialnia', dims: '4.3 × 4.3 m', area: '18.5 m²', perimeter: '17.2 m', cls: 'mockup-room-2' },
+  { name: 'Kuchnia',  dims: '4.1 × 3.0 m', area: '12.3 m²', perimeter: '14.2 m', cls: 'mockup-room-3' },
+  { name: 'Łazienka', dims: '3.2 × 2.7 m', area: '8.7 m²',  perimeter: '11.8 m', cls: 'mockup-room-4' },
 ];
 
+// Room display phases: hidden → detected (show dims) → measured (show area)
+type RoomPhase = 'hidden' | 'detected' | 'measured';
+
 function ProductMockup() {
-  const [phase, setPhase] = useState<'idle' | 'scanning' | 'done'>('idle');
-  const [visibleRooms, setVisibleRooms] = useState<number[]>([]);
+  const [phase, setPhase] = useState<'idle' | 'scanning' | 'measuring' | 'done'>('idle');
+  const [roomPhases, setRoomPhases] = useState<RoomPhase[]>(['hidden', 'hidden', 'hidden', 'hidden']);
   const [scanProgress, setScanProgress] = useState(0);
 
+  const setRoomPhase = (index: number, p: RoomPhase) => {
+    setRoomPhases((prev) => {
+      const next = [...prev];
+      next[index] = p;
+      return next;
+    });
+  };
+
+  // Start animation
   useEffect(() => {
-    // Start after a short delay so the user sees the "empty" state first
-    const startTimer = setTimeout(() => setPhase('scanning'), 1200);
-    return () => clearTimeout(startTimer);
+    const t = setTimeout(() => setPhase('scanning'), 1200);
+    return () => clearTimeout(t);
   }, []);
 
+  // Scanning phase: scan line + detect rooms (show dims)
   useEffect(() => {
     if (phase !== 'scanning') return;
 
-    // Animate scan line from 0 to 100%
     let progress = 0;
     const scanInterval = setInterval(() => {
-      progress += 1.2;
+      progress += 1.0;
       setScanProgress(Math.min(progress, 100));
       if (progress >= 100) {
         clearInterval(scanInterval);
-        setPhase('done');
+        setPhase('measuring');
       }
     }, 30);
 
-    // Reveal rooms one by one at different scan thresholds
-    const thresholds = [20, 40, 60, 80];
-    const roomTimers = thresholds.map((threshold, i) =>
-      setTimeout(() => {
-        setVisibleRooms((prev) => [...prev, i]);
-      }, (threshold / 1.2) * 30)
+    // Detect rooms at scan thresholds — show dimensions
+    const thresholds = [18, 38, 58, 78];
+    const timers = thresholds.map((th, i) =>
+      setTimeout(() => setRoomPhase(i, 'detected'), (th / 1.0) * 30)
     );
 
     return () => {
       clearInterval(scanInterval);
-      roomTimers.forEach(clearTimeout);
+      timers.forEach(clearTimeout);
     };
   }, [phase]);
 
-  // Loop the animation
+  // Measuring phase: convert dims → area one by one
+  useEffect(() => {
+    if (phase !== 'measuring') return;
+
+    const timers = rooms.map((_, i) =>
+      setTimeout(() => {
+        setRoomPhase(i, 'measured');
+        if (i === rooms.length - 1) {
+          setTimeout(() => setPhase('done'), 600);
+        }
+      }, 400 + i * 500)
+    );
+
+    return () => timers.forEach(clearTimeout);
+  }, [phase]);
+
+  // Loop
   useEffect(() => {
     if (phase !== 'done') return;
-    const restartTimer = setTimeout(() => {
-      setVisibleRooms([]);
+    const t = setTimeout(() => {
+      setRoomPhases(['hidden', 'hidden', 'hidden', 'hidden']);
       setScanProgress(0);
       setPhase('idle');
       setTimeout(() => setPhase('scanning'), 800);
-    }, 4000);
-    return () => clearTimeout(restartTimer);
+    }, 5000);
+    return () => clearTimeout(t);
   }, [phase]);
+
+  const isVisible = (i: number) => roomPhases[i] !== 'hidden';
+  const isMeasured = (i: number) => roomPhases[i] === 'measured';
 
   return (
     <div className="hero-visual">
@@ -159,13 +187,19 @@ function ProductMockup() {
             {phase === 'scanning' && (
               <span className="mockup-status scanning">
                 <span className="mockup-status-dot" />
-                Analizuję rysunek...
+                Skanowanie rysunku...
+              </span>
+            )}
+            {phase === 'measuring' && (
+              <span className="mockup-status scanning">
+                <span className="mockup-status-dot" />
+                Obliczanie powierzchni...
               </span>
             )}
             {phase === 'done' && (
               <span className="mockup-status done">
                 <Icons.Check />
-                Znaleziono 4 pomieszczenia
+                Gotowe — 4 pomieszczenia, 63.6 m²
               </span>
             )}
           </div>
@@ -175,26 +209,28 @@ function ProductMockup() {
             <div className="mockup-floorplan">
               {/* Scan line */}
               {phase === 'scanning' && (
-                <div
-                  className="scan-line"
-                  style={{ top: `${scanProgress}%` }}
-                />
+                <div className="scan-line" style={{ top: `${scanProgress}%` }} />
               )}
 
-              {/* Floorplan grid lines (static background) */}
+              {/* Static wall lines */}
               <div className="floorplan-lines">
                 <div className="fp-line fp-h" style={{ top: '50%' }} />
                 <div className="fp-line fp-v" style={{ left: '48%' }} />
                 <div className="fp-line fp-v" style={{ left: '60%', top: '50%', height: '50%' }} />
               </div>
 
-              {/* Rooms appearing after scan */}
+              {/* Rooms */}
               {rooms.map((room, i) => (
                 <div
                   key={room.name}
-                  className={`mockup-room ${room.cls} ${visibleRooms.includes(i) ? 'visible' : ''}`}
+                  className={`mockup-room ${room.cls} ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''}`}
                 >
-                  {visibleRooms.includes(i) && <span>{room.label}</span>}
+                  {isVisible(i) && (
+                    <div className="room-label">
+                      <span className="room-dims">{isMeasured(i) ? room.area : room.dims}</span>
+                      {isMeasured(i) && <span className="room-name">{room.name}</span>}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -204,12 +240,17 @@ function ProductMockup() {
             {rooms.map((room, i) => (
               <div
                 key={room.name}
-                className={`mockup-measurement ${visibleRooms.includes(i) ? 'visible' : ''}`}
+                className={`mockup-measurement ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''}`}
               >
                 <div className="mockup-measurement-name">{room.name}</div>
-                <div className="mockup-measurement-value">
-                  {room.value} &middot; {room.perimeter}
-                </div>
+                {!isMeasured(i) ? (
+                  <div className="mockup-measurement-dims">{room.dims}</div>
+                ) : (
+                  <div className="mockup-measurement-result">
+                    <span className="mockup-measurement-area">{room.area}</span>
+                    <span className="mockup-measurement-perim">obw. {room.perimeter}</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
