@@ -263,7 +263,10 @@ body {
   font-size: 14px;
 }
 
-/* Product mockup */
+/* ══════════════════════════════════════════
+   PRODUCT MOCKUP (animated)
+   ══════════════════════════════════════════ */
+
 .hero-visual {
   margin-top: 56px;
   position: relative;
@@ -298,6 +301,39 @@ body {
   background: rgba(255, 255, 255, 0.12);
 }
 
+.mockup-header-status {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.mockup-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mockup-status.scanning {
+  color: #a78bfa;
+}
+
+.mockup-status.done {
+  color: #4ade80;
+}
+
+.mockup-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a78bfa;
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
 .mockup-body {
   display: grid;
   grid-template-columns: 1fr 260px;
@@ -305,12 +341,8 @@ body {
 }
 
 @media (max-width: 640px) {
-  .mockup-body {
-    grid-template-columns: 1fr;
-  }
-  .mockup-sidebar {
-    display: none;
-  }
+  .mockup-body { grid-template-columns: 1fr; }
+  .mockup-sidebar { display: none; }
 }
 
 .mockup-canvas {
@@ -325,29 +357,89 @@ body {
   width: 100%;
   max-width: 400px;
   aspect-ratio: 4 / 3;
-  border: 2px dashed rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 4px;
   position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.01);
 }
 
+/* Static floorplan lines (walls) */
+.floorplan-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.fp-line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.fp-line.fp-h {
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.fp-line.fp-v {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+/* Scan line */
+.scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #8b5cf6, #38bdf8, #8b5cf6, transparent);
+  box-shadow: 0 0 12px 2px rgba(139, 92, 246, 0.4), 0 0 32px 4px rgba(139, 92, 246, 0.15);
+  z-index: 10;
+  transition: top 0.03s linear;
+  pointer-events: none;
+}
+
+/* Scan line glow trail */
+.scan-line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40px;
+  background: linear-gradient(to top, transparent, rgba(139, 92, 246, 0.06));
+  pointer-events: none;
+}
+
+/* Rooms — hidden by default, animate in */
 .mockup-room {
   position: absolute;
-  border: 2px solid rgba(139, 92, 246, 0.5);
-  background: rgba(139, 92, 246, 0.08);
+  border: 2px solid rgba(139, 92, 246, 0);
+  background: rgba(139, 92, 246, 0);
   border-radius: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
   font-weight: 600;
+  color: rgba(167, 139, 250, 0);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mockup-room.visible {
+  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(139, 92, 246, 0.08);
   color: #a78bfa;
 }
 
-.mockup-room-1 { top: 8%; left: 5%; width: 45%; height: 42%; }
-.mockup-room-2 { top: 8%; left: 52%; width: 43%; height: 42%; }
-.mockup-room-3 { top: 54%; left: 5%; width: 55%; height: 38%; }
-.mockup-room-4 { top: 54%; left: 62%; width: 33%; height: 38%; }
+.mockup-room-1 { top: 4%; left: 3%; width: 44%; height: 44%; }
+.mockup-room-2 { top: 4%; left: 49%; width: 48%; height: 44%; }
+.mockup-room-3 { top: 52%; left: 3%; width: 56%; height: 44%; }
+.mockup-room-4 { top: 52%; left: 61%; width: 36%; height: 44%; }
 
+/* Sidebar */
 .mockup-sidebar {
   border-left: 1px solid rgba(255, 255, 255, 0.06);
   padding: 16px;
@@ -365,12 +457,21 @@ body {
   margin-bottom: 4px;
 }
 
+/* Sidebar measurements — animate in */
 .mockup-measurement {
   padding: 8px 10px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 6px;
   font-size: 12px;
+  opacity: 0;
+  transform: translateX(12px);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mockup-measurement.visible {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .mockup-measurement-name {

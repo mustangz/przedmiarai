@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
+import { addContactToGetResponse } from '@/lib/getresponse';
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const { email, variant } = await request.json();
 
     if (!email || !email.includes('@')) {
       return NextResponse.json(
@@ -28,10 +29,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Insert new email
+    // Insert into Supabase
     const { error } = await supabase
       .from('waitlist')
-      .insert([{ email }]);
+      .insert([{ email, variant }]);
 
     if (error) {
       console.error('Supabase error:', error);
@@ -40,6 +41,11 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+
+    // Add to GetResponse (non-blocking — don't fail the request if GR is down)
+    addContactToGetResponse(email, { variant }).catch((err) =>
+      console.error('GetResponse async error:', err)
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {
