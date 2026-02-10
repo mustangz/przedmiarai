@@ -49,18 +49,6 @@ const Icons = {
       <path d="m14.5 12.5 2-2" /><path d="m11.5 9.5 2-2" /><path d="m8.5 6.5 2-2" /><path d="m17.5 15.5 2-2" />
     </svg>
   ),
-  ZoomIn: () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" />
-      <line x1="11" x2="11" y1="8" y2="14" /><line x1="8" x2="14" y1="11" y2="11" />
-    </svg>
-  ),
-  ZoomOut: () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" />
-      <line x1="8" x2="14" y1="11" y2="11" />
-    </svg>
-  ),
   Settings: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
@@ -111,6 +99,8 @@ export default function ProjectEditor() {
   const [floorName, setFloorName] = useState<string | null>(null);
   const [aiScale, setAiScale] = useState<{ label: string; estimatedPxPerM: number | null } | null>(null);
   const [tableRooms, setTableRooms] = useState<{ name: string; areaMFromTable: number }[] | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load from localStorage on mount
@@ -258,7 +248,21 @@ export default function ProjectEditor() {
     setFloorName(result.floorName);
     setAiScale(result.scale);
     setTableRooms(result.tableRooms);
+    // Show success flash
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 1200);
   };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === 'v' || e.key === 'V') setTool('select');
+      if (e.key === 'm' || e.key === 'M') setTool('measure');
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
 
   const approveRoom = (room: DetectedRoom) => {
     const img = new window.Image();
@@ -386,37 +390,20 @@ export default function ProjectEditor() {
               <button
                 type="button"
                 onClick={() => setTool('select')}
-                title="Wybierz (przesuń/zmień rozmiar)"
+                title="Wybierz (V)"
                 className={`app-toolbar-btn ${tool === 'select' ? 'active' : ''}`}
               >
                 <Icons.MousePointer />
+                <span className="app-toolbar-shortcut">V</span>
               </button>
               <button
                 type="button"
                 onClick={() => setTool('measure')}
-                title="Mierz (rysuj prostokąt)"
+                title="Mierz (M)"
                 className={`app-toolbar-btn ${tool === 'measure' ? 'active' : ''}`}
               >
                 <Icons.Ruler />
-              </button>
-            </div>
-
-            <div className="app-toolbar-group">
-              <button
-                type="button"
-                title="Powiększ (coming soon)"
-                className="app-toolbar-btn"
-                disabled
-              >
-                <Icons.ZoomIn />
-              </button>
-              <button
-                type="button"
-                title="Pomniejsz (coming soon)"
-                className="app-toolbar-btn"
-                disabled
-              >
-                <Icons.ZoomOut />
+                <span className="app-toolbar-shortcut">M</span>
               </button>
             </div>
 
@@ -428,11 +415,6 @@ export default function ProjectEditor() {
               <Icons.Settings />
               Skala: {scale.toFixed(0)} px/m
             </button>
-
-            <AnalyzeButton
-              imageUrl={imageUrl}
-              onAnalysisComplete={handleAnalysisComplete}
-            />
           </div>
 
           {/* Canvas */}
@@ -451,13 +433,16 @@ export default function ProjectEditor() {
                   <div className="app-canvas-dropzone-icon">
                     <Icons.Upload />
                   </div>
-                  <p className="app-canvas-dropzone-title">Przeciągnij plik PDF, PNG lub JPG</p>
-                  <p className="app-canvas-dropzone-hint">lub</p>
+                  <p className="app-canvas-dropzone-title">
+                    {isDragging ? 'Upuść plik tutaj' : 'Wgraj rysunek architektoniczny'}
+                  </p>
+                  <p className="app-canvas-dropzone-hint">Przeciągnij plik lub kliknij poniżej</p>
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="panel-action-btn"
+                    className="app-canvas-dropzone-btn"
                   >
+                    <Icons.Upload />
                     Wybierz plik
                   </button>
                   <input
@@ -468,23 +453,71 @@ export default function ProjectEditor() {
                     className="panel-hidden"
                   />
                   <p className="app-canvas-dropzone-formats">
-                    Obsługiwane: PDF, PNG, JPG &middot; DWG wkrótce
+                    PDF, PNG, JPG
                   </p>
                 </div>
               </div>
             ) : (
-              <MeasurementCanvas
-                imageUrl={imageUrl}
-                measurements={measurements}
-                onMeasurementsChange={setMeasurements}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-                tool={tool}
-                scale={scale}
-                detectedRooms={detectedRooms}
-                hoveredId={hoveredId}
-                buildingOutline={buildingOutline}
-              />
+              <>
+                <MeasurementCanvas
+                  imageUrl={imageUrl}
+                  measurements={measurements}
+                  onMeasurementsChange={setMeasurements}
+                  selectedId={selectedId}
+                  onSelect={setSelectedId}
+                  tool={tool}
+                  scale={scale}
+                  detectedRooms={detectedRooms}
+                  hoveredId={hoveredId}
+                  buildingOutline={buildingOutline}
+                />
+
+                {/* AI Scan overlay */}
+                {isAnalyzing && (
+                  <div className="app-scan-overlay">
+                    <div className="app-scan-line" />
+                    <div className="app-scan-content">
+                      <div className="app-scan-ring">
+                        <svg viewBox="0 0 80 80">
+                          <circle cx="40" cy="40" r="34" stroke="rgba(255,255,255,0.08)" strokeWidth="4" fill="none" />
+                          <circle cx="40" cy="40" r="34" stroke="url(#scanGrad)" strokeWidth="4" fill="none" strokeLinecap="round" strokeDasharray="80 214" />
+                          <defs>
+                            <linearGradient id="scanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#8b5cf6" />
+                              <stop offset="100%" stopColor="#06b6d4" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                      </div>
+                      <div className="app-scan-title">Analizuję rysunek</div>
+                      <div className="app-scan-desc">AI wykrywa pomieszczenia...</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Success flash */}
+                {showSuccess && (
+                  <div className="app-scan-success">
+                    <div className="app-scan-success-inner">
+                      <div className="app-scan-success-icon">
+                        <Icons.Check />
+                      </div>
+                      <div className="app-scan-success-text">Wykryto pomieszczenia</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Floating AI button */}
+                {!isAnalyzing && detectedRooms.length === 0 && (
+                  <div className="app-ai-float">
+                    <AnalyzeButton
+                      imageUrl={imageUrl}
+                      onAnalysisComplete={handleAnalysisComplete}
+                      onLoadingChange={setIsAnalyzing}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -492,10 +525,10 @@ export default function ProjectEditor() {
           {imageUrl && (
             <div className="app-canvas-instructions">
               <span>
-                <strong>Mierz:</strong> kliknij i przeciągnij aby zaznaczyć obszar
+                <kbd>M</kbd> Rysuj pomiar
               </span>
               <span>
-                <strong>Wybierz:</strong> przeciągaj i skaluj istniejące pomiary
+                <kbd>V</kbd> Wybierz / przesuń
               </span>
             </div>
           )}
@@ -549,10 +582,13 @@ export default function ProjectEditor() {
                     onMouseLeave={() => setHoveredId(null)}
                   >
                     <div className="app-ai-room-info">
-                      <span className="app-ai-room-name">{room.name}</span>
-                      {room.areaMFromTable && (
-                        <span className="app-ai-room-area">{room.areaMFromTable} m²</span>
-                      )}
+                      <span className="app-ai-room-marker" />
+                      <div>
+                        <span className="app-ai-room-name">{room.name}</span>
+                        {room.areaMFromTable && (
+                          <span className="app-ai-room-area">{room.areaMFromTable} m²</span>
+                        )}
+                      </div>
                     </div>
                     <div className="app-ai-room-actions">
                       <button

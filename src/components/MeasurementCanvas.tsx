@@ -224,7 +224,7 @@ export default function MeasurementCanvas({
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full bg-neutral-900/50">
+    <div ref={containerRef} className="app-canvas-container">
       <Stage
         ref={stageRef}
         width={stageSize.width}

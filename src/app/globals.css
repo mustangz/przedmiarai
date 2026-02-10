@@ -2898,3 +2898,292 @@ body {
   font-size: 12px;
   color: #f87171;
 }
+
+/* ─── Canvas Container (replaces Tailwind utils) ─── */
+
+.app-canvas-container {
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 15, 16, 0.5);
+}
+
+/* ─── Enhanced Dropzone ─── */
+
+.app-canvas-dropzone {
+  background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.04) 0%, transparent 70%);
+}
+
+.app-canvas-dropzone-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(6, 182, 212, 0.08));
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  animation: dropzone-float 3s ease-in-out infinite;
+}
+
+@keyframes dropzone-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.app-canvas-dropzone-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.app-canvas-dropzone-hint {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.2);
+  margin-bottom: 20px;
+}
+
+.app-canvas-dropzone-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  box-shadow: 0 2px 16px rgba(139, 92, 246, 0.3);
+}
+
+.app-canvas-dropzone-btn:hover {
+  box-shadow: 0 4px 24px rgba(139, 92, 246, 0.5);
+  transform: translateY(-1px);
+}
+
+.app-canvas.dragging .app-canvas-dropzone-icon {
+  animation: none;
+  border-color: rgba(139, 92, 246, 0.6);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.15));
+  transform: scale(1.05);
+  transition: all 0.2s;
+}
+
+.app-canvas.dragging {
+  background: rgba(139, 92, 246, 0.03);
+}
+
+/* ─── AI Scan Overlay ─── */
+
+.app-scan-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 9, 11, 0.7);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.app-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #8b5cf6, #38bdf8, #8b5cf6, transparent);
+  box-shadow: 0 0 16px 3px rgba(139, 92, 246, 0.4), 0 0 40px 6px rgba(139, 92, 246, 0.12);
+  z-index: 21;
+  pointer-events: none;
+  animation: scan-sweep 2.5s ease-in-out infinite;
+}
+
+@keyframes scan-sweep {
+  0% { top: 5%; opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { top: 95%; opacity: 0; }
+}
+
+.app-scan-content {
+  position: relative;
+  z-index: 22;
+  text-align: center;
+}
+
+.app-scan-ring {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+
+.app-scan-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  animation: panel-spin 2s linear infinite;
+}
+
+.app-scan-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fafafa;
+  margin-bottom: 6px;
+}
+
+.app-scan-desc {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ─── AI Scan Success Flash ─── */
+
+.app-scan-success {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 9, 11, 0.6);
+  animation: scan-success-fade 1.2s ease-out forwards;
+}
+
+@keyframes scan-success-fade {
+  0% { opacity: 1; }
+  60% { opacity: 1; }
+  100% { opacity: 0; pointer-events: none; }
+}
+
+.app-scan-success-inner {
+  text-align: center;
+  animation: fadeScaleIn 0.3s ease-out;
+}
+
+.app-scan-success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.15);
+  border: 2px solid #4ade80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  color: #4ade80;
+}
+
+.app-scan-success-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4ade80;
+}
+
+/* ─── Floating AI Button ─── */
+
+.app-ai-float {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 15;
+}
+
+.app-ai-float .app-analyze-btn-inner {
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-size: 14px;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+}
+
+.app-ai-float .app-analyze-btn-glow {
+  border-radius: 16px;
+  filter: blur(6px);
+}
+
+/* ─── Toolbar Shortcuts Badge ─── */
+
+.app-toolbar-shortcut {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 4px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* ─── AI Detected Rooms: staggered fade-in ─── */
+
+.app-ai-room {
+  animation: room-slide-in 0.3s ease-out both;
+}
+
+.app-ai-room:nth-child(1) { animation-delay: 0s; }
+.app-ai-room:nth-child(2) { animation-delay: 0.05s; }
+.app-ai-room:nth-child(3) { animation-delay: 0.1s; }
+.app-ai-room:nth-child(4) { animation-delay: 0.15s; }
+.app-ai-room:nth-child(5) { animation-delay: 0.2s; }
+.app-ai-room:nth-child(6) { animation-delay: 0.25s; }
+.app-ai-room:nth-child(7) { animation-delay: 0.3s; }
+.app-ai-room:nth-child(8) { animation-delay: 0.35s; }
+
+@keyframes room-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ─── AI Room Card: Enhanced ─── */
+
+.app-ai-room-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-ai-room-marker {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.4);
+}
+
+.app-ai-room-area {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* ─── Canvas Instructions Enhanced ─── */
+
+.app-canvas-instructions {
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+}
+
+.app-canvas-instructions kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 2px;
+}

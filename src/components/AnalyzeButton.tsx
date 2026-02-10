@@ -37,9 +37,10 @@ export interface AnalysisResult {
 interface Props {
   imageUrl: string | null;
   onAnalysisComplete: (result: AnalysisResult) => void;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
-export default function AnalyzeButton({ imageUrl, onAnalysisComplete }: Props) {
+export default function AnalyzeButton({ imageUrl, onAnalysisComplete, onLoadingChange }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +49,7 @@ export default function AnalyzeButton({ imageUrl, onAnalysisComplete }: Props) {
 
     setLoading(true);
     setError(null);
+    onLoadingChange?.(true);
 
     try {
       const res = await fetch('/api/analyze-rooms', {
@@ -89,6 +91,7 @@ export default function AnalyzeButton({ imageUrl, onAnalysisComplete }: Props) {
       setError('Błąd połączenia z API');
     } finally {
       setLoading(false);
+      onLoadingChange?.(false);
     }
   };
 
