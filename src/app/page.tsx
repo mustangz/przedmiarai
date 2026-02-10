@@ -295,7 +295,12 @@ function HomeContent() {
             <div className="logo-icon"><Icons.Calculator /></div>
             <span className="logo-text">PrzedmiarAI</span>
           </a>
-          <a href={PRESALE_URL} className="nav-cta">Kup presale — 299 PLN/mies</a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <a href="/app/projekt/1" className="nav-cta" style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#fafafa' }}>
+              Panel — Skaner
+            </a>
+            <a href={PRESALE_URL} className="nav-cta">Kup presale — 299 PLN/mies</a>
+          </div>
         </div>
       </nav>
 
