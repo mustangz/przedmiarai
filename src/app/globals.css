@@ -2240,6 +2240,21 @@ body {
   border-color: rgba(139, 92, 246, 0.3);
 }
 
+.app-toolbar-auto-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
 /* ─── Canvas Container ─── */
 
 .app-canvas {

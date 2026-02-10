@@ -30,7 +30,7 @@ export interface AnalysisResult {
   rooms: DetectedRoom[];
   outline: { x: number; y: number; width: number; height: number } | null;
   floorName: string | null;
-  scale: { label: string; estimatedPxPerM: number | null } | null;
+  scale: { label: string; dimensionMm: number | null; startX: number | null; startY: number | null; endX: number | null; endY: number | null } | null;
   tableRooms: { name: string; areaMFromTable: number }[] | null;
 }
 

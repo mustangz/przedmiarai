@@ -24,7 +24,11 @@ interface TableRoom {
 
 interface ScaleResult {
   label: string;
-  estimatedPxPerM: number | null;
+  dimensionMm: number | null;
+  startX: number | null;
+  startY: number | null;
+  endX: number | null;
+  endY: number | null;
 }
 
 interface ParsedResponse {
@@ -201,9 +205,12 @@ KROK 3 — OBRYS BUDYNKU:
 Zidentyfikuj ściany zewnętrzne (najgrubsze linie). Podaj bounding box CAŁEGO rzutu
 (obrys ścian zewnętrznych) jako % obrazu: x, y, width, height.
 
-KROK 4 — SKALA I WYMIARY:
-Znajdź skalę rysunku (np. "1:100") i wymiary zewnętrzne (np. "12.50 m").
-Jeśli widzisz wymiar i możesz oszacować ile pikseli zajmuje — podaj proporcję.
+KROK 4 — SKALA I WYMIARY ZEWNĘTRZNE:
+Znajdź skalę rysunku (np. "1:100").
+KLUCZOWE: Znajdź NAJDŁUŻSZY wymiar zewnętrzny budynku (linia wymiarowa z wartością w mm, np. "12 500" lub "12500").
+Wymiary na rysunkach architektonicznych są ZAWSZE podane w milimetrach.
+Podaj współrzędne POCZĄTKU i KOŃCA tej linii wymiarowej jako % obrazu (startX, startY, endX, endY).
+Wybierz wymiar który jest najdłuższy i najbardziej czytelny — najlepiej poziomy wymiar całkowity budynku.
 
 KROK 5 — POMIESZCZENIA:
 Wykryj pomieszczenia WYŁĄCZNIE wewnątrz obrysu z kroku 3.
@@ -219,7 +226,7 @@ Na końcu podaj wynik jako JSON w bloku:
 {
   "floorName": "Rzut parteru",
   "outline": { "x": 15, "y": 10, "width": 60, "height": 75 },
-  "scale": { "label": "1:100", "estimatedPxPerM": 45 },
+  "scale": { "label": "1:100", "dimensionMm": 12500, "startX": 10, "startY": 85, "endX": 75, "endY": 85 },
   "tableRooms": [
     { "name": "Salon", "areaMFromTable": 25.5 }
   ],
@@ -276,9 +283,25 @@ Uwagi:
       parsed.scale && typeof parsed.scale.label === 'string'
         ? {
             label: parsed.scale.label,
-            estimatedPxPerM:
-              typeof parsed.scale.estimatedPxPerM === 'number'
-                ? parsed.scale.estimatedPxPerM
+            dimensionMm:
+              typeof parsed.scale.dimensionMm === 'number'
+                ? parsed.scale.dimensionMm
+                : null,
+            startX:
+              typeof parsed.scale.startX === 'number'
+                ? clamp(parsed.scale.startX, 0, 100)
+                : null,
+            startY:
+              typeof parsed.scale.startY === 'number'
+                ? clamp(parsed.scale.startY, 0, 100)
+                : null,
+            endX:
+              typeof parsed.scale.endX === 'number'
+                ? clamp(parsed.scale.endX, 0, 100)
+                : null,
+            endY:
+              typeof parsed.scale.endY === 'number'
+                ? clamp(parsed.scale.endY, 0, 100)
                 : null,
           }
         : null;

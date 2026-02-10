@@ -97,7 +97,8 @@ export default function ProjectEditor() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [buildingOutline, setBuildingOutline] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [floorName, setFloorName] = useState<string | null>(null);
-  const [aiScale, setAiScale] = useState<{ label: string; estimatedPxPerM: number | null } | null>(null);
+  const [aiScale, setAiScale] = useState<{ label: string; dimensionMm: number | null; startX: number | null; startY: number | null; endX: number | null; endY: number | null } | null>(null);
+  const [scaleAutoInfo, setScaleAutoInfo] = useState<string | null>(null);
   const [tableRooms, setTableRooms] = useState<{ name: string; areaMFromTable: number }[] | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -237,6 +238,7 @@ export default function ProjectEditor() {
       setBuildingOutline(null);
       setFloorName(null);
       setAiScale(null);
+      setScaleAutoInfo(null);
       setTableRooms(null);
       localStorage.removeItem(STORAGE_KEY);
     }
@@ -248,6 +250,50 @@ export default function ProjectEditor() {
     setFloorName(result.floorName);
     setAiScale(result.scale);
     setTableRooms(result.tableRooms);
+
+    // Auto-calibrate scale from dimension line
+    const sc = result.scale;
+    if (
+      sc && imageUrl &&
+      sc.dimensionMm !== null && sc.dimensionMm > 0 &&
+      sc.startX !== null && sc.startY !== null &&
+      sc.endX !== null && sc.endY !== null
+    ) {
+      const dimMm = sc.dimensionMm;
+      const sx = sc.startX, sy = sc.startY, ex = sc.endX, ey = sc.endY;
+      const img = new window.Image();
+      img.src = imageUrl;
+      img.onload = () => {
+        const container = document.querySelector('.app-canvas-container');
+        const stageW = container?.clientWidth || 800;
+        const stageH = container?.clientHeight || 600;
+        const ratioX = stageW / img.width;
+        const ratioY = stageH / img.height;
+        const imgScale = Math.min(ratioX, ratioY, 1);
+
+        // Convert % coordinates to pixel positions on the rendered image
+        const startPx = {
+          x: (sx / 100) * img.width * imgScale,
+          y: (sy / 100) * img.height * imgScale,
+        };
+        const endPx = {
+          x: (ex / 100) * img.width * imgScale,
+          y: (ey / 100) * img.height * imgScale,
+        };
+
+        const lineLengthPx = Math.sqrt(
+          (endPx.x - startPx.x) ** 2 + (endPx.y - startPx.y) ** 2
+        );
+
+        if (lineLengthPx > 10) {
+          const dimensionM = dimMm / 1000;
+          const pxPerM = lineLengthPx / dimensionM;
+          setScale(Math.round(pxPerM));
+          setScaleAutoInfo(`${dimMm} mm`);
+        }
+      };
+    }
+
     // Show success flash
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 1200);
@@ -411,9 +457,11 @@ export default function ProjectEditor() {
               type="button"
               onClick={() => setShowCalibration(true)}
               className="app-toolbar-scale"
+              title={scaleAutoInfo ? `Auto-kalibracja z wymiaru ${scaleAutoInfo}` : 'Kliknij aby skalibrować skalę'}
             >
               <Icons.Settings />
               Skala: {scale.toFixed(0)} px/m
+              {scaleAutoInfo && <span className="app-toolbar-auto-badge">AI</span>}
             </button>
           </div>
 
@@ -549,6 +597,12 @@ export default function ProjectEditor() {
                 <div className="app-ai-meta-item">
                   <span className="app-ai-meta-label">Skala</span>
                   <span className="app-ai-meta-value">{aiScale.label}</span>
+                </div>
+              )}
+              {scaleAutoInfo && (
+                <div className="app-ai-meta-item">
+                  <span className="app-ai-meta-label">Wymiar ref.</span>
+                  <span className="app-ai-meta-value">{scaleAutoInfo} &rarr; {scale} px/m</span>
                 </div>
               )}
             </div>
