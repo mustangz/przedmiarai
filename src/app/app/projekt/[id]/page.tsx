@@ -118,7 +118,6 @@ export default function ProjectEditor() {
   const [imgTransform, setImgTransform] = useState<ImageTransform | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [hasAutoAnalyzed, setHasAutoAnalyzed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load from localStorage on mount
@@ -129,7 +128,6 @@ export default function ProjectEditor() {
         const data: ProjectData = JSON.parse(saved);
         if (data.imageDataUrl) {
           setImageUrl(data.imageDataUrl);
-          setHasAutoAnalyzed(true); // Don't auto-analyze saved images
         }
         if (data.measurements) setMeasurements(data.measurements);
         if (data.scale) setScale(data.scale);
@@ -203,25 +201,16 @@ export default function ProjectEditor() {
     setTimeout(() => setShowSuccess(false), 1200);
   }, [imageUrl, isPdfSource, imgTransform]);
 
-  // Auto-start analysis when a new image is loaded
-  useEffect(() => {
-    if (!imageUrl || hasAutoAnalyzed || isAnalyzing) return;
+  // Trigger AI analysis for a given image data URL
+  const triggerAnalysis = useCallback(async (dataUrl: string) => {
+    setIsAnalyzing(true);
+    const result = await runAnalysis(dataUrl);
+    setIsAnalyzing(false);
 
-    setHasAutoAnalyzed(true);
-
-    // Small delay to let canvas render and imgTransform populate
-    const timer = setTimeout(async () => {
-      setIsAnalyzing(true);
-      const result = await runAnalysis(imageUrl);
-      setIsAnalyzing(false);
-
-      if (!('error' in result)) {
-        handleAnalysisComplete(result);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [imageUrl, hasAutoAnalyzed, isAnalyzing, handleAnalysisComplete]);
+    if (!('error' in result)) {
+      handleAnalysisComplete(result);
+    }
+  }, [handleAnalysisComplete]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -244,8 +233,7 @@ export default function ProjectEditor() {
       return;
     }
 
-    // Reset auto-analyze flag for new uploads
-    setHasAutoAnalyzed(false);
+    // Reset state for new uploads
     setDetectedRooms([]);
     setBuildingOutline(null);
     setFloorName(null);
@@ -276,6 +264,7 @@ export default function ProjectEditor() {
         setIsPdfSource(true);
         setMeasurements([]);
         setSelectedId(null);
+        triggerAnalysis(dataUrl);
       } catch (err) {
         console.error('PDF rendering failed:', err);
         alert('Nie udało się wczytać pliku PDF. Spróbuj wyeksportować go jako PNG.');
@@ -286,12 +275,14 @@ export default function ProjectEditor() {
     // Images — create data URL
     if (file.type.startsWith('image/')) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setImageUrl(e.target.result as string);
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          const dataUrl = ev.target.result as string;
+          setImageUrl(dataUrl);
           setIsPdfSource(false);
           setMeasurements([]);
           setSelectedId(null);
+          triggerAnalysis(dataUrl);
         }
       };
       reader.readAsDataURL(file);
@@ -345,7 +336,6 @@ export default function ProjectEditor() {
       setAiScale(null);
       setScaleAutoInfo(null);
       setTableRooms(null);
-      setHasAutoAnalyzed(false);
       localStorage.removeItem(STORAGE_KEY);
     }
   };
@@ -592,8 +582,8 @@ export default function ProjectEditor() {
                   </div>
                 )}
 
-                {/* Floating AI re-scan button (only after first analysis) */}
-                {!isAnalyzing && hasAutoAnalyzed && detectedRooms.length === 0 && measurements.length === 0 && (
+                {/* Floating AI re-scan button */}
+                {!isAnalyzing && detectedRooms.length === 0 && (
                   <div className="app-ai-float">
                     <AnalyzeButton
                       imageUrl={imageUrl}
