@@ -6,8 +6,9 @@ import dynamic from 'next/dynamic';
 import MeasurementList from '@/components/MeasurementList';
 import ScaleCalibration from '@/components/ScaleCalibration';
 import AnalyzeButton from '@/components/AnalyzeButton';
+import { runAnalysis } from '@/components/AnalyzeButton';
 import type { AnalysisResult } from '@/components/AnalyzeButton';
-import type { Measurement, DetectedRoom } from '@/components/MeasurementCanvas';
+import type { Measurement, DetectedRoom, ImageTransform } from '@/components/MeasurementCanvas';
 
 // ─── Inline SVG icons ─────────────────────────────────────────
 const Icons = {
@@ -83,6 +84,19 @@ interface ProjectData {
   imageDataUrl: string | null;
   measurements: Measurement[];
   scale: number;
+  isPdf?: boolean;
+}
+
+/** Shoelace formula: polygon area from flat Konva points [x1,y1, x2,y2, ...] */
+function polygonArea(flatPoints: number[]): number {
+  let area = 0;
+  const n = flatPoints.length / 2;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    area += flatPoints[i * 2] * flatPoints[j * 2 + 1];
+    area -= flatPoints[j * 2] * flatPoints[i * 2 + 1];
+  }
+  return Math.abs(area) / 2;
 }
 
 export default function ProjectEditor() {
@@ -97,11 +111,14 @@ export default function ProjectEditor() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [buildingOutline, setBuildingOutline] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [floorName, setFloorName] = useState<string | null>(null);
-  const [aiScale, setAiScale] = useState<{ label: string; dimensionMm: number | null; startX: number | null; startY: number | null; endX: number | null; endY: number | null } | null>(null);
+  const [aiScale, setAiScale] = useState<{ label: string; dimensionValue: number | null; dimensionUnit: 'mm' | 'cm' | null; startX: number | null; startY: number | null; endX: number | null; endY: number | null } | null>(null);
   const [scaleAutoInfo, setScaleAutoInfo] = useState<string | null>(null);
   const [tableRooms, setTableRooms] = useState<{ name: string; areaMFromTable: number }[] | null>(null);
+  const [isPdfSource, setIsPdfSource] = useState(false);
+  const [imgTransform, setImgTransform] = useState<ImageTransform | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [hasAutoAnalyzed, setHasAutoAnalyzed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load from localStorage on mount
@@ -110,9 +127,13 @@ export default function ProjectEditor() {
     if (saved) {
       try {
         const data: ProjectData = JSON.parse(saved);
-        if (data.imageDataUrl) setImageUrl(data.imageDataUrl);
+        if (data.imageDataUrl) {
+          setImageUrl(data.imageDataUrl);
+          setHasAutoAnalyzed(true); // Don't auto-analyze saved images
+        }
         if (data.measurements) setMeasurements(data.measurements);
         if (data.scale) setScale(data.scale);
+        if (data.isPdf) setIsPdfSource(true);
       } catch (e) {
         console.error('Failed to load project data:', e);
       }
@@ -125,9 +146,82 @@ export default function ProjectEditor() {
       imageDataUrl: imageUrl,
       measurements,
       scale,
+      isPdf: isPdfSource,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [imageUrl, measurements, scale]);
+
+  const handleAnalysisComplete = useCallback((result: AnalysisResult) => {
+    setDetectedRooms(result.rooms);
+    setBuildingOutline(result.outline);
+    setFloorName(result.floorName);
+    setAiScale(result.scale);
+    setTableRooms(result.tableRooms);
+
+    // Auto-calibrate scale
+    const sc = result.scale;
+    if (sc && sc.label && imageUrl) {
+      const scaleMatch = sc.label.match(/1\s*:\s*(\d+)/);
+      if (scaleMatch) {
+        const denominator = parseInt(scaleMatch[1]);
+
+        if (isPdfSource && imgTransform) {
+          const PDF_RENDER_SCALE = 2;
+          const pxPerMmInImage = PDF_RENDER_SCALE * 72 / 25.4;
+          const mmOnPaperPerMeter = 1000 / denominator;
+          const pxPerMFullRes = pxPerMmInImage * mmOnPaperPerMeter;
+          const pxPerM = pxPerMFullRes * imgTransform.imageScale;
+          setScale(Math.round(pxPerM));
+          setScaleAutoInfo(`${sc.label} (PDF)`);
+        } else if (
+          imgTransform &&
+          sc.dimensionValue !== null && sc.dimensionValue > 0 &&
+          sc.startX !== null && sc.startY !== null &&
+          sc.endX !== null && sc.endY !== null
+        ) {
+          const dimVal = sc.dimensionValue;
+          const unit = sc.dimensionUnit || 'mm';
+          const { imageScale: is, imageWidth: iw, imageHeight: ih } = imgTransform;
+
+          const lineLengthPx = Math.sqrt(
+            ((sc.endX - sc.startX) / 100 * iw * is) ** 2 +
+            ((sc.endY - sc.startY) / 100 * ih * is) ** 2
+          );
+
+          if (lineLengthPx > 10) {
+            const dimensionM = unit === 'cm' ? dimVal / 100 : dimVal / 1000;
+            const pxPerM = lineLengthPx / dimensionM;
+            setScale(Math.round(pxPerM));
+            setScaleAutoInfo(`${dimVal} ${unit}`);
+          }
+        }
+      }
+    }
+
+    // Show success flash
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 1200);
+  }, [imageUrl, isPdfSource, imgTransform]);
+
+  // Auto-start analysis when a new image is loaded
+  useEffect(() => {
+    if (!imageUrl || hasAutoAnalyzed || isAnalyzing) return;
+
+    setHasAutoAnalyzed(true);
+
+    // Small delay to let canvas render and imgTransform populate
+    const timer = setTimeout(async () => {
+      setIsAnalyzing(true);
+      const result = await runAnalysis(imageUrl);
+      setIsAnalyzing(false);
+
+      if (!('error' in result)) {
+        handleAnalysisComplete(result);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [imageUrl, hasAutoAnalyzed, isAnalyzing, handleAnalysisComplete]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -150,6 +244,15 @@ export default function ProjectEditor() {
       return;
     }
 
+    // Reset auto-analyze flag for new uploads
+    setHasAutoAnalyzed(false);
+    setDetectedRooms([]);
+    setBuildingOutline(null);
+    setFloorName(null);
+    setAiScale(null);
+    setScaleAutoInfo(null);
+    setTableRooms(null);
+
     // PDF — render first page to image via pdf.js
     if (file.type === 'application/pdf' || name.endsWith('.pdf')) {
       try {
@@ -170,6 +273,7 @@ export default function ProjectEditor() {
 
         const dataUrl = canvas.toDataURL('image/png');
         setImageUrl(dataUrl);
+        setIsPdfSource(true);
         setMeasurements([]);
         setSelectedId(null);
       } catch (err) {
@@ -185,6 +289,7 @@ export default function ProjectEditor() {
       reader.onload = (e) => {
         if (e.target?.result) {
           setImageUrl(e.target.result as string);
+          setIsPdfSource(false);
           setMeasurements([]);
           setSelectedId(null);
         }
@@ -240,63 +345,9 @@ export default function ProjectEditor() {
       setAiScale(null);
       setScaleAutoInfo(null);
       setTableRooms(null);
+      setHasAutoAnalyzed(false);
       localStorage.removeItem(STORAGE_KEY);
     }
-  };
-
-  const handleAnalysisComplete = (result: AnalysisResult) => {
-    setDetectedRooms(result.rooms);
-    setBuildingOutline(result.outline);
-    setFloorName(result.floorName);
-    setAiScale(result.scale);
-    setTableRooms(result.tableRooms);
-
-    // Auto-calibrate scale from dimension line
-    const sc = result.scale;
-    if (
-      sc && imageUrl &&
-      sc.dimensionMm !== null && sc.dimensionMm > 0 &&
-      sc.startX !== null && sc.startY !== null &&
-      sc.endX !== null && sc.endY !== null
-    ) {
-      const dimMm = sc.dimensionMm;
-      const sx = sc.startX, sy = sc.startY, ex = sc.endX, ey = sc.endY;
-      const img = new window.Image();
-      img.src = imageUrl;
-      img.onload = () => {
-        const container = document.querySelector('.app-canvas-container');
-        const stageW = container?.clientWidth || 800;
-        const stageH = container?.clientHeight || 600;
-        const ratioX = stageW / img.width;
-        const ratioY = stageH / img.height;
-        const imgScale = Math.min(ratioX, ratioY, 1);
-
-        // Convert % coordinates to pixel positions on the rendered image
-        const startPx = {
-          x: (sx / 100) * img.width * imgScale,
-          y: (sy / 100) * img.height * imgScale,
-        };
-        const endPx = {
-          x: (ex / 100) * img.width * imgScale,
-          y: (ey / 100) * img.height * imgScale,
-        };
-
-        const lineLengthPx = Math.sqrt(
-          (endPx.x - startPx.x) ** 2 + (endPx.y - startPx.y) ** 2
-        );
-
-        if (lineLengthPx > 10) {
-          const dimensionM = dimMm / 1000;
-          const pxPerM = lineLengthPx / dimensionM;
-          setScale(Math.round(pxPerM));
-          setScaleAutoInfo(`${dimMm} mm`);
-        }
-      };
-    }
-
-    // Show success flash
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 1200);
   };
 
   // Keyboard shortcuts
@@ -310,72 +361,57 @@ export default function ProjectEditor() {
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
-  const approveRoom = (room: DetectedRoom) => {
-    const img = new window.Image();
-    img.src = imageUrl!;
-    img.onload = () => {
-      const container = document.querySelector('.app-canvas-loading')?.parentElement || document.querySelector('.app-canvas');
-      const stageW = container?.clientWidth || 800;
-      const stageH = container?.clientHeight || 600;
-      const scaleX = stageW / img.width;
-      const scaleY = stageH / img.height;
-      const imgScale = Math.min(scaleX, scaleY, 1);
-      const imgX = (stageW - img.width * imgScale) / 2;
-      const imgY = (stageH - img.height * imgScale) / 2;
+  const roomToMeasurement = useCallback((room: DetectedRoom, index?: number): Measurement | null => {
+    if (!imgTransform) return null;
+    const { imageScale: is, imageX: ix, imageY: iy, imageWidth: iw, imageHeight: ih } = imgTransform;
 
-      const x = imgX + (room.x / 100) * img.width * imgScale;
-      const y = imgY + (room.y / 100) * img.height * imgScale;
-      const width = (room.width / 100) * img.width * imgScale;
-      const height = (room.height / 100) * img.height * imgScale;
+    // Convert polygon points from % to px (flat Konva format)
+    const flatPoints: number[] = [];
+    for (const [px, py] of room.points) {
+      flatPoints.push(ix + (px / 100) * iw * is);
+      flatPoints.push(iy + (py / 100) * ih * is);
+    }
 
-      const newMeasurement: Measurement = {
-        id: `m_${Date.now()}`,
-        name: room.name,
-        x,
-        y,
-        width,
-        height,
-        areaM2: scale > 0 ? (width / scale) * (height / scale) : 0,
-      };
+    // Calculate bounding box for x/y/width/height (used for fallback positioning)
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let i = 0; i < flatPoints.length; i += 2) {
+      minX = Math.min(minX, flatPoints[i]);
+      minY = Math.min(minY, flatPoints[i + 1]);
+      maxX = Math.max(maxX, flatPoints[i]);
+      maxY = Math.max(maxY, flatPoints[i + 1]);
+    }
 
-      setMeasurements(prev => [...prev, newMeasurement]);
-      setDetectedRooms(prev => prev.filter(r => r.id !== room.id));
+    // Area from polygon using Shoelace formula
+    const areaPx2 = polygonArea(flatPoints);
+    const areaM2 = scale > 0 ? areaPx2 / (scale * scale) : 0;
+
+    return {
+      id: `m_${Date.now()}${index !== undefined ? `_${index}` : ''}`,
+      name: room.name,
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+      areaM2,
+      points: flatPoints,
     };
+  }, [imgTransform, scale]);
+
+  const approveRoom = (room: DetectedRoom) => {
+    const m = roomToMeasurement(room);
+    if (!m) return;
+    setMeasurements(prev => [...prev, m]);
+    setDetectedRooms(prev => prev.filter(r => r.id !== room.id));
   };
 
   const approveAllRooms = () => {
-    const img = new window.Image();
-    img.src = imageUrl!;
-    img.onload = () => {
-      const container = document.querySelector('.app-canvas-loading')?.parentElement || document.querySelector('.app-canvas');
-      const stageW = container?.clientWidth || 800;
-      const stageH = container?.clientHeight || 600;
-      const scaleX = stageW / img.width;
-      const scaleY = stageH / img.height;
-      const imgScale = Math.min(scaleX, scaleY, 1);
-      const imgX = (stageW - img.width * imgScale) / 2;
-      const imgY = (stageH - img.height * imgScale) / 2;
+    if (!imgTransform) return;
+    const newMeasurements = detectedRooms
+      .map((room, i) => roomToMeasurement(room, i))
+      .filter((m): m is Measurement => m !== null);
 
-      const newMeasurements = detectedRooms.map((room, i) => {
-        const x = imgX + (room.x / 100) * img.width * imgScale;
-        const y = imgY + (room.y / 100) * img.height * imgScale;
-        const width = (room.width / 100) * img.width * imgScale;
-        const height = (room.height / 100) * img.height * imgScale;
-
-        return {
-          id: `m_${Date.now()}_${i}`,
-          name: room.name,
-          x,
-          y,
-          width,
-          height,
-          areaM2: scale > 0 ? (width / scale) * (height / scale) : 0,
-        };
-      });
-
-      setMeasurements(prev => [...prev, ...newMeasurements]);
-      setDetectedRooms([]);
-    };
+    setMeasurements(prev => [...prev, ...newMeasurements]);
+    setDetectedRooms([]);
   };
 
   const rejectRoom = (roomId: string) => {
@@ -518,6 +554,7 @@ export default function ProjectEditor() {
                   detectedRooms={detectedRooms}
                   hoveredId={hoveredId}
                   buildingOutline={buildingOutline}
+                  onImageTransform={setImgTransform}
                 />
 
                 {/* AI Scan overlay */}
@@ -555,8 +592,8 @@ export default function ProjectEditor() {
                   </div>
                 )}
 
-                {/* Floating AI button */}
-                {!isAnalyzing && detectedRooms.length === 0 && (
+                {/* Floating AI re-scan button (only after first analysis) */}
+                {!isAnalyzing && hasAutoAnalyzed && detectedRooms.length === 0 && measurements.length === 0 && (
                   <div className="app-ai-float">
                     <AnalyzeButton
                       imageUrl={imageUrl}

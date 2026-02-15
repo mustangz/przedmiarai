@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { DetectedRoom } from './MeasurementCanvas';
 
 // ─── Inline SVG icons ─────────────────────────────────────────
 const Icons = {
@@ -16,21 +17,11 @@ const Icons = {
   ),
 };
 
-export interface DetectedRoom {
-  id: string;
-  name: string;
-  x: number;      // % of image width
-  y: number;      // % of image height
-  width: number;  // % of image width
-  height: number; // % of image height
-  areaMFromTable?: number;
-}
-
 export interface AnalysisResult {
   rooms: DetectedRoom[];
   outline: { x: number; y: number; width: number; height: number } | null;
   floorName: string | null;
-  scale: { label: string; dimensionMm: number | null; startX: number | null; startY: number | null; endX: number | null; endY: number | null } | null;
+  scale: { label: string; dimensionValue: number | null; dimensionUnit: 'mm' | 'cm' | null; startX: number | null; startY: number | null; endX: number | null; endY: number | null } | null;
   tableRooms: { name: string; areaMFromTable: number }[] | null;
 }
 
@@ -38,6 +29,51 @@ interface Props {
   imageUrl: string | null;
   onAnalysisComplete: (result: AnalysisResult) => void;
   onLoadingChange?: (loading: boolean) => void;
+}
+
+export async function runAnalysis(
+  imageUrl: string,
+  onLoadingChange?: (loading: boolean) => void,
+): Promise<AnalysisResult | { error: string }> {
+  onLoadingChange?.(true);
+
+  try {
+    const res = await fetch('/api/analyze-rooms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64: imageUrl }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { error: data.error || 'Błąd analizy' };
+    }
+
+    if (data.rooms && data.rooms.length > 0) {
+      const rooms: DetectedRoom[] = data.rooms.map(
+        (r: { name: string; points: number[][]; areaMFromTable?: number }, i: number) => ({
+          id: `ai_${Date.now()}_${i}`,
+          name: r.name,
+          points: r.points,
+          ...(typeof r.areaMFromTable === 'number' ? { areaMFromTable: r.areaMFromTable } : {}),
+        })
+      );
+      return {
+        rooms,
+        outline: data.outline || null,
+        floorName: data.floorName || null,
+        scale: data.scale || null,
+        tableRooms: data.tableRooms || null,
+      };
+    } else {
+      return { error: 'Nie wykryto pomieszczeń' };
+    }
+  } catch {
+    return { error: 'Błąd połączenia z API' };
+  } finally {
+    onLoadingChange?.(false);
+  }
 }
 
 export default function AnalyzeButton({ imageUrl, onAnalysisComplete, onLoadingChange }: Props) {
@@ -49,50 +85,16 @@ export default function AnalyzeButton({ imageUrl, onAnalysisComplete, onLoadingC
 
     setLoading(true);
     setError(null);
-    onLoadingChange?.(true);
 
-    try {
-      const res = await fetch('/api/analyze-rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: imageUrl }),
-      });
+    const result = await runAnalysis(imageUrl, onLoadingChange);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Błąd analizy');
-        return;
-      }
-
-      if (data.rooms && data.rooms.length > 0) {
-        const rooms: DetectedRoom[] = data.rooms.map(
-          (r: { name: string; x: number; y: number; width: number; height: number; areaMFromTable?: number }, i: number) => ({
-            id: `ai_${Date.now()}_${i}`,
-            name: r.name,
-            x: r.x,
-            y: r.y,
-            width: r.width,
-            height: r.height,
-            ...(typeof r.areaMFromTable === 'number' ? { areaMFromTable: r.areaMFromTable } : {}),
-          })
-        );
-        onAnalysisComplete({
-          rooms,
-          outline: data.outline || null,
-          floorName: data.floorName || null,
-          scale: data.scale || null,
-          tableRooms: data.tableRooms || null,
-        });
-      } else {
-        setError('Nie wykryto pomieszczeń');
-      }
-    } catch {
-      setError('Błąd połączenia z API');
-    } finally {
-      setLoading(false);
-      onLoadingChange?.(false);
+    if ('error' in result) {
+      setError(result.error);
+    } else {
+      onAnalysisComplete(result);
     }
+
+    setLoading(false);
   };
 
   if (!imageUrl) return null;
@@ -108,7 +110,7 @@ export default function AnalyzeButton({ imageUrl, onAnalysisComplete, onLoadingC
         <span className="app-analyze-btn-glow" />
         <span className="app-analyze-btn-inner">
           {loading ? <Icons.Loader /> : <Icons.Sparkles />}
-          {loading ? 'Analizuję...' : 'AI Wykryj pomieszczenia'}
+          {loading ? 'Analizuję...' : 'AI Skanuj ponownie'}
         </span>
       </button>
       {error && (

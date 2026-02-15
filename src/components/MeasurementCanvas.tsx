@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { Stage, Layer, Image as KonvaImage, Rect, Transformer, Text } from 'react-konva';
+import { Stage, Layer, Image as KonvaImage, Rect, Line, Transformer, Text } from 'react-konva';
 import Konva from 'konva';
 
 export interface Measurement {
@@ -12,16 +12,22 @@ export interface Measurement {
   width: number;
   height: number;
   areaM2: number;
+  points?: number[]; // Konva Line format: [x1,y1, x2,y2, ...] in px
 }
 
 export interface DetectedRoom {
   id: string;
   name: string;
-  x: number;      // % of image width
-  y: number;      // % of image height
-  width: number;  // % of image width
-  height: number; // % of image height
+  points: number[][]; // [[x1,y1], [x2,y2], ...] as % of image (0-100)
   areaMFromTable?: number;
+}
+
+export interface ImageTransform {
+  imageScale: number;
+  imageX: number;
+  imageY: number;
+  imageWidth: number;
+  imageHeight: number;
 }
 
 interface Props {
@@ -35,6 +41,32 @@ interface Props {
   detectedRooms?: DetectedRoom[];
   hoveredId?: string | null;
   buildingOutline?: { x: number; y: number; width: number; height: number } | null;
+  onImageTransform?: (transform: ImageTransform) => void;
+}
+
+/** Convert polygon points (% of image) to Konva flat array (px) */
+function roomPointsToPx(
+  points: number[][],
+  imageX: number, imageY: number,
+  iw: number, ih: number, is: number
+): number[] {
+  const flat: number[] = [];
+  for (const [px, py] of points) {
+    flat.push(imageX + (px / 100) * iw * is);
+    flat.push(imageY + (py / 100) * ih * is);
+  }
+  return flat;
+}
+
+/** Centroid of a polygon from flat Konva points array */
+function centroid(flatPoints: number[]): [number, number] {
+  let cx = 0, cy = 0;
+  const n = flatPoints.length / 2;
+  for (let i = 0; i < flatPoints.length; i += 2) {
+    cx += flatPoints[i];
+    cy += flatPoints[i + 1];
+  }
+  return [cx / n, cy / n];
 }
 
 export default function MeasurementCanvas({
@@ -48,6 +80,7 @@ export default function MeasurementCanvas({
   detectedRooms = [],
   hoveredId,
   buildingOutline,
+  onImageTransform,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
@@ -88,7 +121,7 @@ export default function MeasurementCanvas({
     if (!transformerRef.current || !stageRef.current) return;
     const stage = stageRef.current;
     const tr = transformerRef.current;
-    
+
     if (selectedId && tool === 'select') {
       const node = stage.findOne('#' + selectedId);
       if (node) {
@@ -110,15 +143,14 @@ export default function MeasurementCanvas({
 
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
     if (tool !== 'measure' || !imageUrl) return;
-    
+
     const stage = e.target.getStage();
     if (!stage) return;
-    
-    // Click on stage background = start drawing
+
     if (e.target === stage || e.target.getClassName() === 'Image') {
       const pos = stage.getPointerPosition();
       if (!pos) return;
-      
+
       setIsDrawing(true);
       setNewRect({ x: pos.x, y: pos.y, width: 0, height: 0 });
       onSelect(null);
@@ -127,13 +159,13 @@ export default function MeasurementCanvas({
 
   const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
     if (!isDrawing || !newRect) return;
-    
+
     const stage = e.target.getStage();
     if (!stage) return;
-    
+
     const pos = stage.getPointerPosition();
     if (!pos) return;
-    
+
     setNewRect({
       ...newRect,
       width: pos.x - newRect.x,
@@ -143,16 +175,14 @@ export default function MeasurementCanvas({
 
   const handleMouseUp = () => {
     if (!isDrawing || !newRect) return;
-    
+
     setIsDrawing(false);
-    
-    // Minimum size check
+
     if (Math.abs(newRect.width) < 10 || Math.abs(newRect.height) < 10) {
       setNewRect(null);
       return;
     }
 
-    // Normalize rect (handle negative dimensions)
     const x = newRect.width < 0 ? newRect.x + newRect.width : newRect.x;
     const y = newRect.height < 0 ? newRect.y + newRect.height : newRect.y;
     const width = Math.abs(newRect.width);
@@ -176,14 +206,13 @@ export default function MeasurementCanvas({
   const handleTransformEnd = (id: string, node: Konva.Node) => {
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
-    
-    // Reset scale and apply to dimensions
+
     node.scaleX(1);
     node.scaleY(1);
-    
+
     const newWidth = Math.max(10, node.width() * scaleX);
     const newHeight = Math.max(10, node.height() * scaleY);
-    
+
     const updated = measurements.map(m => {
       if (m.id === id) {
         return {
@@ -197,7 +226,7 @@ export default function MeasurementCanvas({
       }
       return m;
     });
-    
+
     onMeasurementsChange(updated);
   };
 
@@ -222,6 +251,13 @@ export default function MeasurementCanvas({
     imageX = (stageSize.width - image.width * imageScale) / 2;
     imageY = (stageSize.height - image.height * imageScale) / 2;
   }
+
+  // Report image transform to parent
+  useEffect(() => {
+    if (image && onImageTransform) {
+      onImageTransform({ imageScale, imageX, imageY, imageWidth: image.width, imageHeight: image.height });
+    }
+  }, [image, imageScale, imageX, imageY, onImageTransform]);
 
   return (
     <div ref={containerRef} className="app-canvas-container">
@@ -265,6 +301,35 @@ export default function MeasurementCanvas({
           {measurements.map((m) => {
             const isHovered = hoveredId === m.id;
             const isSelected = selectedId === m.id;
+
+            // Polygon measurement (from AI)
+            if (m.points && m.points.length >= 6) {
+              return (
+                <Line
+                  key={m.id}
+                  id={m.id}
+                  points={m.points}
+                  closed={true}
+                  fill={
+                    isSelected ? 'rgba(139, 92, 246, 0.3)'
+                    : isHovered ? 'rgba(96, 165, 250, 0.35)'
+                    : 'rgba(59, 130, 246, 0.2)'
+                  }
+                  stroke={
+                    isSelected ? '#8B5CF6'
+                    : isHovered ? '#60A5FA'
+                    : '#3B82F6'
+                  }
+                  strokeWidth={isHovered ? 3 : 2}
+                  draggable={tool === 'select'}
+                  onClick={() => onSelect(m.id)}
+                  onTap={() => onSelect(m.id)}
+                  onDragEnd={(e) => handleDragEnd(m.id, e.target)}
+                />
+              );
+            }
+
+            // Rect measurement (manual drawing)
             return (
               <Rect
                 key={m.id}
@@ -294,17 +359,27 @@ export default function MeasurementCanvas({
           })}
 
           {/* Labels */}
-          {measurements.map((m) => (
-            <Text
-              key={`label_${m.id}`}
-              x={m.x}
-              y={m.y - 20}
-              text={`${m.name}: ${m.areaM2.toFixed(2)} m²`}
-              fontSize={12}
-              fill="#fff"
-              padding={4}
-            />
-          ))}
+          {measurements.map((m) => {
+            // Position label at centroid for polygon, or top-left for rect
+            let lx = m.x;
+            let ly = m.y - 20;
+            if (m.points && m.points.length >= 6) {
+              const [cx, cy] = centroid(m.points);
+              lx = cx;
+              ly = cy - 20;
+            }
+            return (
+              <Text
+                key={`label_${m.id}`}
+                x={lx}
+                y={ly}
+                text={`${m.name}: ${m.areaM2.toFixed(2)} m²`}
+                fontSize={12}
+                fill="#fff"
+                padding={4}
+              />
+            );
+          })}
 
           {/* Currently drawing rect */}
           {newRect && (
@@ -320,20 +395,18 @@ export default function MeasurementCanvas({
             />
           )}
 
-          {/* AI-detected rooms (pending approval) */}
+          {/* AI-detected rooms (pending approval) — polygons */}
           {image && detectedRooms.map((room) => {
-            const rx = imageX + (room.x / 100) * image.width * imageScale;
-            const ry = imageY + (room.y / 100) * image.height * imageScale;
-            const rw = (room.width / 100) * image.width * imageScale;
-            const rh = (room.height / 100) * image.height * imageScale;
+            const flatPoints = roomPointsToPx(
+              room.points, imageX, imageY,
+              image.width, image.height, imageScale
+            );
             const isHovered = hoveredId === room.id;
             return (
-              <Rect
+              <Line
                 key={room.id}
-                x={rx}
-                y={ry}
-                width={rw}
-                height={rh}
+                points={flatPoints}
+                closed={true}
                 fill={isHovered ? 'rgba(74, 222, 128, 0.3)' : 'rgba(34, 197, 94, 0.15)'}
                 stroke={isHovered ? '#4ADE80' : '#22C55E'}
                 strokeWidth={isHovered ? 3 : 2}
@@ -342,19 +415,23 @@ export default function MeasurementCanvas({
             );
           })}
           {image && detectedRooms.map((room) => {
-            const rx = imageX + (room.x / 100) * image.width * imageScale;
-            const ry = imageY + (room.y / 100) * image.height * imageScale;
+            const flatPoints = roomPointsToPx(
+              room.points, imageX, imageY,
+              image.width, image.height, imageScale
+            );
+            const [cx, cy] = centroid(flatPoints);
             const isHovered = hoveredId === room.id;
             return (
               <Text
                 key={`ai_label_${room.id}`}
-                x={rx}
-                y={ry - 18}
-                text={`🤖 ${room.name}`}
+                x={cx - 30}
+                y={cy - 10}
+                text={room.name}
                 fontSize={isHovered ? 14 : 12}
                 fontStyle={isHovered ? 'bold' : 'normal'}
                 fill={isHovered ? '#4ADE80' : '#22C55E'}
                 padding={3}
+                align="center"
               />
             );
           })}

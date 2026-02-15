@@ -3,10 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 interface RoomResult {
   name: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  points: number[][]; // [[x1,y1], [x2,y2], ...] as % of image (0-100)
   areaMFromTable?: number;
 }
 
@@ -24,7 +21,8 @@ interface TableRoom {
 
 interface ScaleResult {
   label: string;
-  dimensionMm: number | null;
+  dimensionValue: number | null;
+  dimensionUnit: 'mm' | 'cm' | null;
   startX: number | null;
   startY: number | null;
   endX: number | null;
@@ -46,26 +44,21 @@ function clamp(value: number, min: number, max: number): number {
 function validateAndClampRooms(rooms: RoomResult[]): RoomResult[] {
   return rooms
     .filter((room) => {
-      if (
-        typeof room.x !== 'number' ||
-        typeof room.y !== 'number' ||
-        typeof room.width !== 'number' ||
-        typeof room.height !== 'number'
-      ) {
-        return false;
-      }
-      if (room.width <= 1 || room.height <= 1) return false;
-      if (room.width > 100 || room.height > 100) return false;
-      if (room.x < 0 || room.x > 100 || room.y < 0 || room.y > 100) return false;
-      if (room.x + room.width > 105 || room.y + room.height > 105) return false;
-      return true;
+      if (!Array.isArray(room.points) || room.points.length < 3) return false;
+      // Each point must be a [x, y] pair with values 0-100
+      return room.points.every(
+        (p) =>
+          Array.isArray(p) &&
+          p.length === 2 &&
+          typeof p[0] === 'number' &&
+          typeof p[1] === 'number' &&
+          p[0] >= -5 && p[0] <= 105 &&
+          p[1] >= -5 && p[1] <= 105
+      );
     })
     .map((room) => ({
       name: room.name || 'Pomieszczenie',
-      x: clamp(room.x, 0, 100),
-      y: clamp(room.y, 0, 100),
-      width: clamp(room.width, 1, 100 - clamp(room.x, 0, 99)),
-      height: clamp(room.height, 1, 100 - clamp(room.y, 0, 99)),
+      points: room.points.map((p) => [clamp(p[0], 0, 100), clamp(p[1], 0, 100)]),
       ...(typeof room.areaMFromTable === 'number' ? { areaMFromTable: room.areaMFromTable } : {}),
     }));
 }
@@ -88,14 +81,17 @@ function validateOutline(outline: unknown): OutlineResult | null {
 
 function validateRoomsAgainstOutline(rooms: RoomResult[], outline: OutlineResult | null): RoomResult[] {
   if (!outline) return rooms;
-  const tolerance = 2; // 2% tolerance
+  const tolerance = 5;
+  const oLeft = outline.x - tolerance;
+  const oTop = outline.y - tolerance;
+  const oRight = outline.x + outline.width + tolerance;
+  const oBottom = outline.y + outline.height + tolerance;
+
   return rooms.filter((room) => {
-    return (
-      room.x >= outline.x - tolerance &&
-      room.y >= outline.y - tolerance &&
-      room.x + room.width <= outline.x + outline.width + tolerance &&
-      room.y + room.height <= outline.y + outline.height + tolerance
-    );
+    // Check that centroid of polygon is inside outline
+    const cx = room.points.reduce((s, p) => s + p[0], 0) / room.points.length;
+    const cy = room.points.reduce((s, p) => s + p[1], 0) / room.points.length;
+    return cx >= oLeft && cx <= oRight && cy >= oTop && cy <= oBottom;
   });
 }
 
@@ -163,21 +159,28 @@ export async function POST(request: Request) {
     }
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 4096,
-      system: `Jesteś ekspertem architektem. Analizujesz rzuty architektoniczne warstwa po warstwie, od zewnątrz do wewnątrz.
+      system: `Jesteś ekspertem budowlanym analizującym rysunki architektoniczne i konstrukcyjne.
 
-HIERARCHIA WARSTW:
-1. WYMIARY ZEWNĘTRZNE — linie wymiarowe poza budynkiem, to absolutna granica rysunku
-2. ŚCIANY ZEWNĘTRZNE — najgrubsze linie, obrys budynku, z otworami (okna, drzwi wejściowe)
-3. ŚCIANY WEWNĘTRZNE — nośne (grubsze) i działowe (cieńsze), dzielą budynek na pomieszczenia
-4. POMIESZCZENIA — zamknięte przestrzenie ograniczone ścianami, z etykietami i metrażem
+Twoim zadaniem jest wykrycie WSZYSTKICH wydzielonych obszarów/stref na rysunku.
+
+Rysunek może być:
+- Rzutem parteru/piętra — wtedy obszary to POMIESZCZENIA (salon, kuchnia, łazienka, korytarz itd.)
+- Rzutem fundamentów — wtedy obszary to STREFY FUNDAMENTOWE (ławy, stopy, płyty fundamentowe itd.)
+- Przekrojem — wtedy obszary to warstwy/elementy konstrukcyjne
+- Innym rysunkiem technicznym
 
 ZASADY:
-- Pomieszczenia istnieją WYŁĄCZNIE wewnątrz obrysu ścian zewnętrznych
-- IGNORUJ legendy, tabelki pomieszczeń, pieczątki, ramki — to NIE są pomieszczenia
-- Tabela zestawienia pomieszczeń to źródło prawdy o nazwach i powierzchniach
-- Współrzędne jako % wymiarów obrazu (0-100)`,
+- Nazwy ODCZYTUJ z etykiet na rysunku — NIE wymyślaj
+- Jeśli brak etykiety, nazwij: "Strefa 1", "Strefa 2" itd.
+- Każdy obszar opisz jako POLYGON — listę wierzchołków (punktów narożnych ścian)
+- Współrzędne punktów jako % wymiarów OBRAZU (0-100)
+- Obszary NIE MOGĄ się na siebie nakładać
+- IGNORUJ elementy poza rysunkiem technicznym: legendy, pieczątki, ramki, tabelki opisu
+- Wymiary na rysunkach mogą być w mm LUB cm — określ jednostkę na podstawie kontekstu
+- ZAWSZE wykryj obszary — lepiej więcej niż mniej
+- Pomieszczenia mają kształt WIELOKĄTÓW (polygon), nie prostokątów — podążaj wzdłuż ścian`,
       messages: [
         {
           role: 'user',
@@ -192,58 +195,53 @@ ZASADY:
             },
             {
               type: 'text',
-              text: `Przeanalizuj ten rysunek architektoniczny krok po kroku:
+              text: `Przeanalizuj ten rysunek budowlany i wykryj wszystkie wydzielone obszary/strefy.
 
-KROK 1 — OPIS RYSUNKU:
-Co widzisz? Gdzie jest rzut, legenda, pieczątka, tabela pomieszczeń? Jaka kondygnacja?
+Dla każdego obszaru podaj:
+- name: nazwa odczytana z etykiety na rysunku (lub "Strefa N" jeśli brak)
+- points: lista wierzchołków polygonu jako [[x1,y1], [x2,y2], [x3,y3], ...] — współrzędne jako % wymiarów obrazu (0-100)
 
-KROK 2 — TABELA POMIESZCZEŃ:
-Odczytaj tabelę zestawienia pomieszczeń (jeśli jest). Lista: nazwa + powierzchnia (m²).
-To będzie checklist do weryfikacji.
+WAŻNE:
+- Każdy widoczny wydzielony obszar MUSI być w wynikach
+- Obszary NIE MOGĄ się nakładać
+- Podążaj wzdłuż ścian pomieszczenia — punkty to narożniki ścian
+- Minimum 3 punkty na pomieszczenie, zwykle 4-8 punktów
+- Kolejność punktów: zgodnie z ruchem wskazówek zegara
 
-KROK 3 — OBRYS BUDYNKU:
-Zidentyfikuj ściany zewnętrzne (najgrubsze linie). Podaj bounding box CAŁEGO rzutu
-(obrys ścian zewnętrznych) jako % obrazu: x, y, width, height.
+Dodatkowo wykryj:
+- Obrys budynku (outline) — bounding box ścian zewnętrznych jako % obrazu
+- Skalę rysunku i NAJDŁUŻSZY wymiar zewnętrzny z jego współrzędnymi
+- Jednostkę wymiaru: mm lub cm
+- Tabelę zestawienia (jeśli istnieje)
+- Typ/nazwę rysunku (np. "Rzut fundamentów", "Rzut parteru")
 
-KROK 4 — SKALA I WYMIARY ZEWNĘTRZNE:
-Znajdź skalę rysunku (np. "1:100").
-KLUCZOWE: Znajdź NAJDŁUŻSZY wymiar zewnętrzny budynku (linia wymiarowa z wartością w mm, np. "12 500" lub "12500").
-Wymiary na rysunkach architektonicznych są ZAWSZE podane w milimetrach.
-Podaj współrzędne POCZĄTKU i KOŃCA tej linii wymiarowej jako % obrazu (startX, startY, endX, endY).
-Wybierz wymiar który jest najdłuższy i najbardziej czytelny — najlepiej poziomy wymiar całkowity budynku.
-
-KROK 5 — POMIESZCZENIA:
-Wykryj pomieszczenia WYŁĄCZNIE wewnątrz obrysu z kroku 3.
-Dopasuj nazwy do tabeli z kroku 2. Podaj bounding box każdego jako % obrazu.
-
-KROK 6 — WERYFIKACJA:
-- Czy liczba pokoi zgadza się z tabelą?
-- Czy każdy pokój mieści się w obrysie budynku?
-- Czy proporcje powierzchni są sensowne?
-
-Na końcu podaj wynik jako JSON w bloku:
+Odpowiedz WYŁĄCZNIE blokiem JSON:
 \`\`\`json
 {
-  "floorName": "Rzut parteru",
+  "floorName": "Rzut fundamentów",
   "outline": { "x": 15, "y": 10, "width": 60, "height": 75 },
-  "scale": { "label": "1:100", "dimensionMm": 12500, "startX": 10, "startY": 85, "endX": 75, "endY": 85 },
+  "scale": {
+    "label": "1:100",
+    "dimensionValue": 1524,
+    "dimensionUnit": "cm",
+    "startX": 22, "startY": 12, "endX": 78, "endY": 12
+  },
   "tableRooms": [
-    { "name": "Salon", "areaMFromTable": 25.5 }
+    { "name": "Ława fundamentowa", "areaMFromTable": 25.5 }
   ],
   "rooms": [
-    { "name": "Salon", "x": 20, "y": 15, "width": 25, "height": 30, "areaMFromTable": 25.5 }
+    { "name": "Salon", "points": [[20,15], [45,15], [45,45], [20,45]] },
+    { "name": "Kuchnia", "points": [[45,15], [65,15], [65,35], [50,35], [50,45], [45,45]] },
+    { "name": "Łazienka", "points": [[20,45], [35,45], [35,60], [20,60]] }
   ]
 }
 \`\`\`
 
-Jeśli nie widzisz żadnych pomieszczeń, zwróć:
-\`\`\`json
-{"rooms": []}
-\`\`\`
-
-Uwagi:
-- outline, scale, tableRooms mogą być null jeśli nie udało się ich wykryć
-- areaMFromTable w rooms to powierzchnia z tabeli (jeśli znaleziono dopasowanie)`,
+Pola:
+- rooms[].points — wierzchołki polygonu (narożniki ścian) jako % obrazu, minimum 3 punkty
+- scale.dimensionValue — wartość wymiaru DOKŁADNIE jak na rysunku
+- scale.dimensionUnit — "cm" lub "mm"
+- outline, scale, tableRooms — null jeśli nie znaleziono`,
             },
           ],
         },
@@ -262,16 +260,22 @@ Uwagi:
 
     const parsed = parseJsonFromResponse(content);
     if (!parsed || !Array.isArray(parsed.rooms)) {
-      console.error('Failed to parse AI response:', content);
+      console.error('Failed to parse AI response:', content.substring(0, 2000));
       return NextResponse.json(
-        { error: 'Nie udało się przetworzyć odpowiedzi AI' },
+        { error: 'Nie udało się przetworzyć odpowiedzi AI', rawExcerpt: content.substring(0, 500) },
         { status: 500 }
       );
     }
 
+    console.log('[AI] Raw rooms:', JSON.stringify(parsed.rooms, null, 2));
+    console.log('[AI] Raw outline:', JSON.stringify(parsed.outline));
+    console.log('[AI] Raw scale:', JSON.stringify(parsed.scale));
+
     const outline = validateOutline(parsed.outline);
-    let validatedRooms = validateAndClampRooms(parsed.rooms);
-    validatedRooms = validateRoomsAgainstOutline(validatedRooms, outline);
+    const afterClamp = validateAndClampRooms(parsed.rooms);
+    console.log('[AI] After clamp validation:', afterClamp.length, 'of', parsed.rooms.length);
+    const validatedRooms = validateRoomsAgainstOutline(afterClamp, outline);
+    console.log('[AI] After outline validation:', validatedRooms.length, 'of', afterClamp.length);
 
     const tableRooms: TableRoom[] | null = Array.isArray(parsed.tableRooms)
       ? parsed.tableRooms.filter(
@@ -283,9 +287,13 @@ Uwagi:
       parsed.scale && typeof parsed.scale.label === 'string'
         ? {
             label: parsed.scale.label,
-            dimensionMm:
-              typeof parsed.scale.dimensionMm === 'number'
-                ? parsed.scale.dimensionMm
+            dimensionValue:
+              typeof parsed.scale.dimensionValue === 'number'
+                ? parsed.scale.dimensionValue
+                : null,
+            dimensionUnit:
+              parsed.scale.dimensionUnit === 'cm' ? 'cm'
+                : parsed.scale.dimensionUnit === 'mm' ? 'mm'
                 : null,
             startX:
               typeof parsed.scale.startX === 'number'
