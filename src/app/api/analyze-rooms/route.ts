@@ -160,31 +160,26 @@ export async function POST(request: Request) {
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 4096,
-      system: `Jesteś ekspertem budowlanym analizującym rysunki architektoniczne i konstrukcyjne.
-
-Twoim zadaniem jest wykrycie WSZYSTKICH wydzielonych obszarów/stref na rysunku.
-
-Rysunek może być:
-- Rzutem parteru/piętra — wtedy obszary to POMIESZCZENIA (salon, kuchnia, łazienka, korytarz itd.)
-- Rzutem fundamentów — wtedy obszary to STREFY FUNDAMENTOWE (ławy, stopy, płyty fundamentowe itd.)
-- Przekrojem — wtedy obszary to warstwy/elementy konstrukcyjne
-- Innym rysunkiem technicznym
-
-ZASADY:
-- Nazwy ODCZYTUJ z etykiet na rysunku — NIE wymyślaj
-- Jeśli brak etykiety, nazwij: "Strefa 1", "Strefa 2" itd.
-- Każdy obszar opisz jako POLYGON — listę wierzchołków (punktów narożnych ścian)
-- Współrzędne punktów jako % wymiarów OBRAZU (0-100)
-- Obszary NIE MOGĄ się na siebie nakładać
-- IGNORUJ elementy poza rysunkiem technicznym: legendy, pieczątki, ramki, tabelki opisu
-- Wymiary na rysunkach mogą być w mm LUB cm — określ jednostkę na podstawie kontekstu
-- ZAWSZE wykryj obszary — lepiej więcej niż mniej
-- Pomieszczenia mają kształt WIELOKĄTÓW (polygon), nie prostokątów — podążaj wzdłuż ścian`,
+      max_tokens: 16000,
+      thinking: {
+        type: 'enabled',
+        budget_tokens: 10000,
+      },
       messages: [
         {
           role: 'user',
           content: [
+            {
+              type: 'text',
+              text: `Jesteś ekspertem budowlanym analizującym rysunki architektoniczne i konstrukcyjne.
+
+SIATKA REFERENCYJNA — JAK CZYTAĆ WSPÓŁRZĘDNE:
+Na obraz nałożona jest czerwona siatka z etykietami "X,Y" na skrzyżowaniach.
+Etykiety mają format "kolumna,wiersz" np. "30,40" oznacza x=30%, y=40% obrazu.
+Główne linie co 10% (0,10,20...100). Przerywane linie co 5%.
+
+Rysunek może być rzutem parteru/piętra (pomieszczenia), fundamentów (strefy fundamentowe), przekrojem lub innym rysunkiem technicznym.`,
+            },
             {
               type: 'image',
               source: {
@@ -195,53 +190,40 @@ ZASADY:
             },
             {
               type: 'text',
-              text: `Przeanalizuj ten rysunek budowlany i wykryj wszystkie wydzielone obszary/strefy.
+              text: `Przeanalizuj ten rysunek budowlany. Wykryj WSZYSTKIE wydzielone obszary/strefy.
 
-Dla każdego obszaru podaj:
-- name: nazwa odczytana z etykiety na rysunku (lub "Strefa N" jeśli brak)
-- points: lista wierzchołków polygonu jako [[x1,y1], [x2,y2], [x3,y3], ...] — współrzędne jako % wymiarów obrazu (0-100)
+INSTRUKCJA — dla każdego obszaru:
+1. Znajdź narożniki ścian/krawędzi obszaru
+2. Dla KAŻDEGO narożnika: odczytaj jego pozycję z czerwonej siatki referencyjnej (etykiety "X,Y")
+3. Interpoluj precyzyjnie: jeśli punkt jest między siatką 20 a 30, bliżej 20 → wartość ≈ 23
+4. Zapisz jako polygon [[x1,y1], [x2,y2], ...] — współrzędne 0-100 (% obrazu)
 
-WAŻNE:
-- Każdy widoczny wydzielony obszar MUSI być w wynikach
+ZASADY:
+- Nazwy ODCZYTUJ z etykiet na rysunku — NIE wymyślaj
+- Jeśli brak etykiety → "Strefa 1", "Strefa 2" itd.
+- Minimum 3 punkty na polygon, zwykle 4-8
+- Kolejność: zgodnie z ruchem wskazówek zegara
 - Obszary NIE MOGĄ się nakładać
-- Podążaj wzdłuż ścian pomieszczenia — punkty to narożniki ścian
-- Minimum 3 punkty na pomieszczenie, zwykle 4-8 punktów
-- Kolejność punktów: zgodnie z ruchem wskazówek zegara
+- Sąsiednie obszary MUSZĄ dzielić punkty wspólnej krawędzi
+- IGNORUJ legendy, pieczątki, ramki, tabelki — tylko rysunek techniczny
+- IGNORUJ czerwoną siatkę — to nakładka pomocnicza
 
-Dodatkowo wykryj:
-- Obrys budynku (outline) — bounding box ścian zewnętrznych jako % obrazu
-- Skalę rysunku i NAJDŁUŻSZY wymiar zewnętrzny z jego współrzędnymi
-- Jednostkę wymiaru: mm lub cm
-- Tabelę zestawienia (jeśli istnieje)
-- Typ/nazwę rysunku (np. "Rzut fundamentów", "Rzut parteru")
+Dodatkowo wykryj: outline (bounding box ścian zewnętrznych), skalę, tabelę zestawienia, nazwę rysunku.
 
-Odpowiedz WYŁĄCZNIE blokiem JSON:
+Odpowiedz WYŁĄCZNIE JSON:
 \`\`\`json
 {
   "floorName": "Rzut fundamentów",
   "outline": { "x": 15, "y": 10, "width": 60, "height": 75 },
-  "scale": {
-    "label": "1:100",
-    "dimensionValue": 1524,
-    "dimensionUnit": "cm",
-    "startX": 22, "startY": 12, "endX": 78, "endY": 12
-  },
-  "tableRooms": [
-    { "name": "Ława fundamentowa", "areaMFromTable": 25.5 }
-  ],
+  "scale": { "label": "1:100", "dimensionValue": 1524, "dimensionUnit": "cm", "startX": 22, "startY": 12, "endX": 78, "endY": 12 },
+  "tableRooms": [{ "name": "Ława fundamentowa", "areaMFromTable": 25.5 }],
   "rooms": [
     { "name": "Salon", "points": [[20,15], [45,15], [45,45], [20,45]] },
-    { "name": "Kuchnia", "points": [[45,15], [65,15], [65,35], [50,35], [50,45], [45,45]] },
-    { "name": "Łazienka", "points": [[20,45], [35,45], [35,60], [20,60]] }
+    { "name": "Kuchnia", "points": [[45,15], [65,15], [65,35], [50,35], [50,45], [45,45]] }
   ]
 }
 \`\`\`
-
-Pola:
-- rooms[].points — wierzchołki polygonu (narożniki ścian) jako % obrazu, minimum 3 punkty
-- scale.dimensionValue — wartość wymiaru DOKŁADNIE jak na rysunku
-- scale.dimensionUnit — "cm" lub "mm"
-- outline, scale, tableRooms — null jeśli nie znaleziono`,
+Pola: rooms[].points — % obrazu (0-100), odczytane z siatki. outline/scale/tableRooms — null jeśli brak.`,
             },
           ],
         },

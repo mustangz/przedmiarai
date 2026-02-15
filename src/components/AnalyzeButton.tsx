@@ -31,6 +31,87 @@ interface Props {
   onLoadingChange?: (loading: boolean) => void;
 }
 
+/** Draw a reference grid overlay with labeled intersections for AI coordinate accuracy */
+async function addGridOverlay(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+
+      // Draw original image
+      ctx.drawImage(img, 0, 0);
+
+      const w = img.width;
+      const h = img.height;
+      const lineW = Math.max(1, Math.round(Math.min(w, h) / 600));
+      const fontSize = Math.max(9, Math.round(Math.min(w, h) / 80));
+
+      // Draw major grid lines every 10% (thicker)
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+      ctx.lineWidth = lineW;
+      for (let i = 0; i <= 10; i++) {
+        const x = Math.round((i / 10) * w);
+        const y = Math.round((i / 10) * h);
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+
+      // Draw minor grid lines every 5% (thinner, dashed)
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.25)';
+      ctx.lineWidth = Math.max(1, lineW * 0.5);
+      ctx.setLineDash([4, 4]);
+      for (let i = 1; i <= 19; i += 2) {
+        const x = Math.round((i / 20) * w);
+        const y = Math.round((i / 20) * h);
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // Draw coordinate labels at intersections along edges
+      ctx.font = `bold ${fontSize}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let col = 0; col <= 10; col++) {
+        for (let row = 0; row <= 10; row++) {
+          const x = Math.round((col / 10) * w);
+          const y = Math.round((row / 10) * h);
+
+          // Labels on top edge and left edge, plus every other intersection
+          const isEdge = col === 0 || row === 0;
+          const isEveryOther = col % 2 === 0 && row % 2 === 0;
+          if (!isEdge && !isEveryOther) continue;
+
+          const label = `${col * 10},${row * 10}`;
+          const tw = ctx.measureText(label).width + 4;
+          const th = fontSize + 2;
+
+          // White background with border
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+          ctx.fillRect(x - tw / 2, y - th / 2, tw, th);
+          ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x - tw / 2, y - th / 2, tw, th);
+
+          // Label text
+          ctx.fillStyle = 'rgba(200, 0, 0, 1)';
+          ctx.fillText(label, x, y);
+        }
+      }
+
+      const result = canvas.toDataURL('image/jpeg', 0.85);
+      console.log('[addGridOverlay] Grid overlay applied:', w, 'x', h, '→', (result.length / 1024).toFixed(0), 'KB');
+      resolve(result);
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 /** Compress image if base64 is too large for API (>4MB) */
 async function compressIfNeeded(dataUrl: string, maxBytes = 4 * 1024 * 1024): Promise<string> {
   if (dataUrl.length < maxBytes) return dataUrl;
@@ -70,14 +151,67 @@ export async function runAnalysis(
 
   try {
     const compressed = await compressIfNeeded(imageUrl);
+    const withGrid = await addGridOverlay(compressed);
     const res = await fetch('/api/analyze-rooms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageBase64: compressed }),
+      body: JSON.stringify({ imageBase64: withGrid }),
     });
 
     const data = await res.json();
     console.log('[runAnalysis] API response status:', res.status, 'rooms:', data.rooms?.length, 'raw:', JSON.stringify(data).substring(0, 500));
+
+    // DEBUG: draw AI polygons on grid image
+    if (data.rooms?.length) {
+      const debugImg = new Image();
+      debugImg.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = debugImg.width;
+        c.height = debugImg.height;
+        const cx = c.getContext('2d')!;
+        cx.drawImage(debugImg, 0, 0);
+        const colors = ['#ff0000', '#00ff00', '#0000ff', '#ff00ff', '#ffff00', '#00ffff', '#ff8800', '#8800ff', '#00ff88'];
+        data.rooms.forEach((room: { name: string; points: number[][] }, i: number) => {
+          const color = colors[i % colors.length];
+          cx.strokeStyle = color;
+          cx.lineWidth = 3;
+          cx.fillStyle = color + '33';
+          cx.beginPath();
+          room.points.forEach((p: number[], j: number) => {
+            const px = (p[0] / 100) * c.width;
+            const py = (p[1] / 100) * c.height;
+            if (j === 0) cx.moveTo(px, py); else cx.lineTo(px, py);
+          });
+          cx.closePath();
+          cx.fill();
+          cx.stroke();
+          // Label
+          const centX = room.points.reduce((s: number, p: number[]) => s + p[0], 0) / room.points.length;
+          const centY = room.points.reduce((s: number, p: number[]) => s + p[1], 0) / room.points.length;
+          cx.font = 'bold 14px monospace';
+          cx.fillStyle = color;
+          cx.fillText(`${i}: ${room.name}`, (centX / 100) * c.width, (centY / 100) * c.height);
+          // Point markers
+          room.points.forEach((p: number[]) => {
+            const px = (p[0] / 100) * c.width;
+            const py = (p[1] / 100) * c.height;
+            cx.fillStyle = '#fff';
+            cx.beginPath(); cx.arc(px, py, 5, 0, Math.PI * 2); cx.fill();
+            cx.fillStyle = color;
+            cx.beginPath(); cx.arc(px, py, 3, 0, Math.PI * 2); cx.fill();
+            cx.fillStyle = '#000';
+            cx.font = '10px monospace';
+            cx.fillText(`${p[0]},${p[1]}`, px + 6, py - 4);
+          });
+        });
+        const debugWin = window.open('');
+        if (debugWin) {
+          debugWin.document.write(`<img src="${c.toDataURL('image/png')}" style="max-width:100%"/>`);
+          debugWin.document.title = 'DEBUG: AI polygons on grid';
+        }
+      };
+      debugImg.src = withGrid;
+    }
 
     if (!res.ok) {
       return { error: data.error || 'Błąd analizy' };
