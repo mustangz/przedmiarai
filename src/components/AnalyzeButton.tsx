@@ -31,6 +31,37 @@ interface Props {
   onLoadingChange?: (loading: boolean) => void;
 }
 
+/** Compress image if base64 is too large for API (>4MB) */
+async function compressIfNeeded(dataUrl: string, maxBytes = 4 * 1024 * 1024): Promise<string> {
+  if (dataUrl.length < maxBytes) return dataUrl;
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      // Scale down to reduce size
+      const maxDim = 2000;
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const compressed = canvas.toDataURL('image/jpeg', 0.8);
+      console.log('[compressIfNeeded] Compressed from', (dataUrl.length / 1024).toFixed(0), 'KB to', (compressed.length / 1024).toFixed(0), 'KB');
+      resolve(compressed);
+    };
+    img.onerror = () => resolve(dataUrl); // fallback to original
+    img.src = dataUrl;
+  });
+}
+
 export async function runAnalysis(
   imageUrl: string,
   onLoadingChange?: (loading: boolean) => void,
@@ -38,13 +69,15 @@ export async function runAnalysis(
   onLoadingChange?.(true);
 
   try {
+    const compressed = await compressIfNeeded(imageUrl);
     const res = await fetch('/api/analyze-rooms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageBase64: imageUrl }),
+      body: JSON.stringify({ imageBase64: compressed }),
     });
 
     const data = await res.json();
+    console.log('[runAnalysis] API response status:', res.status, 'rooms:', data.rooms?.length, 'raw:', JSON.stringify(data).substring(0, 500));
 
     if (!res.ok) {
       return { error: data.error || 'Błąd analizy' };

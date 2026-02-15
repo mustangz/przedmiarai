@@ -202,15 +202,18 @@ export default function ProjectEditor() {
   }, [imageUrl, isPdfSource, imgTransform]);
 
   // Trigger AI analysis for a given image data URL
-  const triggerAnalysis = useCallback(async (dataUrl: string) => {
+  const triggerAnalysis = async (dataUrl: string) => {
+    console.log('[Auto-AI] Starting analysis, dataUrl length:', dataUrl.length);
     setIsAnalyzing(true);
     const result = await runAnalysis(dataUrl);
+    console.log('[Auto-AI] Result:', 'error' in result ? result.error : `${result.rooms.length} rooms`);
     setIsAnalyzing(false);
 
     if (!('error' in result)) {
+      console.log('[Auto-AI] Calling handleAnalysisComplete with', result.rooms.length, 'rooms');
       handleAnalysisComplete(result);
     }
-  }, [handleAnalysisComplete]);
+  };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -259,7 +262,8 @@ export default function ProjectEditor() {
 
         await page.render({ canvas, canvasContext: ctx, viewport }).promise;
 
-        const dataUrl = canvas.toDataURL('image/png');
+        // Use JPEG for smaller payload (PNG can be 10MB+)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
         setImageUrl(dataUrl);
         setIsPdfSource(true);
         setMeasurements([]);
