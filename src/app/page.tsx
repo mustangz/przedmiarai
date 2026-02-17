@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 /* ─── Inline SVG icons ─── */
 const Icons = {
@@ -95,7 +96,6 @@ const rooms = [
   { name: 'Łazienka',  dims: '3.2 × 2.7 m', w: '3.2 m', h: '2.7 m', area: '8.7 m²',  perimeter: '11.8 m', cls: 'mockup-room-4' },
 ];
 
-// Room display phases: hidden → detected (show dims) → measured (show area)
 type RoomPhase = 'hidden' | 'detected' | 'measured';
 
 function ProductMockup() {
@@ -112,16 +112,13 @@ function ProductMockup() {
     });
   };
 
-  // Start animation
   useEffect(() => {
     const t = setTimeout(() => setPhase('scanning'), 1200);
     return () => clearTimeout(t);
   }, []);
 
-  // Scanning phase: scan line + detect rooms (show dims)
   useEffect(() => {
     if (phase !== 'scanning') return;
-
     let progress = 0;
     const scanInterval = setInterval(() => {
       progress += 1.0;
@@ -131,36 +128,24 @@ function ProductMockup() {
         setPhase('measuring');
       }
     }, 30);
-
-    // Detect rooms at scan thresholds — show dimensions
     const thresholds = [18, 38, 58, 78];
     const timers = thresholds.map((th, i) =>
       setTimeout(() => setRoomPhase(i, 'detected'), (th / 1.0) * 30)
     );
-
-    return () => {
-      clearInterval(scanInterval);
-      timers.forEach(clearTimeout);
-    };
+    return () => { clearInterval(scanInterval); timers.forEach(clearTimeout); };
   }, [phase]);
 
-  // Measuring phase: convert dims → area one by one
   useEffect(() => {
     if (phase !== 'measuring') return;
-
     const timers = rooms.map((_, i) =>
       setTimeout(() => {
         setRoomPhase(i, 'measured');
-        if (i === rooms.length - 1) {
-          setTimeout(() => setPhase('done'), 600);
-        }
+        if (i === rooms.length - 1) setTimeout(() => setPhase('done'), 600);
       }, 400 + i * 500)
     );
-
     return () => timers.forEach(clearTimeout);
   }, [phase]);
 
-  // Loop
   useEffect(() => {
     if (phase !== 'done') return;
     const t = setTimeout(() => {
@@ -179,60 +164,33 @@ function ProductMockup() {
     <div className="hero-visual">
       <div className="hero-mockup">
         <div className="mockup-header">
-          <div className="mockup-dot" />
-          <div className="mockup-dot" />
-          <div className="mockup-dot" />
+          <div className="mockup-dot" /><div className="mockup-dot" /><div className="mockup-dot" />
           <div className="mockup-header-status">
-            {phase === 'scanning' && (
-              <span className="mockup-status scanning">
-                <span className="mockup-status-dot" />
-                Skanowanie rysunku...
-              </span>
-            )}
-            {phase === 'measuring' && (
-              <span className="mockup-status scanning">
-                <span className="mockup-status-dot" />
-                Obliczanie powierzchni...
-              </span>
-            )}
-            {phase === 'done' && (
-              <span className="mockup-status done">
-                <Icons.Check />
-                Gotowe — 4 pomieszczenia, 63.6 m²
-              </span>
-            )}
+            {phase === 'scanning' && <span className="mockup-status scanning"><span className="mockup-status-dot" />Skanowanie rysunku...</span>}
+            {phase === 'measuring' && <span className="mockup-status scanning"><span className="mockup-status-dot" />Obliczanie powierzchni...</span>}
+            {phase === 'done' && <span className="mockup-status done"><Icons.Check />Gotowe — 4 pomieszczenia, 63.6 m²</span>}
           </div>
         </div>
         <div className="mockup-body">
           <div className="mockup-canvas">
             <div className="mockup-floorplan">
-              {/* Scan line */}
-              {phase === 'scanning' && (
-                <div className="scan-line" style={{ top: `${scanProgress}%` }} />
-              )}
-
-              {/* Static wall lines */}
+              {phase === 'scanning' && <div className="scan-line" style={{ top: `${scanProgress}%` }} />}
               <div className="floorplan-lines">
                 <div className="fp-line fp-h" style={{ top: '50%' }} />
                 <div className="fp-line fp-v" style={{ left: '48%' }} />
                 <div className="fp-line fp-v" style={{ left: '60%', top: '50%', height: '50%' }} />
               </div>
-
-              {/* Rooms */}
               {rooms.map((room, i) => (
-                <div
-                  key={room.name}
+                <div key={room.name}
                   className={`mockup-room ${room.cls} ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''} ${hoveredRoom === i ? 'hovered' : ''}`}
                   onMouseEnter={() => isMeasured(i) && setHoveredRoom(i)}
-                  onMouseLeave={() => setHoveredRoom(null)}
-                >
+                  onMouseLeave={() => setHoveredRoom(null)}>
                   {isVisible(i) && (
                     <>
                       <div className="room-label">
                         <span className="room-dims">{isMeasured(i) ? room.area : room.dims}</span>
                         {isMeasured(i) && <span className="room-name">{room.name}</span>}
                       </div>
-                      {/* Wall dimensions on hover */}
                       {hoveredRoom === i && isMeasured(i) && (
                         <>
                           <span className="wall-dim wall-top">{room.w}</span>
@@ -250,12 +208,10 @@ function ProductMockup() {
           <div className="mockup-sidebar">
             <div className="mockup-sidebar-title">Pomiary</div>
             {rooms.map((room, i) => (
-              <div
-                key={room.name}
+              <div key={room.name}
                 className={`mockup-measurement ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''} ${hoveredRoom === i ? 'highlighted' : ''}`}
                 onMouseEnter={() => isMeasured(i) && setHoveredRoom(i)}
-                onMouseLeave={() => setHoveredRoom(null)}
-              >
+                onMouseLeave={() => setHoveredRoom(null)}>
                 <div className="mockup-measurement-name">{room.name}</div>
                 {!isMeasured(i) ? (
                   <div className="mockup-measurement-dims">{room.dims}</div>
@@ -265,11 +221,7 @@ function ProductMockup() {
                       <span className="mockup-measurement-area">{room.area}</span>
                       <span className="mockup-measurement-perim">obw. {room.perimeter}</span>
                     </div>
-                    {hoveredRoom === i && (
-                      <div className="mockup-measurement-walls">
-                        {room.w} &times; {room.h}
-                      </div>
-                    )}
+                    {hoveredRoom === i && <div className="mockup-measurement-walls">{room.w} &times; {room.h}</div>}
                   </>
                 )}
               </div>
@@ -281,11 +233,37 @@ function ProductMockup() {
   );
 }
 
-/* ─── Presale link ─── */
-const PRESALE_URL = 'https://secure.tpay.com/?h=5ebabdbbba03abb3496e58f9845d9d515a39ec13';
+/* ─── Pricing packs ─── */
+const packs = [
+  {
+    name: 'Pionier',
+    price: 0,
+    desc: 'Zostało 5 miejsc',
+    features: ['3 analizy przedmiaru', 'Eksport Excel', 'Czas realizacji: do 24h', 'Feedback po analizie'],
+    cta: 'Dołącz jako Pionier',
+    popular: false,
+  },
+  {
+    name: 'Pakiet 5',
+    price: 399,
+    desc: '79,80 PLN za analizę',
+    features: ['5 analiz przedmiaru', 'Eksport Excel', 'Czas realizacji: do 12h', 'Weryfikacja eksperta'],
+    cta: 'Kup Pakiet 5',
+    popular: true,
+  },
+  {
+    name: 'Pakiet 15',
+    price: 899,
+    desc: '59,90 PLN za analizę',
+    features: ['15 analiz przedmiaru', 'Eksport Excel', 'Czas realizacji: do 6h', 'Weryfikacja eksperta', 'Priorytetowe wsparcie'],
+    cta: 'Kup Pakiet 15',
+    popular: false,
+  },
+];
 
 /* ─── Main Content ─── */
 function HomeContent() {
+
   return (
     <>
       {/* NAV */}
@@ -296,63 +274,123 @@ function HomeContent() {
             <span className="logo-text">PrzedmiarAI</span>
           </a>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <a href="/app/projekt/1" className="nav-cta" style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: '#fafafa' }}>
-              Panel — Skaner
-            </a>
-            <a href={PRESALE_URL} className="nav-cta">Kup presale — 299 PLN/mies</a>
+            <Link href="/login" className="nav-link-login">Zaloguj</Link>
+            <a href="#cennik" className="nav-cta">Cennik</a>
           </div>
         </div>
       </nav>
 
       {/* HERO */}
-      <section className="hero">
-        <div className="hero-badge">
-          <Icons.Sparkles />
-          <span>Presale — tylko 10 miejsc</span>
-        </div>
+      <section className="hero hero-full" id="hero">
+        {/* Animated background — floor plan */}
+        <div className="hero-bg">
+          <div className="hero-bg-grid" />
+          <div className="hero-bg-scanline" />
 
-        <h1 className="hero-title">
-          Wgraj PDF lub DWG, odbierz <span className="gradient-text">gotowy przedmiar</span>
-        </h1>
+          {/* House floor plan */}
+          <div className="hero-floorplan">
+            {/* Outer walls */}
+            <div className="fp-wall fp-outer" />
 
-        <p className="hero-subtitle">
-          Sztuczna inteligencja rozpoznaje pomieszczenia z rysunków PDF i DWG,
-          automatycznie oblicza powierzchnie. Bez ręcznego mierzenia.
-        </p>
+            {/* Internal walls */}
+            <div className="fp-wall fp-h-wall fp-wall-1" /> {/* horizontal divider top */}
+            <div className="fp-wall fp-h-wall fp-wall-2" /> {/* horizontal divider bottom */}
+            <div className="fp-wall fp-v-wall fp-wall-3" /> {/* vertical left */}
+            <div className="fp-wall fp-v-wall fp-wall-4" /> {/* vertical right */}
+            <div className="fp-wall fp-v-wall fp-wall-5" /> {/* vertical middle-bottom */}
 
-        <div className="hero-card">
-          <div className="presale-pricing">
-            <span className="price-old">499 PLN/mies</span>
-            <span className="price-new">299 PLN/mies</span>
+            {/* Room fills — revealed by scanner */}
+            <div className="fp-room fp-room-1">
+              <span className="fp-room-label">Salon</span>
+              <span className="fp-room-area">24.1 m²</span>
+            </div>
+            <div className="fp-room fp-room-2">
+              <span className="fp-room-label">Kuchnia</span>
+              <span className="fp-room-area">12.3 m²</span>
+            </div>
+            <div className="fp-room fp-room-3">
+              <span className="fp-room-label">Sypialnia</span>
+              <span className="fp-room-area">18.5 m²</span>
+            </div>
+            <div className="fp-room fp-room-4">
+              <span className="fp-room-label">Łazienka</span>
+              <span className="fp-room-area">6.2 m²</span>
+            </div>
+            <div className="fp-room fp-room-5">
+              <span className="fp-room-label">Korytarz</span>
+              <span className="fp-room-area">8.7 m²</span>
+            </div>
+            <div className="fp-room fp-room-6">
+              <span className="fp-room-label">Gabinet</span>
+              <span className="fp-room-area">10.4 m²</span>
+            </div>
+
+            {/* Dimension lines */}
+            <div className="fp-dim fp-dim-top"><span>12.8 m</span></div>
+            <div className="fp-dim fp-dim-side"><span>9.6 m</span></div>
+
+            {/* Door openings */}
+            <div className="fp-door fp-door-1" />
+            <div className="fp-door fp-door-2" />
+            <div className="fp-door fp-door-3" />
           </div>
-          <p className="hero-card-label">Tylko 10 miejsc w cenie presale. Później 499 PLN/mies.</p>
-          <a href={PRESALE_URL} className="hero-submit presale-cta">
-            Kup presale — 299 PLN/mies
-            <Icons.ArrowRight />
-          </a>
-          <ul className="presale-benefits">
-            <li><Icons.Check /><span>Cena zamrożona na zawsze</span></li>
-            <li><Icons.Check /><span>Pierwszy dostęp do nowych funkcji</span></li>
-          </ul>
         </div>
 
-        <ProductMockup />
+        <div className="hero-inner">
+          <div className="hero-badge">
+            <Icons.Sparkles />
+            <span>AI, które się uczy z każdą analizą</span>
+          </div>
+
+          <h1 className="hero-title">
+            Wgraj przedmiar PDF, odbierz <span className="gradient-text">gotowy kosztorys</span>
+          </h1>
+
+          <p className="hero-subtitle">
+            AI analizuje Twój przedmiar i generuje zestawienie w Excelu.
+            Ekspert weryfikuje każdy wynik.
+          </p>
+
+          <div className="hero-buttons">
+            <Link href="/login" className="hero-btn-primary">
+              Wypróbuj za darmo
+              <Icons.ArrowRight />
+            </Link>
+            <a href="#cennik" className="hero-btn-secondary">
+              Zobacz cennik
+            </a>
+          </div>
+        </div>
+
+        <a href="#demo" className="hero-scroll-arrow" aria-label="Przewiń w dół">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </a>
+      </section>
+
+      {/* DEMO - Scanner mockup */}
+      <section id="demo" className="demo-section">
+        <div className="container">
+          <ProductMockup />
+        </div>
       </section>
 
       {/* METRICS */}
-      <section className="metrics">
+      <section id="metrics" className="metrics">
+
         <div className="metrics-grid">
           <div className="metric">
             <div className="metric-value"><span className="gradient-text">10x</span></div>
             <div className="metric-label">szybciej niż ręcznie</div>
           </div>
           <div className="metric">
-            <div className="metric-value"><span className="gradient-text">PDF/DWG</span></div>
+            <div className="metric-value"><span className="gradient-text">PDF</span></div>
             <div className="metric-label">wgraj i gotowe</div>
           </div>
           <div className="metric">
-            <div className="metric-value"><span className="gradient-text">m²</span></div>
-            <div className="metric-label">automatyczne obliczenia</div>
+            <div className="metric-value"><span className="gradient-text">AI</span></div>
+            <div className="metric-label">weryfikowane przez eksperta</div>
           </div>
           <div className="metric">
             <div className="metric-value"><span className="gradient-text">Excel</span></div>
@@ -371,49 +409,23 @@ function HomeContent() {
               Zobacz, co się zmienia, gdy AI przejmuje żmudną robotę.
             </p>
           </div>
-
           <div className="compare-grid">
             <div className="compare-card before">
               <div className="compare-label">Bez PrzedmiarAI</div>
               <ul className="compare-list">
-                <li>
-                  <Icons.X />
-                  <span>Godziny z linijką na ekranie, piksel po pikselu</span>
-                </li>
-                <li>
-                  <Icons.X />
-                  <span>Ręczne przepisywanie wymiarów do Excela</span>
-                </li>
-                <li>
-                  <Icons.X />
-                  <span>Błędy w obliczeniach = kosztowne poprawki</span>
-                </li>
-                <li>
-                  <Icons.X />
-                  <span>Każda zmiana w projekcie = pomiary od nowa</span>
-                </li>
+                <li><Icons.X /><span>Godziny z linijką na ekranie, piksel po pikselu</span></li>
+                <li><Icons.X /><span>Ręczne przepisywanie wymiarów do Excela</span></li>
+                <li><Icons.X /><span>Błędy w obliczeniach = kosztowne poprawki</span></li>
+                <li><Icons.X /><span>Każda zmiana w projekcie = pomiary od nowa</span></li>
               </ul>
             </div>
-
             <div className="compare-card after">
               <div className="compare-label">Z PrzedmiarAI</div>
               <ul className="compare-list">
-                <li>
-                  <Icons.Check />
-                  <span>AI rozpoznaje pomieszczenia w sekundy</span>
-                </li>
-                <li>
-                  <Icons.Check />
-                  <span>Automatyczny eksport do Excel / PDF</span>
-                </li>
-                <li>
-                  <Icons.Check />
-                  <span>Precyzyjne obliczenia m² i obwodów</span>
-                </li>
-                <li>
-                  <Icons.Check />
-                  <span>Nowy rysunek? Nowy przedmiar w minutę</span>
-                </li>
+                <li><Icons.Check /><span>AI analizuje przedmiar w minuty</span></li>
+                <li><Icons.Check /><span>Automatyczny eksport do Excel</span></li>
+                <li><Icons.Check /><span>Ekspert weryfikuje każdy wynik</span></li>
+                <li><Icons.Check /><span>Nowy przedmiar? Wynik w kilka godzin</span></li>
               </ul>
             </div>
           </div>
@@ -427,42 +439,33 @@ function HomeContent() {
             <p className="section-label">Jak to działa</p>
             <h2 className="section-title">Trzy kroki do gotowego przedmiaru</h2>
             <p className="section-desc">
-              Od rysunku PDF lub DWG do gotowego zestawienia w mniej niż minutę.
+              Od przedmiaru PDF do gotowego zestawienia Excel.
             </p>
           </div>
-
           <div className="steps-grid">
             <div className="step">
               <div className="step-number">1</div>
               <div className="step-icon" style={{ background: 'rgba(139, 92, 246, 0.1)' }}>
                 <span style={{ color: '#a78bfa' }}><Icons.Upload /></span>
               </div>
-              <h3 className="step-title">Wgraj rysunek PDF lub DWG</h3>
-              <p className="step-desc">
-                Przeciągnij plik na ekran. Obsługujemy PDF, DWG, rzuty, przekroje i plany pięter.
-              </p>
+              <h3 className="step-title">Wgraj przedmiar PDF</h3>
+              <p className="step-desc">Przeciągnij plik na ekran. Obsługujemy PDF z przedmiarami robót.</p>
             </div>
-
             <div className="step">
               <div className="step-number">2</div>
               <div className="step-icon" style={{ background: 'rgba(59, 130, 246, 0.1)' }}>
                 <span style={{ color: '#60a5fa' }}><Icons.Pointer /></span>
               </div>
-              <h3 className="step-title">AI rozpoznaje pomieszczenia</h3>
-              <p className="step-desc">
-                Sztuczna inteligencja automatycznie wykrywa pomieszczenia i oblicza m² oraz obwód.
-              </p>
+              <h3 className="step-title">AI analizuje + ekspert weryfikuje</h3>
+              <p className="step-desc">Sztuczna inteligencja wyciąga dane, a nasz ekspert sprawdza poprawność.</p>
             </div>
-
             <div className="step">
               <div className="step-number">3</div>
               <div className="step-icon" style={{ background: 'rgba(6, 182, 212, 0.1)' }}>
                 <span style={{ color: '#22d3ee' }}><Icons.FileSpreadsheet /></span>
               </div>
-              <h3 className="step-title">Eksportuj przedmiar</h3>
-              <p className="step-desc">
-                Pobierz gotowe zestawienie jako Excel lub PDF. Gotowe do wyceny.
-              </p>
+              <h3 className="step-title">Pobierz Excel</h3>
+              <p className="step-desc">Gotowe zestawienie do pobrania. Przygotowane do wyceny.</p>
             </div>
           </div>
         </div>
@@ -474,86 +477,159 @@ function HomeContent() {
           <div className="section-header">
             <p className="section-label">Funkcje</p>
             <h2 className="section-title">Wszystko, czego potrzebujesz</h2>
-            <p className="section-desc">
-              Narzędzie zaprojektowane dla kosztorysantów i inżynierów.
-            </p>
+            <p className="section-desc">Narzędzie zaprojektowane dla kosztorysantów i inżynierów.</p>
           </div>
-
           <div className="features-grid">
             <div className="feature">
               <div className="feature-icon"><Icons.Zap /></div>
               <div className="feature-content">
-                <div className="feature-title">Rozpoznawanie AI</div>
-                <div className="feature-desc">Automatyczna detekcja pomieszczeń z PDF i DWG</div>
+                <div className="feature-title">Analiza AI</div>
+                <div className="feature-desc">Automatyczna ekstrakcja danych z przedmiarów PDF</div>
               </div>
             </div>
-
-            <div className="feature">
-              <div className="feature-icon"><Icons.BarChart /></div>
-              <div className="feature-content">
-                <div className="feature-title">Obliczenia m² i obwodów</div>
-                <div className="feature-desc">Precyzyjne pomiary powierzchni i obwodów</div>
-              </div>
-            </div>
-
-            <div className="feature">
-              <div className="feature-icon"><Icons.Download /></div>
-              <div className="feature-content">
-                <div className="feature-title">Eksport Excel / PDF</div>
-                <div className="feature-desc">Gotowe zestawienie do pobrania jednym klikiem</div>
-              </div>
-            </div>
-
-            <div className="feature">
-              <div className="feature-icon"><Icons.Layers /></div>
-              <div className="feature-content">
-                <div className="feature-title">Kalibracja skali</div>
-                <div className="feature-desc">Ustaw skalę rysunku dla dokładnych pomiarów</div>
-              </div>
-            </div>
-
-            <div className="feature">
-              <div className="feature-icon"><Icons.Clock /></div>
-              <div className="feature-content">
-                <div className="feature-title">Historia projektów</div>
-                <div className="feature-desc">Wszystkie projekty zapisane i dostępne w jednym miejscu</div>
-              </div>
-            </div>
-
             <div className="feature">
               <div className="feature-icon"><Icons.Shield /></div>
               <div className="feature-content">
-                <div className="feature-title">Bezpieczeństwo danych</div>
-                <div className="feature-desc">Twoje rysunki są szyfrowane i bezpieczne</div>
+                <div className="feature-title">Weryfikacja eksperta</div>
+                <div className="feature-desc">Każdy wynik sprawdzany przez doświadczonego kosztorysanta</div>
+              </div>
+            </div>
+            <div className="feature">
+              <div className="feature-icon"><Icons.Download /></div>
+              <div className="feature-content">
+                <div className="feature-title">Eksport Excel</div>
+                <div className="feature-desc">Gotowe zestawienie do pobrania jednym klikiem</div>
+              </div>
+            </div>
+            <div className="feature">
+              <div className="feature-icon"><Icons.Clock /></div>
+              <div className="feature-content">
+                <div className="feature-title">Szybka realizacja</div>
+                <div className="feature-desc">Wynik od 4h do 24h w zależności od pakietu</div>
+              </div>
+            </div>
+            <div className="feature">
+              <div className="feature-icon"><Icons.Layers /></div>
+              <div className="feature-content">
+                <div className="feature-title">Historia analiz</div>
+                <div className="feature-desc">Wszystkie analizy zapisane i dostępne w panelu</div>
+              </div>
+            </div>
+            <div className="feature">
+              <div className="feature-icon"><Icons.BarChart /></div>
+              <div className="feature-content">
+                <div className="feature-title">Rosnąca dokładność</div>
+                <div className="feature-desc">AI uczy się z każdą analizą — coraz lepsze wyniki</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section id="cta" className="cta-section">
-        <div className="cta-box">
-          <h2 className="cta-title">Zacznij oszczędzać czas</h2>
-          <p className="cta-desc">
-            Zostało tylko 10 miejsc w cenie presale.
-            Później cena wzrośnie do 499 PLN/mies.
-          </p>
-
-          <div className="cta-presale-pricing">
-            <span className="price-old">499 PLN/mies</span>
-            <span className="price-new">299 PLN/mies</span>
+      {/* INTEGRATIONS / ROADMAP */}
+      <section className="section">
+        <div className="container">
+          <div className="section-header">
+            <p className="section-label">Integracje</p>
+            <h2 className="section-title">Rozwój pod Twoje potrzeby</h2>
+            <p className="section-desc">
+              Budujemy narzędzie wspólnie z kosztorysantami. Powiedz nam, czego potrzebujesz.
+            </p>
           </div>
 
-          <a href={PRESALE_URL} className="cta-submit presale-cta">
-            Kup presale — 299 PLN/mies
-            <Icons.ArrowRight />
-          </a>
+          <div className="roadmap-grid">
+            <div className="roadmap-card roadmap-soon">
+              <div className="roadmap-badge">Wkrótce</div>
+              <div className="roadmap-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="M12 18v-6" /><path d="m9 15 3-3 3 3" /></svg>
+              </div>
+              <h3 className="roadmap-title">Eksport ATH</h3>
+              <p className="roadmap-desc">
+                Bezpośredni import do NormaPRO, Zuzia, Rodos i innych programów kosztorysowych. Zero przepisywania.
+              </p>
+            </div>
 
-          <ul className="presale-benefits cta-benefits">
-            <li><Icons.Check /><span>Cena zamrożona na zawsze</span></li>
-            <li><Icons.Check /><span>Pierwszy dostęp do nowych funkcji</span></li>
-          </ul>
+            <div className="roadmap-card roadmap-soon">
+              <div className="roadmap-badge">Wkrótce</div>
+              <div className="roadmap-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+              </div>
+              <h3 className="roadmap-title">Mapowanie KNR / KNNR</h3>
+              <p className="roadmap-desc">
+                AI automatycznie dopasuje pozycje przedmiaru do katalogów norm. Gotowe do wyceny.
+              </p>
+            </div>
+
+            <div className="roadmap-card roadmap-planned">
+              <div className="roadmap-badge planned">W planie</div>
+              <div className="roadmap-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.855z" /></svg>
+              </div>
+              <h3 className="roadmap-title">Twoje potrzeby</h3>
+              <p className="roadmap-desc">
+                Rozwijamy produkt pod realne potrzeby użytkowników. Napisz, czego Ci brakuje — zbudujemy to.
+              </p>
+            </div>
+          </div>
+
+          <div className="ai-learning-banner" style={{ marginTop: '32px' }}>
+            <Icons.Sparkles />
+            <p>
+              Stale uczymy nasze modele AI — wydajność i dokładność rosną z każdym miesiącem.
+              Każda analiza pomaga nam dostarczać lepsze wyniki.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* PRICING */}
+      <section id="cennik" className="section pricing-section">
+        <div className="container">
+          <div className="section-header">
+            <p className="section-label">Cennik</p>
+            <h2 className="section-title">Płacisz za analizę, nie za subskrypcję</h2>
+            <p className="section-desc">Bez abonamentu. Kupujesz pakiet analiz — wykorzystujesz kiedy chcesz.</p>
+          </div>
+
+          <div className="pricing-grid">
+            {packs.map((pack) => (
+              <div key={pack.name} className={`pricing-card ${pack.popular ? 'popular' : ''}`}>
+                {pack.popular && <div className="pricing-popular-badge">Najlepszy stosunek ceny</div>}
+                <div className="pricing-card-header">
+                  <h3 className="pricing-plan-name">{pack.name}</h3>
+                  <div className="pricing-price">
+                    <span className="pricing-amount">{pack.price === 0 ? '0' : pack.price}</span>
+                    <span className="pricing-currency">PLN</span>
+                  </div>
+                  <p className="pricing-per-unit">{pack.desc}</p>
+                </div>
+                <ul className="pricing-features">
+                  {pack.features.map((f) => (
+                    <li key={f}><Icons.Check /><span>{f}</span></li>
+                  ))}
+                </ul>
+                <Link
+                  href={pack.price === 0 ? '/login' : `/login?pack=${pack.price}`}
+                  className={`pricing-cta ${pack.popular ? 'popular' : ''}`}
+                >
+                  {pack.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          <div className="pricing-custom">
+            <div className="pricing-custom-inner">
+              <div>
+                <h4 className="pricing-custom-title">Potrzebujesz więcej analiz?</h4>
+                <p className="pricing-custom-desc">Przygotujemy indywidualną ofertę dopasowaną do Twojej firmy.</p>
+              </div>
+              <a href="mailto:kontakt@przedmiar.ai" className="pricing-custom-cta">
+                Napisz do nas
+                <Icons.ArrowRight />
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
