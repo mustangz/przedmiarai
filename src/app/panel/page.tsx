@@ -202,8 +202,11 @@ function AuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
           <>
             <div style={{ margin: '20px 0 8px', padding: '12px 16px', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.2)', borderRadius: 10 }}>
               <p style={{ fontSize: 14, color: '#c4b5fd', lineHeight: 1.6, margin: 0 }}>
-                <strong style={{ color: '#e9d5ff' }}>Beta — co testujemy:</strong><br />
-                Wgraj rzut PDF → AI zmierzy powierzchnie podłóg, ścian, obwody pomieszczeń → eksport do Excela
+                <strong style={{ color: '#e9d5ff' }}>Beta — co mierzymy:</strong><br />
+                Budynek architektoniczny — powierzchnie podłóg, ścian, obwody pomieszczeń z rzutu PDF. Eksport do Excela.
+              </p>
+              <p style={{ fontSize: 12, color: '#8b7fc7', lineHeight: 1.5, margin: '8px 0 0' }}>
+                Instalacje (elektryka, kanalizacja, wentylacja) — wkrótce.
               </p>
             </div>
 
@@ -227,6 +230,10 @@ function AuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
                 {loading ? 'Wysyłanie...' : 'Wyślij link'}
               </button>
             </form>
+
+            <a href="/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', marginTop: 16, fontSize: 13, color: '#a78bfa', textDecoration: 'none' }}>
+              Dowiedz się więcej o PrzedmiarAI →
+            </a>
           </>
         ) : (
           <div className="auth-sent">
@@ -377,6 +384,22 @@ export default function PanelPage() {
       setAnalyzeProgress(100);
       setState('results');
       setProgress('');
+
+      // Fire-and-forget notification to founder
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        fetch('/api/notify-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: file?.name,
+            userEmail: user.email || 'unknown',
+            pozycjeCount: allPozycje.length,
+            pagesCount: pageImages.length,
+          }),
+        }).catch(() => {});
+      } catch {}
+
     } catch (err) {
       console.error('Analysis error:', err);
       setError(err instanceof Error ? err.message : 'Błąd analizy przedmiaru');
