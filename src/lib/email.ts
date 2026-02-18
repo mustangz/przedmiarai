@@ -1,7 +1,10 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'PrzedmiarAI <onboarding@resend.dev>';
+
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY || 'dummy');
+}
 
 async function sendEmail(to: string, subject: string, html: string) {
   if (!process.env.RESEND_API_KEY) {
@@ -10,7 +13,7 @@ async function sendEmail(to: string, subject: string, html: string) {
   }
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject,
