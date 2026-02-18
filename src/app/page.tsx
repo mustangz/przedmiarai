@@ -5,6 +5,19 @@ import Link from 'next/link';
 
 /* ─── Inline SVG icons ─── */
 const Icons = {
+  Sun: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  ),
+  Moon: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  ),
   Calculator: () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="4" y="2" width="16" height="20" rx="2" />
@@ -41,9 +54,11 @@ const Icons = {
       <polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" />
     </svg>
   ),
-  Pointer: () => (
+  Scan: () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z" /><path d="m13 13 6 6" />
+      <path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" />
+      <path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+      <line x1="7" x2="17" y1="12" y2="12" />
     </svg>
   ),
   FileSpreadsheet: () => (
@@ -86,14 +101,26 @@ const Icons = {
       <polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" />
     </svg>
   ),
+  Ruler: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" />
+      <path d="m14.5 12.5 2-2" /><path d="m11.5 9.5 2-2" /><path d="m8.5 6.5 2-2" /><path d="m17.5 15.5 2-2" />
+    </svg>
+  ),
+  Home: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
+      <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    </svg>
+  ),
 };
 
 /* ─── Animated Product Mockup ─── */
 const rooms = [
-  { name: 'Salon',     dims: '5.2 × 4.6 m', w: '5.2 m', h: '4.6 m', area: '24.1 m²', perimeter: '19.6 m', cls: 'mockup-room-1' },
-  { name: 'Sypialnia', dims: '4.3 × 4.3 m', w: '4.3 m', h: '4.3 m', area: '18.5 m²', perimeter: '17.2 m', cls: 'mockup-room-2' },
-  { name: 'Kuchnia',   dims: '4.1 × 3.0 m', w: '4.1 m', h: '3.0 m', area: '12.3 m²', perimeter: '14.2 m', cls: 'mockup-room-3' },
-  { name: 'Łazienka',  dims: '3.2 × 2.7 m', w: '3.2 m', h: '2.7 m', area: '8.7 m²',  perimeter: '11.8 m', cls: 'mockup-room-4' },
+  { name: 'Salon',     dims: '5.2 × 4.6 m', w: '5.2 m', h: '4.6 m', area: '23.92 m²', perimeter: '19.6 m', cls: 'v2-mockup-room-1' },
+  { name: 'Sypialnia', dims: '4.3 × 4.4 m', w: '4.3 m', h: '4.4 m', area: '18.92 m²', perimeter: '17.4 m', cls: 'v2-mockup-room-2' },
+  { name: 'Kuchnia',   dims: '4.1 × 3.0 m', w: '4.1 m', h: '3.0 m', area: '12.30 m²', perimeter: '14.2 m', cls: 'v2-mockup-room-3' },
+  { name: 'Łazienka',  dims: '3.2 × 2.7 m', w: '3.2 m', h: '2.7 m', area: '8.64 m²',  perimeter: '11.8 m', cls: 'v2-mockup-room-4' },
 ];
 
 type RoomPhase = 'hidden' | 'detected' | 'measured';
@@ -161,42 +188,43 @@ function ProductMockup() {
   const isMeasured = (i: number) => roomPhases[i] === 'measured';
 
   return (
-    <div className="hero-visual">
-      <div className="hero-mockup">
-        <div className="mockup-header">
-          <div className="mockup-dot" /><div className="mockup-dot" /><div className="mockup-dot" />
-          <div className="mockup-header-status">
-            {phase === 'scanning' && <span className="mockup-status scanning"><span className="mockup-status-dot" />Skanowanie rysunku...</span>}
-            {phase === 'measuring' && <span className="mockup-status scanning"><span className="mockup-status-dot" />Obliczanie powierzchni...</span>}
-            {phase === 'done' && <span className="mockup-status done"><Icons.Check />Gotowe — 4 pomieszczenia, 63.6 m²</span>}
+    <div className="v2-mockup-wrap">
+      <div className="v2-mockup">
+        <div className="v2-mockup-header">
+          <div className="v2-mockup-dots">
+            <span /><span /><span />
+          </div>
+          <div className="v2-mockup-status">
+            {phase === 'idle' && <span>Oczekiwanie na rysunek...</span>}
+            {phase === 'scanning' && <span className="v2-status-active"><span className="v2-pulse" />Wykrywanie pomieszczeń i ścian...</span>}
+            {phase === 'measuring' && <span className="v2-status-active"><span className="v2-pulse" />Obliczanie obmiarów...</span>}
+            {phase === 'done' && <span className="v2-status-done"><Icons.Check /> 4 pomieszczenia — 63.78 m² — 12 pozycji przedmiaru</span>}
           </div>
         </div>
-        <div className="mockup-body">
-          <div className="mockup-canvas">
-            <div className="mockup-floorplan">
-              {phase === 'scanning' && <div className="scan-line" style={{ top: `${scanProgress}%` }} />}
-              <div className="floorplan-lines">
-                <div className="fp-line fp-h" style={{ top: '50%' }} />
-                <div className="fp-line fp-v" style={{ left: '48%' }} />
-                <div className="fp-line fp-v" style={{ left: '60%', top: '50%', height: '50%' }} />
+        <div className="v2-mockup-body">
+          <div className="v2-mockup-canvas">
+            <div className="v2-floorplan">
+              {phase === 'scanning' && <div className="v2-scanline" style={{ top: `${scanProgress}%` }} />}
+              <div className="v2-fp-lines">
+                <div className="v2-fp-line v2-fp-h" style={{ top: '50%' }} />
+                <div className="v2-fp-line v2-fp-v" style={{ left: '48%' }} />
+                <div className="v2-fp-line v2-fp-v" style={{ left: '60%', top: '50%', height: '50%' }} />
               </div>
               {rooms.map((room, i) => (
                 <div key={room.name}
-                  className={`mockup-room ${room.cls} ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''} ${hoveredRoom === i ? 'hovered' : ''}`}
+                  className={`v2-room ${room.cls} ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''} ${hoveredRoom === i ? 'hovered' : ''}`}
                   onMouseEnter={() => isMeasured(i) && setHoveredRoom(i)}
                   onMouseLeave={() => setHoveredRoom(null)}>
                   {isVisible(i) && (
                     <>
-                      <div className="room-label">
-                        <span className="room-dims">{isMeasured(i) ? room.area : room.dims}</span>
-                        {isMeasured(i) && <span className="room-name">{room.name}</span>}
+                      <div className="v2-room-label">
+                        <span className="v2-room-dims">{isMeasured(i) ? room.area : room.dims}</span>
+                        {isMeasured(i) && <span className="v2-room-name">{room.name}</span>}
                       </div>
                       {hoveredRoom === i && isMeasured(i) && (
                         <>
-                          <span className="wall-dim wall-top">{room.w}</span>
-                          <span className="wall-dim wall-bottom">{room.w}</span>
-                          <span className="wall-dim wall-left">{room.h}</span>
-                          <span className="wall-dim wall-right">{room.h}</span>
+                          <span className="v2-wall-dim v2-wall-top">{room.w}</span>
+                          <span className="v2-wall-dim v2-wall-left">{room.h}</span>
                         </>
                       )}
                     </>
@@ -205,27 +233,33 @@ function ProductMockup() {
               ))}
             </div>
           </div>
-          <div className="mockup-sidebar">
-            <div className="mockup-sidebar-title">Pomiary</div>
+          <div className="v2-mockup-sidebar">
+            <div className="v2-sidebar-title">Wykryte elementy</div>
             {rooms.map((room, i) => (
               <div key={room.name}
-                className={`mockup-measurement ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''} ${hoveredRoom === i ? 'highlighted' : ''}`}
+                className={`v2-measurement ${isVisible(i) ? 'visible' : ''} ${isMeasured(i) ? 'measured' : ''} ${hoveredRoom === i ? 'highlighted' : ''}`}
                 onMouseEnter={() => isMeasured(i) && setHoveredRoom(i)}
                 onMouseLeave={() => setHoveredRoom(null)}>
-                <div className="mockup-measurement-name">{room.name}</div>
+                <div className="v2-measurement-name">{room.name}</div>
                 {!isMeasured(i) ? (
-                  <div className="mockup-measurement-dims">{room.dims}</div>
+                  <div className="v2-measurement-dims">{room.dims}</div>
                 ) : (
-                  <>
-                    <div className="mockup-measurement-result">
-                      <span className="mockup-measurement-area">{room.area}</span>
-                      <span className="mockup-measurement-perim">obw. {room.perimeter}</span>
-                    </div>
-                    {hoveredRoom === i && <div className="mockup-measurement-walls">{room.w} &times; {room.h}</div>}
-                  </>
+                  <div className="v2-measurement-result">
+                    <span className="v2-measurement-area">{room.area}</span>
+                    <span className="v2-measurement-perim">obw. {room.perimeter}</span>
+                  </div>
                 )}
               </div>
             ))}
+            {phase === 'done' && (
+              <div className="v2-sidebar-output">
+                <div className="v2-sidebar-title" style={{ marginTop: 12 }}>Przedmiar</div>
+                <div className="v2-output-row">Posadzki — 63.78 m²</div>
+                <div className="v2-output-row">Tynki ścian — 187.4 m²</div>
+                <div className="v2-output-row">Malowanie — 251.0 m²</div>
+                <div className="v2-output-row v2-output-more">+ 9 pozycji...</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -239,193 +273,160 @@ const packs = [
     name: 'Pionier',
     price: 0,
     desc: 'Zostało 5 miejsc',
-    features: ['3 analizy przedmiaru', 'Eksport Excel', 'Czas realizacji: do 24h', 'Feedback po analizie'],
-    cta: 'Dołącz jako Pionier',
+    features: ['3 analizy rysunków', 'Do 5 stron / analiza', 'Eksport Excel', 'Czas realizacji: do 24h'],
+    cta: 'Wypróbuj za darmo',
     popular: false,
   },
   {
     name: 'Pakiet 5',
     price: 399,
-    desc: '79,80 PLN za analizę',
-    features: ['5 analiz przedmiaru', 'Eksport Excel', 'Czas realizacji: do 12h', 'Weryfikacja eksperta'],
+    desc: '79,80 PLN za projekt',
+    features: ['5 projektów', 'Do 20 stron / projekt', 'Eksport Excel', 'Weryfikacja eksperta', 'Czas realizacji: do 12h'],
     cta: 'Kup Pakiet 5',
     popular: true,
   },
   {
     name: 'Pakiet 15',
     price: 899,
-    desc: '59,90 PLN za analizę',
-    features: ['15 analiz przedmiaru', 'Eksport Excel', 'Czas realizacji: do 6h', 'Weryfikacja eksperta', 'Priorytetowe wsparcie'],
+    desc: '59,90 PLN za projekt',
+    features: ['15 projektów', 'Do 50 stron / projekt', 'Eksport Excel + ATH', 'Weryfikacja eksperta', 'Priorytetowe wsparcie'],
     cta: 'Kup Pakiet 15',
     popular: false,
   },
 ];
 
 /* ─── Main Content ─── */
-function HomeContent() {
+export default function Home() {
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') setDark(true);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }, [dark]);
 
   return (
-    <>
+    <div className={`v2 ${dark ? 'v2-dark' : ''}`}>
       {/* NAV */}
-      <nav className="navbar">
-        <div className="navbar-inner">
-          <a href="#" className="logo">
-            <div className="logo-icon"><Icons.Calculator /></div>
-            <span className="logo-text">PrzedmiarAI</span>
+      <nav className="v2-nav">
+        <div className="v2-nav-inner">
+          <a href="#" className="v2-logo">
+            <div className="v2-logo-icon"><Icons.Calculator /></div>
+            <span className="v2-logo-text">PrzedmiarAI</span>
           </a>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Link href="/login" className="nav-link-login">Zaloguj</Link>
-            <a href="#cennik" className="nav-cta">Cennik</a>
+          <div className="v2-nav-links">
+            <a href="#jak-dziala">Jak to działa</a>
+            <a href="#cennik">Cennik</a>
+            <button
+              onClick={() => setDark(!dark)}
+              className="v2-theme-toggle"
+              title={dark ? 'Jasny motyw' : 'Ciemny motyw'}
+            >
+              {dark ? <Icons.Sun /> : <Icons.Moon />}
+            </button>
+            <Link href="/login" className="v2-nav-cta">Zaloguj się</Link>
           </div>
         </div>
       </nav>
 
       {/* HERO */}
-      <section className="hero hero-full" id="hero">
-        {/* Animated background — floor plan */}
-        <div className="hero-bg">
-          <div className="hero-bg-grid" />
-          <div className="hero-bg-scanline" />
-
-          {/* House floor plan */}
-          <div className="hero-floorplan">
-            {/* Outer walls */}
-            <div className="fp-wall fp-outer" />
-
-            {/* Internal walls */}
-            <div className="fp-wall fp-h-wall fp-wall-1" /> {/* horizontal divider top */}
-            <div className="fp-wall fp-h-wall fp-wall-2" /> {/* horizontal divider bottom */}
-            <div className="fp-wall fp-v-wall fp-wall-3" /> {/* vertical left */}
-            <div className="fp-wall fp-v-wall fp-wall-4" /> {/* vertical right */}
-            <div className="fp-wall fp-v-wall fp-wall-5" /> {/* vertical middle-bottom */}
-
-            {/* Room fills — revealed by scanner */}
-            <div className="fp-room fp-room-1">
-              <span className="fp-room-label">Salon</span>
-              <span className="fp-room-area">24.1 m²</span>
-            </div>
-            <div className="fp-room fp-room-2">
-              <span className="fp-room-label">Kuchnia</span>
-              <span className="fp-room-area">12.3 m²</span>
-            </div>
-            <div className="fp-room fp-room-3">
-              <span className="fp-room-label">Sypialnia</span>
-              <span className="fp-room-area">18.5 m²</span>
-            </div>
-            <div className="fp-room fp-room-4">
-              <span className="fp-room-label">Łazienka</span>
-              <span className="fp-room-area">6.2 m²</span>
-            </div>
-            <div className="fp-room fp-room-5">
-              <span className="fp-room-label">Korytarz</span>
-              <span className="fp-room-area">8.7 m²</span>
-            </div>
-            <div className="fp-room fp-room-6">
-              <span className="fp-room-label">Gabinet</span>
-              <span className="fp-room-area">10.4 m²</span>
+      <section className="v2-hero">
+        <div className="v2-hero-content">
+          <div className="v2-hero-text">
+            <div className="v2-badge">
+              <Icons.Sparkles />
+              <span>Pierwsze takie narzędzie w Polsce</span>
             </div>
 
-            {/* Dimension lines */}
-            <div className="fp-dim fp-dim-top"><span>12.8 m</span></div>
-            <div className="fp-dim fp-dim-side"><span>9.6 m</span></div>
+            <h1 className="v2-hero-title">
+              Wgraj <span className="v2-gradient">rysunek techniczny</span>,{' '}
+              odbierz gotowy przedmiar
+            </h1>
 
-            {/* Door openings */}
-            <div className="fp-door fp-door-1" />
-            <div className="fp-door fp-door-2" />
-            <div className="fp-door fp-door-3" />
-          </div>
-        </div>
+            <p className="v2-hero-subtitle">
+              AI wykrywa pomieszczenia, ściany, drzwi i okna z Twojego rzutu.
+              Automatycznie oblicza powierzchnie, obwody i obmiary.
+              Ekspert weryfikuje wynik — dostajesz przedmiar w Excelu.
+            </p>
 
-        <div className="hero-inner">
-          <div className="hero-badge">
-            <Icons.Sparkles />
-            <span>AI, które się uczy z każdą analizą</span>
+            <div className="v2-hero-buttons">
+              <Link href="/login" className="v2-btn-primary">
+                Wypróbuj za darmo
+                <Icons.ArrowRight />
+              </Link>
+              <a href="#jak-dziala" className="v2-btn-secondary">
+                Zobacz jak to działa
+              </a>
+            </div>
+
+            <div className="v2-hero-trust">
+              <Icons.Shield />
+              <span>Każdy wynik weryfikowany przez eksperta kosztorysanta</span>
+            </div>
           </div>
 
-          <h1 className="hero-title">
-            Wgraj przedmiar PDF, odbierz <span className="gradient-text">gotowy kosztorys</span>
-          </h1>
-
-          <p className="hero-subtitle">
-            AI analizuje Twój przedmiar i generuje zestawienie w Excelu.
-            Ekspert weryfikuje każdy wynik.
-          </p>
-
-          <div className="hero-buttons">
-            <Link href="/login" className="hero-btn-primary">
-              Wypróbuj za darmo
-              <Icons.ArrowRight />
-            </Link>
-            <a href="#cennik" className="hero-btn-secondary">
-              Zobacz cennik
-            </a>
+          <div className="v2-hero-visual">
+            <ProductMockup />
           </div>
-        </div>
-
-        <a href="#demo" className="hero-scroll-arrow" aria-label="Przewiń w dół">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </a>
-      </section>
-
-      {/* DEMO - Scanner mockup */}
-      <section id="demo" className="demo-section">
-        <div className="container">
-          <ProductMockup />
         </div>
       </section>
 
       {/* METRICS */}
-      <section id="metrics" className="metrics">
-
-        <div className="metrics-grid">
-          <div className="metric">
-            <div className="metric-value"><span className="gradient-text">10x</span></div>
-            <div className="metric-label">szybciej niż ręcznie</div>
-          </div>
-          <div className="metric">
-            <div className="metric-value"><span className="gradient-text">PDF</span></div>
-            <div className="metric-label">wgraj i gotowe</div>
-          </div>
-          <div className="metric">
-            <div className="metric-value"><span className="gradient-text">AI</span></div>
-            <div className="metric-label">weryfikowane przez eksperta</div>
-          </div>
-          <div className="metric">
-            <div className="metric-value"><span className="gradient-text">Excel</span></div>
-            <div className="metric-label">eksport jednym klikiem</div>
+      <section className="v2-metrics">
+        <div className="v2-container">
+          <div className="v2-metrics-grid">
+            <div className="v2-metric">
+              <div className="v2-metric-icon"><Icons.Scan /></div>
+              <div className="v2-metric-value">AI</div>
+              <div className="v2-metric-label">wykrywa elementy z rysunku</div>
+            </div>
+            <div className="v2-metric">
+              <div className="v2-metric-icon"><Icons.Ruler /></div>
+              <div className="v2-metric-value">m² mb</div>
+              <div className="v2-metric-label">automatyczne obmiary</div>
+            </div>
+            <div className="v2-metric">
+              <div className="v2-metric-icon"><Icons.Shield /></div>
+              <div className="v2-metric-value">100%</div>
+              <div className="v2-metric-label">weryfikacja eksperta</div>
+            </div>
+            <div className="v2-metric">
+              <div className="v2-metric-icon"><Icons.Download /></div>
+              <div className="v2-metric-value">Excel</div>
+              <div className="v2-metric-label">gotowy przedmiar</div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* BEFORE / AFTER */}
-      <section className="section">
-        <div className="container">
-          <div className="section-header">
-            <p className="section-label">Problem</p>
-            <h2 className="section-title">Koniec z ręcznym przedmiarowaniem</h2>
-            <p className="section-desc">
-              Zobacz, co się zmienia, gdy AI przejmuje żmudną robotę.
-            </p>
+      {/* PROBLEM */}
+      <section className="v2-section">
+        <div className="v2-container">
+          <div className="v2-section-header">
+            <span className="v2-label">Problem</span>
+            <h2>Ręczne przedmiarowanie zabiera 70% czasu</h2>
+            <p>Kosztorysant siedzi z linijką nad rysunkiem i liczy metry kwadratowe. To przeszłość.</p>
           </div>
-          <div className="compare-grid">
-            <div className="compare-card before">
-              <div className="compare-label">Bez PrzedmiarAI</div>
-              <ul className="compare-list">
-                <li><Icons.X /><span>Godziny z linijką na ekranie, piksel po pikselu</span></li>
-                <li><Icons.X /><span>Ręczne przepisywanie wymiarów do Excela</span></li>
-                <li><Icons.X /><span>Błędy w obliczeniach = kosztowne poprawki</span></li>
-                <li><Icons.X /><span>Każda zmiana w projekcie = pomiary od nowa</span></li>
+          <div className="v2-compare">
+            <div className="v2-compare-card v2-before">
+              <div className="v2-compare-label">Tradycyjnie</div>
+              <ul>
+                <li><Icons.X /><span>Godziny z linijką nad rysunkiem</span></li>
+                <li><Icons.X /><span>Ręczne liczenie powierzchni i obwodów</span></li>
+                <li><Icons.X /><span>Przepisywanie wymiarów do Excela</span></li>
+                <li><Icons.X /><span>Zmiana w projekcie = pomiary od nowa</span></li>
               </ul>
             </div>
-            <div className="compare-card after">
-              <div className="compare-label">Z PrzedmiarAI</div>
-              <ul className="compare-list">
-                <li><Icons.Check /><span>AI analizuje przedmiar w minuty</span></li>
-                <li><Icons.Check /><span>Automatyczny eksport do Excel</span></li>
-                <li><Icons.Check /><span>Ekspert weryfikuje każdy wynik</span></li>
-                <li><Icons.Check /><span>Nowy przedmiar? Wynik w kilka godzin</span></li>
+            <div className="v2-compare-card v2-after">
+              <div className="v2-compare-label">Z PrzedmiarAI</div>
+              <ul>
+                <li><Icons.Check /><span>AI skanuje rysunek i wykrywa elementy</span></li>
+                <li><Icons.Check /><span>Automatyczne obliczanie m², mb, szt.</span></li>
+                <li><Icons.Check /><span>Gotowy przedmiar w Excelu</span></li>
+                <li><Icons.Check /><span>Nowy rysunek = nowy wynik w godziny</span></li>
               </ul>
             </div>
           </div>
@@ -433,220 +434,205 @@ function HomeContent() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="section" style={{ background: 'rgba(255,255,255,0.01)' }}>
-        <div className="container">
-          <div className="section-header">
-            <p className="section-label">Jak to działa</p>
-            <h2 className="section-title">Trzy kroki do gotowego przedmiaru</h2>
-            <p className="section-desc">
-              Od przedmiaru PDF do gotowego zestawienia Excel.
-            </p>
+      <section className="v2-section v2-section-alt" id="jak-dziala">
+        <div className="v2-container">
+          <div className="v2-section-header">
+            <span className="v2-label">Jak to działa</span>
+            <h2>Od rysunku do przedmiaru w 3 krokach</h2>
+            <p>Wgrywasz rzut w PDF — AI robi resztę.</p>
           </div>
-          <div className="steps-grid">
-            <div className="step">
-              <div className="step-number">1</div>
-              <div className="step-icon" style={{ background: 'rgba(139, 92, 246, 0.1)' }}>
-                <span style={{ color: '#a78bfa' }}><Icons.Upload /></span>
-              </div>
-              <h3 className="step-title">Wgraj przedmiar PDF</h3>
-              <p className="step-desc">Przeciągnij plik na ekran. Obsługujemy PDF z przedmiarami robót.</p>
+          <div className="v2-steps">
+            <div className="v2-step">
+              <div className="v2-step-num">1</div>
+              <div className="v2-step-icon"><Icons.Upload /></div>
+              <h3>Wgraj rysunek PDF</h3>
+              <p>Rzut kondygnacji, przekrój, plan zagospodarowania — dowolny rysunek techniczny w PDF.</p>
             </div>
-            <div className="step">
-              <div className="step-number">2</div>
-              <div className="step-icon" style={{ background: 'rgba(59, 130, 246, 0.1)' }}>
-                <span style={{ color: '#60a5fa' }}><Icons.Pointer /></span>
-              </div>
-              <h3 className="step-title">AI analizuje + ekspert weryfikuje</h3>
-              <p className="step-desc">Sztuczna inteligencja wyciąga dane, a nasz ekspert sprawdza poprawność.</p>
+            <div className="v2-step-arrow">&rarr;</div>
+            <div className="v2-step">
+              <div className="v2-step-num">2</div>
+              <div className="v2-step-icon"><Icons.Scan /></div>
+              <h3>AI wykrywa i mierzy</h3>
+              <p>Sztuczna inteligencja rozpoznaje pomieszczenia, ściany, drzwi i okna. Oblicza powierzchnie, obwody i długości.</p>
             </div>
-            <div className="step">
-              <div className="step-number">3</div>
-              <div className="step-icon" style={{ background: 'rgba(6, 182, 212, 0.1)' }}>
-                <span style={{ color: '#22d3ee' }}><Icons.FileSpreadsheet /></span>
+            <div className="v2-step-arrow">&rarr;</div>
+            <div className="v2-step">
+              <div className="v2-step-num">3</div>
+              <div className="v2-step-icon"><Icons.FileSpreadsheet /></div>
+              <h3>Odbierz przedmiar</h3>
+              <p>Ekspert weryfikuje wynik. Dostajesz gotowy przedmiar w Excelu z pozycjami, jednostkami i ilościami.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WHAT WE DETECT */}
+      <section className="v2-section">
+        <div className="v2-container">
+          <div className="v2-section-header">
+            <span className="v2-label">Detekcja AI</span>
+            <h2>Co wykrywamy z rysunku</h2>
+            <p>Jeden rysunek = dziesiątki pozycji przedmiarowych.</p>
+          </div>
+          <div className="v2-detect-grid">
+            <div className="v2-detect-card">
+              <div className="v2-detect-icon"><Icons.Home /></div>
+              <h3>Pomieszczenia</h3>
+              <p>Wykrycie granic, powierzchnia (m²), obwód (mb)</p>
+              <div className="v2-detect-output">
+                <span>Posadzki</span>
+                <span>Sufity</span>
+                <span>Tynki</span>
+                <span>Malowanie</span>
               </div>
-              <h3 className="step-title">Pobierz Excel</h3>
-              <p className="step-desc">Gotowe zestawienie do pobrania. Przygotowane do wyceny.</p>
+            </div>
+            <div className="v2-detect-card">
+              <div className="v2-detect-icon"><Icons.Layers /></div>
+              <h3>Ściany</h3>
+              <p>Nośne, działowe, zewnętrzne — długość, grubość</p>
+              <div className="v2-detect-output">
+                <span>Murowanie</span>
+                <span>Tynki</span>
+                <span>Izolacja</span>
+                <span>Malowanie</span>
+              </div>
+            </div>
+            <div className="v2-detect-card">
+              <div className="v2-detect-icon"><Icons.Scan /></div>
+              <h3>Drzwi i okna</h3>
+              <p>Ilość, lokalizacja, typ otworu</p>
+              <div className="v2-detect-output">
+                <span>Montaż</span>
+                <span>Ościeżnice</span>
+                <span>Obróbka</span>
+                <span>Parapety</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* FEATURES */}
-      <section className="section">
-        <div className="container">
-          <div className="section-header">
-            <p className="section-label">Funkcje</p>
-            <h2 className="section-title">Wszystko, czego potrzebujesz</h2>
-            <p className="section-desc">Narzędzie zaprojektowane dla kosztorysantów i inżynierów.</p>
+      <section className="v2-section v2-section-alt">
+        <div className="v2-container">
+          <div className="v2-section-header">
+            <span className="v2-label">Funkcje</span>
+            <h2>Narzędzie dla kosztorysantów</h2>
           </div>
-          <div className="features-grid">
-            <div className="feature">
-              <div className="feature-icon"><Icons.Zap /></div>
-              <div className="feature-content">
-                <div className="feature-title">Analiza AI</div>
-                <div className="feature-desc">Automatyczna ekstrakcja danych z przedmiarów PDF</div>
-              </div>
+          <div className="v2-features-grid">
+            <div className="v2-feature">
+              <div className="v2-feature-icon"><Icons.Zap /></div>
+              <div><strong>Detekcja z rysunków</strong><p>AI rozpoznaje elementy budowlane bezpośrednio z rysunku technicznego</p></div>
             </div>
-            <div className="feature">
-              <div className="feature-icon"><Icons.Shield /></div>
-              <div className="feature-content">
-                <div className="feature-title">Weryfikacja eksperta</div>
-                <div className="feature-desc">Każdy wynik sprawdzany przez doświadczonego kosztorysanta</div>
-              </div>
+            <div className="v2-feature">
+              <div className="v2-feature-icon"><Icons.Ruler /></div>
+              <div><strong>Automatyczne obmiary</strong><p>Powierzchnie, obwody, długości ścian — obliczone z geometrii rysunku</p></div>
             </div>
-            <div className="feature">
-              <div className="feature-icon"><Icons.Download /></div>
-              <div className="feature-content">
-                <div className="feature-title">Eksport Excel</div>
-                <div className="feature-desc">Gotowe zestawienie do pobrania jednym klikiem</div>
-              </div>
+            <div className="v2-feature">
+              <div className="v2-feature-icon"><Icons.Shield /></div>
+              <div><strong>Weryfikacja eksperta</strong><p>Każdy wynik sprawdza doświadczony kosztorysant przed wysyłką</p></div>
             </div>
-            <div className="feature">
-              <div className="feature-icon"><Icons.Clock /></div>
-              <div className="feature-content">
-                <div className="feature-title">Szybka realizacja</div>
-                <div className="feature-desc">Wynik od 4h do 24h w zależności od pakietu</div>
-              </div>
+            <div className="v2-feature">
+              <div className="v2-feature-icon"><Icons.Download /></div>
+              <div><strong>Eksport Excel</strong><p>Gotowy przedmiar z pozycjami, jednostkami i ilościami</p></div>
             </div>
-            <div className="feature">
-              <div className="feature-icon"><Icons.Layers /></div>
-              <div className="feature-content">
-                <div className="feature-title">Historia analiz</div>
-                <div className="feature-desc">Wszystkie analizy zapisane i dostępne w panelu</div>
-              </div>
+            <div className="v2-feature">
+              <div className="v2-feature-icon"><Icons.Clock /></div>
+              <div><strong>Szybka realizacja</strong><p>Wynik od 4h do 24h w zależności od pakietu</p></div>
             </div>
-            <div className="feature">
-              <div className="feature-icon"><Icons.BarChart /></div>
-              <div className="feature-content">
-                <div className="feature-title">Rosnąca dokładność</div>
-                <div className="feature-desc">AI uczy się z każdą analizą — coraz lepsze wyniki</div>
-              </div>
+            <div className="v2-feature">
+              <div className="v2-feature-icon"><Icons.BarChart /></div>
+              <div><strong>Rosnąca dokładność</strong><p>AI uczy się z każdą analizą — coraz lepsze wyniki</p></div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* INTEGRATIONS / ROADMAP */}
-      <section className="section">
-        <div className="container">
-          <div className="section-header">
-            <p className="section-label">Integracje</p>
-            <h2 className="section-title">Rozwój pod Twoje potrzeby</h2>
-            <p className="section-desc">
-              Budujemy narzędzie wspólnie z kosztorysantami. Powiedz nam, czego potrzebujesz.
-            </p>
+      {/* ROADMAP */}
+      <section className="v2-section">
+        <div className="v2-container">
+          <div className="v2-section-header">
+            <span className="v2-label">Roadmap</span>
+            <h2>Rozwój pod Twoje potrzeby</h2>
           </div>
-
-          <div className="roadmap-grid">
-            <div className="roadmap-card roadmap-soon">
-              <div className="roadmap-badge">Wkrótce</div>
-              <div className="roadmap-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="M12 18v-6" /><path d="m9 15 3-3 3 3" /></svg>
-              </div>
-              <h3 className="roadmap-title">Eksport ATH</h3>
-              <p className="roadmap-desc">
-                Bezpośredni import do NormaPRO, Zuzia, Rodos i innych programów kosztorysowych. Zero przepisywania.
-              </p>
+          <div className="v2-roadmap">
+            <div className="v2-roadmap-card">
+              <span className="v2-roadmap-badge">Wkrótce</span>
+              <h3>Eksport ATH</h3>
+              <p>Bezpośredni import do NormaPRO, Zuzia, Rodos</p>
             </div>
-
-            <div className="roadmap-card roadmap-soon">
-              <div className="roadmap-badge">Wkrótce</div>
-              <div className="roadmap-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
-              </div>
-              <h3 className="roadmap-title">Mapowanie KNR / KNNR</h3>
-              <p className="roadmap-desc">
-                AI automatycznie dopasuje pozycje przedmiaru do katalogów norm. Gotowe do wyceny.
-              </p>
+            <div className="v2-roadmap-card">
+              <span className="v2-roadmap-badge">Wkrótce</span>
+              <h3>Mapowanie KNR / KNNR</h3>
+              <p>AI dopasuje pozycje do katalogów norm</p>
             </div>
-
-            <div className="roadmap-card roadmap-planned">
-              <div className="roadmap-badge planned">W planie</div>
-              <div className="roadmap-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.855z" /></svg>
-              </div>
-              <h3 className="roadmap-title">Twoje potrzeby</h3>
-              <p className="roadmap-desc">
-                Rozwijamy produkt pod realne potrzeby użytkowników. Napisz, czego Ci brakuje — zbudujemy to.
-              </p>
+            <div className="v2-roadmap-card">
+              <span className="v2-roadmap-badge v2-badge-planned">W planie</span>
+              <h3>Twoje potrzeby</h3>
+              <p>Rozwijamy produkt z kosztorysantami</p>
             </div>
           </div>
-
-          <div className="ai-learning-banner" style={{ marginTop: '32px' }}>
+          <div className="v2-ai-banner">
             <Icons.Sparkles />
-            <p>
-              Stale uczymy nasze modele AI — wydajność i dokładność rosną z każdym miesiącem.
-              Każda analiza pomaga nam dostarczać lepsze wyniki.
-            </p>
+            <p>Stale uczymy nasze modele AI — wydajność i dokładność rosną z każdym miesiącem.</p>
           </div>
         </div>
       </section>
 
       {/* PRICING */}
-      <section id="cennik" className="section pricing-section">
-        <div className="container">
-          <div className="section-header">
-            <p className="section-label">Cennik</p>
-            <h2 className="section-title">Płacisz za analizę, nie za subskrypcję</h2>
-            <p className="section-desc">Bez abonamentu. Kupujesz pakiet analiz — wykorzystujesz kiedy chcesz.</p>
+      <section className="v2-section v2-section-alt" id="cennik">
+        <div className="v2-container">
+          <div className="v2-section-header">
+            <span className="v2-label">Cennik</span>
+            <h2>Płacisz za projekt, nie za subskrypcję</h2>
+            <p>Bez abonamentu. Kupujesz pakiet — wykorzystujesz kiedy chcesz.</p>
           </div>
-
-          <div className="pricing-grid">
+          <div className="v2-pricing-grid">
             {packs.map((pack) => (
-              <div key={pack.name} className={`pricing-card ${pack.popular ? 'popular' : ''}`}>
-                {pack.popular && <div className="pricing-popular-badge">Najlepszy stosunek ceny</div>}
-                <div className="pricing-card-header">
-                  <h3 className="pricing-plan-name">{pack.name}</h3>
-                  <div className="pricing-price">
-                    <span className="pricing-amount">{pack.price === 0 ? '0' : pack.price}</span>
-                    <span className="pricing-currency">PLN</span>
-                  </div>
-                  <p className="pricing-per-unit">{pack.desc}</p>
+              <div key={pack.name} className={`v2-pricing-card ${pack.popular ? 'v2-popular' : ''}`}>
+                {pack.popular && <div className="v2-popular-badge">Najpopularniejszy</div>}
+                <h3>{pack.name}</h3>
+                <div className="v2-price">
+                  <span className="v2-price-amount">{pack.price === 0 ? '0' : pack.price}</span>
+                  <span className="v2-price-currency">PLN</span>
                 </div>
-                <ul className="pricing-features">
+                <p className="v2-price-desc">{pack.desc}</p>
+                <ul className="v2-pricing-features">
                   {pack.features.map((f) => (
                     <li key={f}><Icons.Check /><span>{f}</span></li>
                   ))}
                 </ul>
                 <Link
                   href={pack.price === 0 ? '/login' : `/login?pack=${pack.price}`}
-                  className={`pricing-cta ${pack.popular ? 'popular' : ''}`}
+                  className={`v2-pricing-cta ${pack.popular ? 'v2-cta-primary' : ''}`}
                 >
                   {pack.cta}
                 </Link>
               </div>
             ))}
           </div>
-
-          <div className="pricing-custom">
-            <div className="pricing-custom-inner">
-              <div>
-                <h4 className="pricing-custom-title">Potrzebujesz więcej analiz?</h4>
-                <p className="pricing-custom-desc">Przygotujemy indywidualną ofertę dopasowaną do Twojej firmy.</p>
-              </div>
-              <a href="mailto:kontakt@przedmiar.ai" className="pricing-custom-cta">
-                Napisz do nas
-                <Icons.ArrowRight />
-              </a>
+          <div className="v2-pricing-custom">
+            <div>
+              <h4>Potrzebujesz więcej?</h4>
+              <p>Przygotujemy indywidualną ofertę dla Twojej firmy.</p>
             </div>
+            <a href="mailto:kontakt@przedmiar.ai" className="v2-btn-secondary">
+              Napisz do nas <Icons.ArrowRight />
+            </a>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="footer">
-        <div className="footer-inner">
-          <a href="#" className="logo">
-            <div className="logo-icon" style={{ width: 28, height: 28 }}><Icons.Calculator /></div>
-            <span className="logo-text" style={{ fontSize: 15 }}>PrzedmiarAI</span>
-          </a>
-          <p className="footer-text">&copy; 2026 PrzedmiarAI. Wszystkie prawa zastrzeżone.</p>
+      <footer className="v2-footer">
+        <div className="v2-footer-inner">
+          <div className="v2-logo">
+            <div className="v2-logo-icon"><Icons.Calculator /></div>
+            <span className="v2-logo-text">PrzedmiarAI</span>
+          </div>
+          <p>&copy; 2026 PrzedmiarAI. Wszystkie prawa zastrzeżone.</p>
         </div>
       </footer>
-    </>
+    </div>
   );
-}
-
-export default function Home() {
-  return <HomeContent />;
 }
