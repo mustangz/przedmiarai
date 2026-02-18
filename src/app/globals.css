@@ -4685,7 +4685,7 @@ body {
 
 /* ─── Container ─── */
 .v2-container {
-  max-width: 1140px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -4702,7 +4702,7 @@ body {
   border-bottom: 1px solid var(--v2-border);
 }
 .v2-nav-inner {
-  max-width: 1140px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 24px;
   height: 60px;
@@ -4786,7 +4786,7 @@ body {
   100% { transform: translate(60px, 60px); }
 }
 .v2-hero-content {
-  max-width: 1140px;
+  max-width: 1400px;
   width: 100%;
   margin: 0 auto;
   position: relative;
@@ -4884,7 +4884,7 @@ body {
   padding: 40px 24px;
 }
 .v2-metrics-grid {
-  max-width: 1140px;
+  max-width: 1400px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -5333,7 +5333,7 @@ body {
   border-top: 1px solid var(--v2-border);
 }
 .v2-footer-inner {
-  max-width: 1140px;
+  max-width: 1400px;
   margin: 0 auto;
   display: flex;
   align-items: center;
