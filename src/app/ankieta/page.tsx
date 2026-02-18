@@ -143,18 +143,18 @@ export default function AnkietaPage() {
 
   if (done) {
     return (
-      <div className="auth-page">
-        <div className="auth-card" style={{ maxWidth: 520 }}>
-          <div className="auth-logo">
-            <div className="logo-icon-sm" />
-            <span className="auth-logo-text">PrzedmiarAI</span>
+      <div className="survey-page">
+        <div className="survey-card">
+          <div className="survey-logo">
+            <div className="survey-logo-icon" />
+            <span className="survey-logo-text">PrzedmiarAI</span>
           </div>
-          <div className="auth-sent-icon">🙏</div>
-          <h1 className="auth-title">Dziękujemy!</h1>
-          <p className="auth-desc">
+          <div style={{ fontSize: 40, marginBottom: 16 }}>🙏</div>
+          <h1 className="survey-title">Dziękujemy!</h1>
+          <p className="survey-desc">
             Twoje odpowiedzi pomogą nam zbudować lepszy produkt. Jeśli zostawiłeś kontakt — odezwiemy się wkrótce.
           </p>
-          <a href="https://przedmiarai.pl" className="auth-submit" style={{ display: 'inline-block', textDecoration: 'none' }}>
+          <a href="https://przedmiarai.pl" className="survey-submit" style={{ display: 'inline-block', textDecoration: 'none' }}>
             Wróć na stronę
           </a>
         </div>
@@ -163,15 +163,15 @@ export default function AnkietaPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card" style={{ maxWidth: 520 }}>
-        <div className="auth-logo">
-          <div className="logo-icon-sm" />
-          <span className="auth-logo-text">PrzedmiarAI</span>
+    <div className="survey-page">
+      <div className="survey-card">
+        <div className="survey-logo">
+          <div className="survey-logo-icon" />
+          <span className="survey-logo-text">PrzedmiarAI</span>
         </div>
 
-        <h1 className="auth-title">Ankieta po beta teście</h1>
-        <p className="auth-desc">Zajmie Ci to ~2 minuty. Żadnych nagród — liczy się szczerość.</p>
+        <h1 className="survey-title">Ankieta po beta teście</h1>
+        <p className="survey-desc">Zajmie Ci to ~2 minuty. Żadnych nagród — liczy się szczerość.</p>
 
         {/* Progress bar */}
         <div className="survey-progress">
@@ -186,7 +186,7 @@ export default function AnkietaPage() {
           </div>
         </div>
 
-        <div className="auth-form">
+        <div className="survey-form">
           {/* Section A */}
           {step === 0 && (
             <>
@@ -222,7 +222,7 @@ export default function AnkietaPage() {
               </Question>
               <Question label="7. Co najbardziej wkurza w obecnym procesie?">
                 <textarea
-                  className="auth-input"
+                  className="survey-input"
                   rows={3}
                   placeholder="Pisz szczerze — to najważniejsze pytanie..."
                   value={answers.pain_point}
@@ -241,14 +241,14 @@ export default function AnkietaPage() {
               </Question>
               <Question label="9. Co było największym ograniczeniem?">
                 <textarea
-                  className="auth-input"
+                  className="survey-input"
                   rows={3}
                   placeholder="Co byś zmienił/poprawił?"
                   value={answers.beta_limitation}
                   onChange={(e) => set('beta_limitation', e.target.value)}
                 />
               </Question>
-              <Question label="10. Jak bardzo byłbyś zawiedziony gdyby PrzedmiarAI zniknął?">
+              <Question label="10. Jak oceniasz potencjał tego narzędzia? (1 = bez sensu, 10 = must-have)">
                 <ScaleInput value={answers.disappointment_score} onChange={(v) => set('disappointment_score', v)} />
               </Question>
               <Question label="11. Czy powiedziałeś komuś o PrzedmiarAI?">
@@ -275,7 +275,7 @@ export default function AnkietaPage() {
               </Question>
               <Question label="Opcjonalnie: email lub telefon do kontaktu">
                 <input
-                  className="auth-input"
+                  className="survey-input"
                   type="text"
                   placeholder="email@firma.pl lub +48..."
                   value={answers.contact_email}
@@ -285,7 +285,7 @@ export default function AnkietaPage() {
             </>
           )}
 
-          {error && <p className="auth-error">{error}</p>}
+          {error && <p className="survey-error">{error}</p>}
 
           <div className="survey-nav">
             {step > 0 && (
@@ -294,11 +294,11 @@ export default function AnkietaPage() {
               </button>
             )}
             {step < 3 ? (
-              <button type="button" className="auth-submit" disabled={!canNext()} onClick={() => setStep(step + 1)}>
+              <button type="button" className="survey-submit" disabled={!canNext()} onClick={() => setStep(step + 1)}>
                 Dalej →
               </button>
             ) : (
-              <button type="button" className="auth-submit" disabled={!canNext() || submitting} onClick={submit}>
+              <button type="button" className="survey-submit" disabled={!canNext() || submitting} onClick={submit}>
                 {submitting ? 'Wysyłam...' : 'Wyślij ankietę'}
               </button>
             )}
