@@ -4818,7 +4818,7 @@ body {
   gap: 60px;
   align-items: center;
 }
-.v2-hero-text { max-width: 580px; }
+.v2-hero-text { }
 
 .v2-badge {
   display: inline-flex;
@@ -4851,6 +4851,7 @@ body {
   line-height: 1.7;
   color: var(--v2-text-secondary);
   margin-bottom: 28px;
+  max-width: 32rem;
 }
 .v2-hero-buttons {
   display: flex;
