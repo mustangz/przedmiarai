@@ -1,0 +1,23 @@
+[
+  { "email": "biuro.magfin@wp.pl", "name": "Magdalena", "firma": "MAGFIN", "kategoria": "kosztorysowe" },
+  { "email": "remiz@pro.onet.pl", "name": "Marek", "firma": "Remiz", "kategoria": "kosztorysowe" },
+  { "email": "biuro@qsinzynieria.pl", "name": "", "firma": "QS Inżynieria", "kategoria": "kosztorysowe" },
+  { "email": "kosztorysy@budhelp.pl", "name": "Michał", "firma": "Budhelp", "kategoria": "kosztorysowe" },
+  { "email": "arturwasylkow@interia.pl", "name": "Artur", "firma": "ArtKoszt", "kategoria": "kosztorysowe" },
+  { "email": "biurorenomex@gmail.com", "name": "Bartosz", "firma": "Renomex", "kategoria": "kosztorysowe" },
+  { "email": "e.ziaja@samax.eu", "name": "Elżbieta", "firma": "SAMAX", "kategoria": "kosztorysowe" },
+  { "email": "kosztorysy@norman.net.pl", "name": "", "firma": "Biuro Kosztorysowe NORMAN", "kategoria": "kosztorysowe" },
+  { "email": "biuro@speckosztorys.pl", "name": "Tomasz", "firma": "Speckosztorys", "kategoria": "kosztorysowe" },
+  { "email": "pl_office.strabag@strabag.com", "name": "", "firma": "STRABAG", "kategoria": "generalni-duzi" },
+  { "email": "centrala@porr.pl", "name": "", "firma": "PORR", "kategoria": "generalni-duzi" },
+  { "email": "grazyna.markiewicz@erbud.pl", "name": "Grażyna", "firma": "Erbud", "kategoria": "generalni-duzi" },
+  { "email": "biuro@grupakdm.pl", "name": "", "firma": "Grupa KDM", "kategoria": "generalni-sredni" },
+  { "email": "mmikulski@inzynieria.rzeszow.pl", "name": "", "firma": "Inżynieria Rzeszów", "kategoria": "generalni-sredni" },
+  { "email": "promus@promus.com.pl", "name": "", "firma": "PROMUS", "kategoria": "generalni-sredni" },
+  { "email": "sekretariat@grupatrakcja.com", "name": "", "firma": "Trakcja", "kategoria": "generalni-sredni" },
+  { "email": "info@bergerbau.pl", "name": "", "firma": "Berger Bau Polska", "kategoria": "generalni-sredni" },
+  { "email": "ofertowanie@dekpol.pl", "name": "", "firma": "Dekpol", "kategoria": "generalni-sredni" },
+  { "email": "biuro@biams.pl", "name": "", "firma": "BIAMS", "kategoria": "projektowe" },
+  { "email": "biuro@kosztorysy-budowlane.lublin.pl", "name": "", "firma": "Kosztorysy Budowlane Lublin", "kategoria": "projektowe" },
+  { "email": "oferty@kosztorysysanitarne.pl", "name": "", "firma": "Kosztorysy Sanitarne", "kategoria": "projektowe" }
+]
