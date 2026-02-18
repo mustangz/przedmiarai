@@ -4796,19 +4796,19 @@ body {
   gap: 60px;
   align-items: center;
 }
-.v2-hero-text { max-width: 32rem; }
+.v2-hero-text { max-width: 520px; }
 
 .v2-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 6px 14px;
   background: var(--v2-accent-bg);
   color: #7c3aed;
   border-radius: 100px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 .v2-gradient {
   background: linear-gradient(135deg, #7c3aed, #06b6d4);
@@ -4817,32 +4817,32 @@ body {
   background-clip: text;
 }
 .v2-hero-title {
-  font-size: clamp(2rem, 5vw, 4rem);
+  font-size: 42px;
   font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  margin-bottom: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin-bottom: 20px;
   color: var(--v2-text);
 }
 .v2-hero-subtitle {
-  font-size: 1.125rem;
+  font-size: 16px;
   line-height: 1.7;
   color: var(--v2-text-secondary);
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 .v2-hero-buttons {
   display: flex;
-  gap: 14px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 .v2-btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 0.875rem 1.75rem;
+  padding: 12px 24px;
   background: #7c3aed;
   color: white;
-  border-radius: 0.75rem;
+  border-radius: 10px;
   font-weight: 600;
   font-size: 15px;
   text-decoration: none;
@@ -4855,11 +4855,11 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 0.875rem 1.75rem;
+  padding: 12px 24px;
   background: transparent;
   color: var(--v2-text-secondary);
   border: 1px solid var(--v2-border-hover);
-  border-radius: 0.75rem;
+  border-radius: 10px;
   font-weight: 500;
   font-size: 15px;
   text-decoration: none;
@@ -5409,8 +5409,8 @@ body {
 
 .v2-mockup-body {
   display: grid;
-  grid-template-columns: 1fr 200px;
-  height: 420px;
+  grid-template-columns: 1fr 180px;
+  height: 320px;
 }
 
 /* ─── MOCKUP CANVAS (floor plan) ─── */
@@ -5615,7 +5615,7 @@ body {
 @media (max-width: 900px) {
   .v2-hero-content { grid-template-columns: 1fr; gap: 40px; }
   .v2-hero-text { max-width: 100%; }
-  .v2-hero-title { font-size: 2rem; }
+  .v2-hero-title { font-size: 32px; }
   .v2-compare { grid-template-columns: 1fr; }
   .v2-steps { flex-direction: column; align-items: center; }
   .v2-step-arrow { transform: rotate(90deg); padding: 0; }
