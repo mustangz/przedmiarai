@@ -149,8 +149,104 @@ async function exportToExcel(pozycje: PozycjaPrzedmiaru[], fileName: string) {
   XLSX.writeFile(wb, fileName);
 }
 
+// ─── Auth Gate Component ─────────────────────────────────────
+function AuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
+  const [email, setEmail] = useState('');
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, redirect: '/panel' }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Błąd');
+      }
+
+      setSent(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Błąd serwera');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Check if token appeared (e.g. from another tab)
+  useEffect(() => {
+    const check = () => {
+      if (localStorage.getItem('token')) onAuthenticated();
+    };
+    window.addEventListener('storage', check);
+    return () => window.removeEventListener('storage', check);
+  }, [onAuthenticated]);
+
+  return (
+    <div className="auth-page">
+      <div className="auth-card" style={{ maxWidth: 440 }}>
+        <a href="/" className="auth-logo" style={{ textDecoration: 'none' }}>
+          <div className="logo-icon-sm" />
+          <span className="auth-logo-text">PrzedmiarAI</span>
+        </a>
+
+        {!sent ? (
+          <>
+            <div style={{ margin: '20px 0 8px', padding: '12px 16px', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.2)', borderRadius: 10 }}>
+              <p style={{ fontSize: 14, color: '#c4b5fd', lineHeight: 1.6, margin: 0 }}>
+                <strong style={{ color: '#e9d5ff' }}>Beta — co testujemy:</strong><br />
+                Wgraj rzut PDF → AI zmierzy powierzchnie podłóg, ścian, obwody pomieszczeń → eksport do Excela
+              </p>
+            </div>
+
+            <h1 className="auth-title" style={{ marginTop: 20 }}>Przetestuj za darmo</h1>
+            <p className="auth-desc">
+              Podaj email, żebyśmy mogli wysłać Ci link do panelu.
+            </p>
+
+            <form onSubmit={handleSubmit} className="auth-form">
+              <input
+                type="email"
+                placeholder="jan@firma.pl"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="auth-input"
+                required
+                autoFocus
+              />
+              {error && <p className="auth-error">{error}</p>}
+              <button type="submit" className="auth-submit" disabled={loading}>
+                {loading ? 'Wysyłanie...' : 'Wyślij link'}
+              </button>
+            </form>
+          </>
+        ) : (
+          <div className="auth-sent">
+            <div className="auth-sent-icon">✉️</div>
+            <h1 className="auth-title">Sprawdź skrzynkę</h1>
+            <p className="auth-desc">
+              Wysłaliśmy link do logowania na <strong>{email}</strong>.
+              <br />
+              Link wygasa za 15 minut.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ─────────────────────────────────────────
 export default function PanelPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [state, setState] = useState<AppState>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [pageImages, setPageImages] = useState<string[]>([]);
@@ -162,6 +258,19 @@ export default function PanelPage() {
   const [usage, setUsage] = useState<{ input_tokens: number; output_tokens: number } | null>(null);
   const [analyzeProgress, setAnalyzeProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check auth on mount
+  useEffect(() => {
+    setIsAuthenticated(!!localStorage.getItem('token'));
+  }, []);
+
+  // Show nothing during SSR/hydration
+  if (isAuthenticated === null) return null;
+
+  // Show auth gate if not authenticated
+  if (!isAuthenticated) {
+    return <AuthGate onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();

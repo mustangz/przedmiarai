@@ -12,6 +12,7 @@ function VerifyContent() {
 
   useEffect(() => {
     const token = searchParams.get('token');
+    const redirect = searchParams.get('redirect');
     if (!token) {
       setStatus('error');
       setErrorMsg('Brak tokenu w linku.');
@@ -29,7 +30,7 @@ function VerifyContent() {
       .then((data) => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/dashboard');
+        router.push(redirect || '/dashboard');
       })
       .catch((err) => {
         setStatus('error');

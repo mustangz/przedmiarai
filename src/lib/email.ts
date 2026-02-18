@@ -25,9 +25,9 @@ async function sendEmail(to: string, subject: string, html: string) {
   }
 }
 
-export async function sendMagicLinkEmail(email: string, token: string) {
+export async function sendMagicLinkEmail(email: string, token: string, redirect?: string) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://przedmiar.ai';
-  const link = `${baseUrl}/auth/verify?token=${token}`;
+  const link = `${baseUrl}/auth/verify?token=${token}${redirect ? `&redirect=${encodeURIComponent(redirect)}` : ''}`;
 
   await sendEmail(
     email,

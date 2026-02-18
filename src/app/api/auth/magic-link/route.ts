@@ -4,14 +4,14 @@ import { sendMagicLinkEmail } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   try {
-    const { email } = await req.json();
+    const { email, redirect } = await req.json();
 
     if (!email || !email.includes('@')) {
       return NextResponse.json({ error: 'Podaj poprawny email' }, { status: 400 });
     }
 
     const token = await createMagicLink(email);
-    await sendMagicLinkEmail(email, token);
+    await sendMagicLinkEmail(email, token, redirect);
 
     return NextResponse.json({ ok: true });
   } catch (err) {
