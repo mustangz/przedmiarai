@@ -272,63 +272,60 @@ const packs = [
   {
     name: 'Start',
     price: 0,
-    originalPrice: null,
-    desc: 'Zostało 5 miejsc',
     perProject: null,
+    subtitle: 'Do 3 analiz',
     features: [
       '3 analizy rysunków',
       'Do 5 stron / analiza',
       'Eksport Excel',
-      'Czas realizacji: do 48h',
+      'Realizacja: do 48h',
     ],
-    missingFeatures: [
-      'Bez weryfikacji eksperta',
-      'Bez eksportu ATH/Norma',
-      'Bez gwarancji poprawek',
-    ],
+    bonuses: [],
+    totalValue: null,
     cta: 'Zacznij za darmo',
     popular: false,
-    guarantee: false,
   },
   {
     name: 'Profesjonalny',
     price: 399,
-    originalPrice: 695,
-    desc: 'Cena premierowa',
-    perProject: '79,80 PLN / projekt',
+    perProject: '79,80',
+    subtitle: 'Do 5 projektów',
     features: [
-      '5 projektów',
+      { text: '5 projektów', bold: true },
       'Do 20 stron / projekt',
       'Eksport Excel + ATH/Norma',
       'Weryfikacja eksperta',
-      'Gwarancja poprawek gratis',
       'Realizacja: do 12h',
     ],
-    missingFeatures: [],
-    cta: 'Kup teraz — oszczędzasz 296 PLN',
+    bonuses: [
+      { name: 'Gwarancja poprawek', value: '149' },
+      { name: 'Konsultacja z kosztorysantem', value: '197' },
+    ],
+    totalValue: '745',
+    cta: 'Wybieram Profesjonalny',
     popular: true,
-    guarantee: true,
   },
   {
     name: 'Biuro projektowe',
     price: 899,
-    originalPrice: 1785,
-    desc: 'Najlepsza wartość',
-    perProject: '59,90 PLN / projekt',
+    perProject: '59,90',
+    subtitle: 'Do 15 projektów',
     features: [
-      '15 projektów',
+      { text: '15 projektów', bold: true },
       'Do 50 stron / projekt',
       'Eksport Excel + ATH/Norma',
       'Weryfikacja eksperta',
-      'Gwarancja poprawek gratis',
-      'Priorytetowe wsparcie',
-      'Realizacja: do 6h',
-      'Dedykowany opiekun',
+      { text: 'Najszybsza kolejka', bold: false },
     ],
-    missingFeatures: [],
-    cta: 'Kup teraz — oszczędzasz 886 PLN',
+    bonuses: [
+      { name: 'Gwarancja poprawek', value: '149' },
+      { name: 'Konsultacja z kosztorysantem', value: '197' },
+      { name: 'Dedykowany opiekun', value: '297' },
+      { name: 'Priorytetowe wsparcie', value: '497' },
+    ],
+    totalValue: '2 039',
+    cta: 'Wybieram Biuro',
     popular: false,
-    guarantee: true,
   },
 ];
 
@@ -624,48 +621,95 @@ export default function Home() {
         <div className="v2-container">
           <div className="v2-section-header">
             <span className="v2-label">Cennik premierowy</span>
-            <h2>Płacisz za projekt, nie za subskrypcję</h2>
-            <p>Bez abonamentu. Kupujesz pakiet — wykorzystujesz kiedy chcesz. Ceny premierowe znikną po zamknięciu 50 miejsc.</p>
+            <h2>Prosty <span className="v2-gradient">cennik</span></h2>
+            <p>Kupujesz pakiet — wykorzystujesz kiedy chcesz. Bez abonamentu.</p>
           </div>
+
+          {/* Anchor bar */}
+          <div className="v2-pricing-anchor">
+            <div className="v2-anchor-item v2-anchor-old">
+              <Icons.X />
+              <span>Ręczny przedmiar = <strong className="v2-anchor-strike">2 000 – 5 000 PLN</strong></span>
+            </div>
+            <div className="v2-anchor-item v2-anchor-old">
+              <Icons.X />
+              <span>Czas realizacji = <strong className="v2-anchor-strike">3–7 dni</strong></span>
+            </div>
+            <div className="v2-anchor-item v2-anchor-new">
+              <Icons.Zap />
+              <span>PrzedmiarAI = <strong>od 59,90 PLN, gotowe w 6h</strong></span>
+            </div>
+          </div>
+
           <div className="v2-pricing-grid">
             {packs.map((pack) => (
               <div key={pack.name} className={`v2-pricing-card ${pack.popular ? 'v2-popular' : ''}`}>
-                {pack.popular && <div className="v2-popular-badge">Najpopularniejszy</div>}
-                <h3>{pack.name}</h3>
+                {pack.popular && <div className="v2-popular-badge">Najczęściej wybierany</div>}
+                <div className="v2-pricing-card-top">
+                  <h3>{pack.name}</h3>
+                  <p className="v2-pricing-subtitle">{pack.subtitle}</p>
+                </div>
                 <div className="v2-price">
-                  {pack.originalPrice && (
-                    <span className="v2-price-original">{pack.originalPrice} PLN</span>
-                  )}
                   <span className="v2-price-amount">{pack.price === 0 ? '0' : pack.price}</span>
                   <span className="v2-price-currency">PLN</span>
                 </div>
-                <p className="v2-price-desc">
-                  {pack.perProject ? <><strong>{pack.perProject}</strong> &middot; </> : null}
-                  {pack.desc}
-                </p>
+                {pack.perProject && (
+                  <p className="v2-price-per">= {pack.perProject} PLN za projekt</p>
+                )}
                 <ul className="v2-pricing-features">
-                  {pack.features.map((f) => (
-                    <li key={f}><Icons.Check /><span>{f}</span></li>
-                  ))}
-                  {pack.missingFeatures.map((f) => (
-                    <li key={f} className="v2-feature-missing"><Icons.X /><span>{f}</span></li>
-                  ))}
+                  {pack.features.map((f, i) => {
+                    const text = typeof f === 'string' ? f : f.text;
+                    const bold = typeof f !== 'string' && f.bold;
+                    return (
+                      <li key={i}><Icons.Check /><span>{bold ? <strong>{text}</strong> : text}</span></li>
+                    );
+                  })}
                 </ul>
-                {pack.guarantee && (
-                  <div className="v2-pricing-guarantee">
-                    <Icons.Shield />
-                    <span>Jeśli wynik Cię nie zadowoli — poprawimy za darmo</span>
+
+                {pack.bonuses.length > 0 && (
+                  <div className="v2-value-stack">
+                    <p className="v2-value-stack-title">Bonusy w cenie:</p>
+                    {pack.bonuses.map((b, i) => (
+                      <div key={i} className="v2-value-stack-row">
+                        <span className="v2-value-stack-name">{b.name}</span>
+                        <span className="v2-value-stack-price">{b.value} PLN</span>
+                      </div>
+                    ))}
                   </div>
                 )}
+
+                {pack.totalValue && (
+                  <div className={`v2-pricing-summary ${pack.popular ? 'v2-summary-featured' : ''}`}>
+                    <p className="v2-summary-old">Wartość pakietu: <span>{pack.totalValue} PLN</span></p>
+                    <p className={`v2-summary-new ${pack.popular ? 'v2-gradient' : ''}`}>Twoja cena: {pack.price} PLN</p>
+                  </div>
+                )}
+
                 <Link
                   href={pack.price === 0 ? '/login' : `/login?pack=${pack.price}`}
                   className={`v2-pricing-cta ${pack.popular ? 'v2-cta-primary' : ''}`}
                 >
                   {pack.cta}
+                  {pack.popular && <Icons.ArrowRight />}
                 </Link>
               </div>
             ))}
           </div>
+
+          {/* Guarantee block */}
+          <div className="v2-guarantee-block">
+            <div className="v2-guarantee-icon">
+              <Icons.Shield />
+            </div>
+            <h3>Gwarancja poprawek — gratis</h3>
+            <p>Jeśli wynik nie spełni Twoich oczekiwań — poprawimy przedmiar za darmo. Bez limitu poprawek, bez dodatkowych opłat. Ryzyko jest po naszej stronie.</p>
+            <div className="v2-guarantee-badges">
+              <span><Icons.Check /> Bez ukrytych warunków</span>
+              <span><Icons.Check /> Poprawki w 24h</span>
+              <span><Icons.Check /> Weryfikacja eksperta</span>
+            </div>
+          </div>
+
           <div className="v2-pricing-custom">
             <div>
               <h4>Potrzebujesz więcej niż 15 projektów?</h4>

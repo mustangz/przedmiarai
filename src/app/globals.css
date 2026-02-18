@@ -5229,20 +5229,44 @@ body {
 .v2-ai-banner p { margin: 0; }
 
 /* ─── PRICING ─── */
+
+/* Anchor bar */
+.v2-pricing-anchor {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+.v2-anchor-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--v2-text-muted);
+}
+.v2-anchor-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.v2-anchor-old svg { color: #f87171; }
+.v2-anchor-strike { text-decoration: line-through; color: #f87171; }
+.v2-anchor-new { color: #7c3aed; font-weight: 500; }
+.v2-anchor-new svg { color: #7c3aed; }
+
+/* Grid */
 .v2-pricing-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 }
 .v2-pricing-card {
   padding: 32px;
   background: var(--v2-bg-card);
   border-radius: 16px;
   border: 1px solid var(--v2-border);
-  text-align: center;
   position: relative;
   transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
 }
 .v2-pricing-card:hover { border-color: var(--v2-border-hover); box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
 .v2-popular {
@@ -5262,81 +5286,117 @@ body {
   font-weight: 600;
   white-space: nowrap;
 }
+.v2-pricing-card-top { margin-bottom: 16px; }
 .v2-pricing-card h3 {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--v2-text);
-  margin-bottom: 12px;
+  margin-bottom: 2px;
+}
+.v2-pricing-subtitle {
+  font-size: 13px;
+  color: var(--v2-text-muted);
 }
 .v2-price {
   display: flex;
   align-items: baseline;
-  justify-content: center;
   gap: 4px;
   margin-bottom: 4px;
-  flex-wrap: wrap;
-}
-.v2-price-original {
-  font-size: 16px;
-  color: var(--v2-text-faint);
-  text-decoration: line-through;
-  width: 100%;
-  margin-bottom: -2px;
 }
 .v2-price-amount {
-  font-size: 48px;
+  font-size: 40px;
   font-weight: 800;
   color: var(--v2-text);
   letter-spacing: -0.03em;
   line-height: 1;
 }
+.v2-popular .v2-price-amount { color: #7c3aed; }
 .v2-price-currency {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--v2-text-muted);
 }
-.v2-price-desc {
-  font-size: 13px;
+.v2-price-per {
+  font-size: 12px;
   color: var(--v2-text-faint);
   margin-bottom: 20px;
 }
 .v2-pricing-features {
   list-style: none;
   padding: 0;
-  margin: 0 0 24px;
+  margin: 0 0 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   text-align: left;
+  flex-grow: 1;
 }
 .v2-pricing-features li {
   display: flex;
-  align-items: center;
+  align-items: start;
   gap: 8px;
   font-size: 14px;
   color: var(--v2-text-secondary);
 }
-.v2-pricing-features li svg { color: #22c55e; flex-shrink: 0; }
-.v2-feature-missing { opacity: 0.5; }
-.v2-feature-missing svg { color: var(--v2-text-faint) !important; }
-.v2-pricing-guarantee {
+.v2-pricing-features li svg { color: #22c55e; flex-shrink: 0; margin-top: 2px; }
+.v2-pricing-features li strong { color: var(--v2-text); }
+
+/* Value stack */
+.v2-value-stack {
+  border-top: 1px solid var(--v2-border);
+  padding-top: 16px;
+  margin-bottom: 16px;
+}
+.v2-value-stack-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--v2-text-faint);
+  margin-bottom: 8px;
+}
+.v2-value-stack-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.v2-value-stack-name { color: #7c3aed; }
+.v2-value-stack-price { color: var(--v2-text-faint); text-decoration: line-through; }
+
+/* Summary box */
+.v2-pricing-summary {
+  background: var(--v2-bg-card-alt);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.v2-summary-featured {
+  background: var(--v2-accent-bg);
+  border: 1px solid var(--v2-accent-border, rgba(124, 58, 237, 0.2));
+}
+.v2-summary-old {
+  font-size: 12px;
+  color: var(--v2-text-faint);
+  margin-bottom: 2px;
+}
+.v2-summary-old span { text-decoration: line-through; }
+.v2-summary-new {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--v2-text);
+}
+
+/* CTA */
+.v2-pricing-cta {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  font-size: 12px;
-  color: var(--v2-success-text);
-  margin-bottom: 16px;
-  padding: 8px 10px;
-  background: var(--v2-success-bg);
-  border-radius: 8px;
-  border: 1px solid var(--v2-success-border);
-}
-.v2-pricing-guarantee svg { flex-shrink: 0; width: 14px; height: 14px; }
-.v2-pricing-cta {
-  display: block;
   width: 100%;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: 0.75rem;
   font-weight: 600;
   font-size: 14px;
   text-decoration: none;
@@ -5351,8 +5411,61 @@ body {
   background: #7c3aed !important;
   color: white !important;
   border-color: #7c3aed !important;
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
 }
-.v2-cta-primary:hover { background: #6d28d9 !important; }
+.v2-cta-primary:hover { background: #6d28d9 !important; box-shadow: 0 4px 24px rgba(124, 58, 237, 0.4); }
+
+/* Guarantee block */
+.v2-guarantee-block {
+  max-width: 640px;
+  margin: 0 auto 32px;
+  text-align: center;
+  padding: 32px;
+  background: var(--v2-bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--v2-success-border);
+}
+.v2-guarantee-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--v2-success-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+.v2-guarantee-icon svg { color: var(--v2-success-text); width: 24px; height: 24px; }
+.v2-guarantee-block h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--v2-text);
+  margin-bottom: 8px;
+}
+.v2-guarantee-block p {
+  font-size: 14px;
+  color: var(--v2-text-secondary);
+  margin-bottom: 16px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.v2-guarantee-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+}
+.v2-guarantee-badges span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--v2-text-muted);
+}
+.v2-guarantee-badges svg { color: #22c55e; width: 14px; height: 14px; }
+
+/* Custom / enterprise */
 .v2-pricing-custom {
   display: flex;
   align-items: center;
