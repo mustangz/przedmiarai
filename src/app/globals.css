@@ -5455,8 +5455,8 @@ body {
 
 .v2-mockup-body {
   display: grid;
-  grid-template-columns: 1fr 180px;
-  height: 320px;
+  grid-template-columns: 1fr 200px;
+  height: 400px;
 }
 
 /* ─── MOCKUP CANVAS (floor plan) ─── */
