@@ -31,17 +31,27 @@ export async function sendMagicLinkEmail(email: string, token: string, redirect?
 
   await sendEmail(
     email,
-    'Twój link do logowania — PrzedmiarAI',
+    'Twój dostęp do panelu beta — PrzedmiarAI',
     `
-    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 20px;">
-      <h2 style="color: #fafafa;">PrzedmiarAI</h2>
-      <p>Cześć!</p>
-      <p>Kliknij poniższy przycisk, aby się zalogować:</p>
-      <a href="${link}" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #8b5cf6, #06b6d4); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 16px 0;">
-        Zaloguj się
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 20px; color: #1f2937;">
+      <h2 style="margin: 0 0 20px; color: #7c3aed; font-size: 20px;">Przedmiar<span style="color: #a78bfa;">AI</span></h2>
+      <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.6;">Cześć!</p>
+      <p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6;">Kliknij poniżej, żeby otworzyć panel beta:</p>
+      <a href="${link}" style="display: inline-block; padding: 14px 28px; background-color: #7c3aed; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; margin: 0 0 20px;">
+        Otwórz panel &rarr;
       </a>
-      <p style="color: #888; font-size: 13px;">Link wygasa za 15 minut.</p>
-      <p style="color: #888; font-size: 13px;">Jeśli nie prosiłeś o logowanie, zignoruj tę wiadomość.</p>
+      <div style="padding: 12px 16px; background-color: #f5f3ff; border-radius: 6px; margin: 0 0 20px; font-size: 14px; line-height: 1.7; color: #4b5563;">
+        <strong style="color: #1f2937;">Co możesz przetestować:</strong><br>
+        &bull; Wgraj rzut PDF (budynek architektoniczny)<br>
+        &bull; AI zmierzy powierzchnie podłóg, ścian, obwody<br>
+        &bull; Eksport wyników do Excela
+      </div>
+      <p style="color: #9ca3af; font-size: 13px; margin: 0 0 4px;">Link wygasa za 15 minut.</p>
+      <p style="color: #9ca3af; font-size: 13px; margin: 0 0 20px;">Jeśli nie prosiłeś o dostęp, zignoruj tę wiadomość.</p>
+      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #6b7280;">
+        Pozdrawiam,<br>
+        <strong style="color: #1f2937;">Marcin z PrzedmiarAI</strong>
+      </p>
     </div>
     `
   );
