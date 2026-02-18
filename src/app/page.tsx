@@ -334,6 +334,9 @@ export default function Home() {
 
       {/* HERO */}
       <section className="v2-hero">
+        <div className="v2-hero-bg">
+          <div className="v2-hero-bg-grid" />
+        </div>
         <div className="v2-hero-content">
           <div className="v2-hero-text">
             <div className="v2-badge">
