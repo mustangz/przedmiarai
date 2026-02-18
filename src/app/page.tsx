@@ -595,6 +595,11 @@ export default function Home() {
           <div className="v2-roadmap">
             <div className="v2-roadmap-card">
               <span className="v2-roadmap-badge">Wkrótce</span>
+              <h3>Instalacje</h3>
+              <p>Elektryka, kanalizacja, wentylacja — obmiary z rysunków instalacyjnych</p>
+            </div>
+            <div className="v2-roadmap-card">
+              <span className="v2-roadmap-badge">Wkrótce</span>
               <h3>Eksport ATH</h3>
               <p>Bezpośredni import do NormaPRO, Zuzia, Rodos</p>
             </div>
