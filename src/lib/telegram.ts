@@ -27,7 +27,7 @@ export async function notifyNewSubmission(submission: {
   userEmail: string;
   submissionId: string;
 }) {
-  const adminUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://przedmiar.ai'}/admin/submissions/${submission.submissionId}`;
+  const adminUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://przedmiarai.pl'}/admin/submissions/${submission.submissionId}`;
 
   await sendTelegramMessage(
     `📋 <b>Nowy przedmiar!</b>\n\n` +

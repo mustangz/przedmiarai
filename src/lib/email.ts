@@ -26,7 +26,7 @@ async function sendEmail(to: string, subject: string, html: string) {
 }
 
 export async function sendMagicLinkEmail(email: string, token: string, redirect?: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://przedmiar.ai';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://przedmiarai.pl';
   const link = `${baseUrl}/auth/verify?token=${token}${redirect ? `&redirect=${encodeURIComponent(redirect)}` : ''}`;
 
   await sendEmail(
@@ -65,7 +65,7 @@ export async function sendFounderNotification(submission: {
   const founderEmail = process.env.FOUNDER_EMAIL;
   if (!founderEmail) return;
 
-  const adminUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://przedmiar.ai'}/admin/submissions/${submission.submissionId}`;
+  const adminUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://przedmiarai.pl'}/admin/submissions/${submission.submissionId}`;
 
   await sendEmail(
     founderEmail,
@@ -84,7 +84,7 @@ export async function sendFounderNotification(submission: {
 }
 
 export async function sendUserResultNotification(email: string, submissionId: string) {
-  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://przedmiar.ai'}/dashboard`;
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://przedmiarai.pl'}/dashboard`;
 
   await sendEmail(
     email,

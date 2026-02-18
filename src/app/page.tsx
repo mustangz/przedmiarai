@@ -720,7 +720,7 @@ export default function Home() {
               <h4>Potrzebujesz więcej niż 15 projektów?</h4>
               <p>Dla biur projektowych przygotujemy indywidualną wycenę z jeszcze lepszą ceną za projekt.</p>
             </div>
-            <a href="mailto:kontakt@przedmiar.ai" className="v2-btn-secondary">
+            <a href="mailto:kontakt@przedmiarai.pl" className="v2-btn-secondary">
               Napisz do nas <Icons.ArrowRight />
             </a>
           </div>
