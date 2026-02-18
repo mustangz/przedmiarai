@@ -5091,8 +5091,6 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  max-width: 1024px;
-  margin: 0 auto;
 }
 .v2-detect-card {
   padding: 32px;
@@ -5144,8 +5142,6 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  max-width: 1024px;
-  margin: 0 auto;
 }
 .v2-feature {
   display: flex;
@@ -5186,8 +5182,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  max-width: 896px;
-  margin: 0 auto 32px;
+  margin-bottom: 32px;
 }
 .v2-roadmap-card {
   padding: 24px;
@@ -5242,8 +5237,7 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   gap: 24px;
-  max-width: 1024px;
-  margin: 0 auto 40px;
+  margin-bottom: 40px;
 }
 .v2-anchor-item {
   display: flex;
@@ -5263,7 +5257,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  max-width: 1024px;
+  max-width: 896px;
   margin: 0 auto 40px;
 }
 .v2-pricing-card {
@@ -5482,9 +5476,6 @@ body {
   background: var(--v2-bg-card);
   border-radius: 14px;
   border: 1px solid var(--v2-border);
-  max-width: 1024px;
-  margin-left: auto;
-  margin-right: auto;
 }
 .v2-pricing-custom h4 {
   font-size: 16px;
