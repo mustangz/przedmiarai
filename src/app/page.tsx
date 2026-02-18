@@ -270,28 +270,65 @@ function ProductMockup() {
 /* ─── Pricing packs ─── */
 const packs = [
   {
-    name: 'Pionier',
+    name: 'Start',
     price: 0,
+    originalPrice: null,
     desc: 'Zostało 5 miejsc',
-    features: ['3 analizy rysunków', 'Do 5 stron / analiza', 'Eksport Excel', 'Czas realizacji: do 24h'],
-    cta: 'Wypróbuj za darmo',
+    perProject: null,
+    features: [
+      '3 analizy rysunków',
+      'Do 5 stron / analiza',
+      'Eksport Excel',
+      'Czas realizacji: do 48h',
+    ],
+    missingFeatures: [
+      'Bez weryfikacji eksperta',
+      'Bez eksportu ATH/Norma',
+      'Bez gwarancji poprawek',
+    ],
+    cta: 'Zacznij za darmo',
     popular: false,
+    guarantee: false,
   },
   {
-    name: 'Pakiet 5',
+    name: 'Profesjonalny',
     price: 399,
-    desc: '79,80 PLN za projekt',
-    features: ['5 projektów', 'Do 20 stron / projekt', 'Eksport Excel', 'Weryfikacja eksperta', 'Czas realizacji: do 12h'],
-    cta: 'Kup Pakiet 5',
+    originalPrice: 695,
+    desc: 'Cena premierowa',
+    perProject: '79,80 PLN / projekt',
+    features: [
+      '5 projektów',
+      'Do 20 stron / projekt',
+      'Eksport Excel + ATH/Norma',
+      'Weryfikacja eksperta',
+      'Gwarancja poprawek gratis',
+      'Realizacja: do 12h',
+    ],
+    missingFeatures: [],
+    cta: 'Kup teraz — oszczędzasz 296 PLN',
     popular: true,
+    guarantee: true,
   },
   {
-    name: 'Pakiet 15',
+    name: 'Biuro projektowe',
     price: 899,
-    desc: '59,90 PLN za projekt',
-    features: ['15 projektów', 'Do 50 stron / projekt', 'Eksport Excel + ATH', 'Weryfikacja eksperta', 'Priorytetowe wsparcie'],
-    cta: 'Kup Pakiet 15',
+    originalPrice: 1785,
+    desc: 'Najlepsza wartość',
+    perProject: '59,90 PLN / projekt',
+    features: [
+      '15 projektów',
+      'Do 50 stron / projekt',
+      'Eksport Excel + ATH/Norma',
+      'Weryfikacja eksperta',
+      'Gwarancja poprawek gratis',
+      'Priorytetowe wsparcie',
+      'Realizacja: do 6h',
+      'Dedykowany opiekun',
+    ],
+    missingFeatures: [],
+    cta: 'Kup teraz — oszczędzasz 886 PLN',
     popular: false,
+    guarantee: true,
   },
 ];
 
@@ -586,9 +623,9 @@ export default function Home() {
       <section className="v2-section v2-section-alt" id="cennik">
         <div className="v2-container">
           <div className="v2-section-header">
-            <span className="v2-label">Cennik</span>
+            <span className="v2-label">Cennik premierowy</span>
             <h2>Płacisz za projekt, nie za subskrypcję</h2>
-            <p>Bez abonamentu. Kupujesz pakiet — wykorzystujesz kiedy chcesz.</p>
+            <p>Bez abonamentu. Kupujesz pakiet — wykorzystujesz kiedy chcesz. Ceny premierowe znikną po zamknięciu 50 miejsc.</p>
           </div>
           <div className="v2-pricing-grid">
             {packs.map((pack) => (
@@ -596,15 +633,30 @@ export default function Home() {
                 {pack.popular && <div className="v2-popular-badge">Najpopularniejszy</div>}
                 <h3>{pack.name}</h3>
                 <div className="v2-price">
+                  {pack.originalPrice && (
+                    <span className="v2-price-original">{pack.originalPrice} PLN</span>
+                  )}
                   <span className="v2-price-amount">{pack.price === 0 ? '0' : pack.price}</span>
                   <span className="v2-price-currency">PLN</span>
                 </div>
-                <p className="v2-price-desc">{pack.desc}</p>
+                <p className="v2-price-desc">
+                  {pack.perProject ? <><strong>{pack.perProject}</strong> &middot; </> : null}
+                  {pack.desc}
+                </p>
                 <ul className="v2-pricing-features">
                   {pack.features.map((f) => (
                     <li key={f}><Icons.Check /><span>{f}</span></li>
                   ))}
+                  {pack.missingFeatures.map((f) => (
+                    <li key={f} className="v2-feature-missing"><Icons.X /><span>{f}</span></li>
+                  ))}
                 </ul>
+                {pack.guarantee && (
+                  <div className="v2-pricing-guarantee">
+                    <Icons.Shield />
+                    <span>Jeśli wynik Cię nie zadowoli — poprawimy za darmo</span>
+                  </div>
+                )}
                 <Link
                   href={pack.price === 0 ? '/login' : `/login?pack=${pack.price}`}
                   className={`v2-pricing-cta ${pack.popular ? 'v2-cta-primary' : ''}`}
@@ -616,8 +668,8 @@ export default function Home() {
           </div>
           <div className="v2-pricing-custom">
             <div>
-              <h4>Potrzebujesz więcej?</h4>
-              <p>Przygotujemy indywidualną ofertę dla Twojej firmy.</p>
+              <h4>Potrzebujesz więcej niż 15 projektów?</h4>
+              <p>Dla biur projektowych przygotujemy indywidualną wycenę z jeszcze lepszą ceną za projekt.</p>
             </div>
             <a href="mailto:kontakt@przedmiar.ai" className="v2-btn-secondary">
               Napisz do nas <Icons.ArrowRight />
