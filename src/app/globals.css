@@ -5464,8 +5464,8 @@ body {
 }
 .v2-room.visible {
   opacity: 1;
-  background: rgba(124, 58, 237, 0.08);
-  border: 1.5px solid rgba(124, 58, 237, 0.35);
+  background: rgba(124, 58, 237, 0.12);
+  border: 1.5px solid rgba(124, 58, 237, 0.5);
 }
 .v2-room.measured {
   background: rgba(124, 58, 237, 0.12);
@@ -5545,7 +5545,11 @@ body {
 .v2-measurement.visible {
   opacity: 1;
   transform: translateX(0);
-  background: var(--v2-bg-card-alt);
+  background: var(--v2-accent-bg-subtle);
+  border-color: var(--v2-accent-bg);
+}
+.v2-measurement.visible .v2-measurement-name {
+  color: #7c3aed;
 }
 .v2-measurement.measured {
   background: var(--v2-accent-bg);
