@@ -422,7 +422,7 @@ export default function Home() {
             </div>
             <div className="v2-metric">
               <div className="v2-metric-icon"><Icons.Ruler /></div>
-              <div className="v2-metric-value">m² mb</div>
+              <div className="v2-metric-value">m² / mb / szt.</div>
               <div className="v2-metric-label">automatyczne obmiary</div>
             </div>
             <div className="v2-metric">
