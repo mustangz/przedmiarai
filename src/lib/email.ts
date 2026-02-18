@@ -83,6 +83,63 @@ export async function sendFounderNotification(submission: {
   );
 }
 
+export async function sendSurveyEmail(email: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://przedmiarai.pl';
+  const surveyUrl = `${baseUrl}/ankieta`;
+
+  await sendEmail(
+    email,
+    'Jak Ci poszło z PrzedmiarAI? (2 min)',
+    `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 20px; color: #1f2937;">
+      <h2 style="margin: 0 0 20px; color: #7c3aed; font-size: 20px;">Przedmiar<span style="color: #a78bfa;">AI</span></h2>
+      <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.6;">Cześć!</p>
+      <p style="margin: 0 0 12px; font-size: 15px; line-height: 1.6;">Dzięki, że przetestowałeś PrzedmiarAI. Mam do Ciebie krótką ankietę — <strong>2 minuty</strong>, 14 pytań.</p>
+      <p style="margin: 0 0 20px; font-size: 15px; line-height: 1.6;">Żadnych nagród za wypełnienie — zależy mi na szczerych odpowiedziach od ludzi, którzy faktycznie tego używają.</p>
+      <a href="${surveyUrl}" style="display: inline-block; padding: 14px 28px; background-color: #7c3aed; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; margin: 0 0 20px;">
+        Wypełnij ankietę &rarr;
+      </a>
+      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #6b7280;">
+        Pozdrawiam,<br>
+        <strong style="color: #1f2937;">Marcin z PrzedmiarAI</strong>
+      </p>
+    </div>
+    `
+  );
+}
+
+export async function sendFounderSurveyNotification(survey: {
+  role: string | null;
+  company_size: string | null;
+  disappointment_score: number | null;
+  willing_to_pay: string | null;
+  would_subscribe: string | null;
+  contact_email: string | null;
+  pain_point: string | null;
+}) {
+  const founderEmail = process.env.FOUNDER_EMAIL;
+  if (!founderEmail) return;
+
+  await sendEmail(
+    founderEmail,
+    `Ankieta: ${survey.role} | Score: ${survey.disappointment_score}/10`,
+    `
+    <div style="font-family: sans-serif; padding: 20px;">
+      <h3>Nowa odpowiedź z ankiety</h3>
+      <table style="border-collapse: collapse; width: 100%;">
+        <tr><td style="padding: 4px 8px; font-weight: bold;">Rola:</td><td style="padding: 4px 8px;">${survey.role}</td></tr>
+        <tr><td style="padding: 4px 8px; font-weight: bold;">Firma:</td><td style="padding: 4px 8px;">${survey.company_size} osób</td></tr>
+        <tr><td style="padding: 4px 8px; font-weight: bold;">Disappointment:</td><td style="padding: 4px 8px;"><strong>${survey.disappointment_score}/10</strong></td></tr>
+        <tr><td style="padding: 4px 8px; font-weight: bold;">Gotów płacić:</td><td style="padding: 4px 8px;">${survey.willing_to_pay}</td></tr>
+        <tr><td style="padding: 4px 8px; font-weight: bold;">Zapisałby się:</td><td style="padding: 4px 8px;">${survey.would_subscribe}</td></tr>
+        <tr><td style="padding: 4px 8px; font-weight: bold;">Kontakt:</td><td style="padding: 4px 8px;">${survey.contact_email || 'brak'}</td></tr>
+        <tr><td style="padding: 4px 8px; font-weight: bold;">Pain point:</td><td style="padding: 4px 8px;">${survey.pain_point || '-'}</td></tr>
+      </table>
+    </div>
+    `
+  );
+}
+
 export async function sendUserResultNotification(email: string, submissionId: string) {
   const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://przedmiarai.pl'}/dashboard`;
 
